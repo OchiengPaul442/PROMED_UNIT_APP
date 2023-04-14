@@ -15,3 +15,6 @@ export {default as Profile} from './profile/Profile';
 export {default as Notifications} from './notifications/Notifications';
 export {default as Settings} from './settings/Settings';
 export {default as About} from './Home/About';
+export {default as Terms} from './Therapy/Terms';
+export {default as Test} from './Therapy/Test';
+export {default as TestResult} from './Therapy/TestResult';

@@ -27,8 +27,24 @@ const WelcomeScreen = ({navigation}) => {
         <View style={styles.button}>
           <CurvedButton
             text="Get Started"
-            color={COLORS.primary}
-            radius={100}
+            textColor={COLORS.primary}
+            style={{
+              backgroundColor: COLORS.white,
+              width: 200,
+              height: 50,
+              borderRadius: 50,
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              shadowColor: '#000',
+              shadowOffset: {
+                width: 0,
+                height: 5,
+              },
+              shadowOpacity: 0.34,
+              shadowRadius: 6.27,
+              elevation: 5,
+            }}
             onPress={() => navigation.navigate('Access')}
           />
         </View>

@@ -1,5 +1,5 @@
 import {StyleSheet, Text, View, Image, TouchableOpacity} from 'react-native';
-import {COLORS, Profile, Bell} from '../constants';
+import {COLORS, Profile, Bell} from '../../constants';
 import React from 'react';
 
 const Header = () => {

@@ -6,7 +6,7 @@ import {
   UnHappyAnimation,
   WellAnimation,
   HappyAnimation,
-} from '../../components/animations';
+} from '../../components/Animations/animations';
 import React from 'react';
 
 const MoodTracker = () => {

@@ -1,5 +1,4 @@
 import {StyleSheet} from 'react-native';
-import React from 'react';
 
 // constants
 import {COLORS} from '../constants';
@@ -9,6 +8,7 @@ import Svg, {G, Path, Ellipse} from 'react-native-svg';
 
 // tab navigation
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
+import TherapyNavigation from './TherapyNavigation';
 
 // screens
 import {HomeScreen, Therapy, Groups, Bot} from '../screens';
@@ -45,8 +45,8 @@ const BottomTabs = () => {
         }}
       />
       <Tab.Screen
-        name="Therapy"
-        component={Therapy}
+        name="Therapy_root"
+        component={TherapyNavigation}
         options={{
           tabBarIcon: ({focused}) => (
             <Svg
@@ -123,9 +123,17 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: 5,
     right: 5,
-    bottom: 8,
+    bottom: 5,
     alignSelf: 'center',
     backgroundColor: COLORS.primary,
     borderRadius: 30,
+    shadowColor: COLORS.black,
+    shadowOffset: {
+      width: 0,
+      height: 3,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3,
+    elevation: 3,
   },
 });

@@ -7,12 +7,19 @@ import {
   Image,
   TouchableOpacity,
 } from 'react-native';
+import React from 'react';
 
 // constants
 import {COLORS, Three_btn_menu, Plus} from '../../constants';
 
 // screen layout
 import Screen from '../../layout/Screen';
+
+// card
+import Card from '../../components/Cards/Card';
+
+// modal
+import {BottomModal, CenterHalf} from '../../components';
 
 const Groups = () => {
   // List of available Groups
@@ -49,22 +56,42 @@ const Groups = () => {
     },
   ];
 
+  // modal
+
+  // Modal
+  const [isModalVisible, setModalVisible] = React.useState(false);
+  const [isModalVisible2, setModalVisible2] = React.useState(false);
+
+  const toggleModal = () => {
+    setModalVisible(!isModalVisible);
+  };
+
+  const toggleModal2 = () => {
+    setModalVisible2(!isModalVisible2);
+  };
+
   return (
     <Screen>
       <View style={styles.Groups_Screen}>
         {/* Add Group Button */}
-        <TouchableOpacity style={styles.Add_group_btn}>
-          <View style={styles.Add_group_btn_icon}>
+        <View style={styles.Add_group_btn}>
+          <TouchableOpacity
+            onPress={toggleModal2}
+            style={styles.Add_group_btn_icon}>
             <Plus width={30} height={30} />
-          </View>
-        </TouchableOpacity>
+          </TouchableOpacity>
+        </View>
 
         {/* Content */}
         <View style={styles.Content}>
           <ScrollView showsVerticalScrollIndicator={false}>
             {/* Search input field section */}
             <View style={styles.Search_input_con}>
-              <TextInput style={styles.Search_input} placeholder="Search" />
+              <TextInput
+                style={styles.Search_input}
+                placeholderTextColor={COLORS.black}
+                placeholder="Search ..."
+              />
             </View>
 
             {/* list of available Groups */}
@@ -73,7 +100,7 @@ const Groups = () => {
             </Text>
             <View style={styles.Group_list}>
               {groups.map((item, index) => (
-                <TouchableOpacity key={index} style={styles.group_card}>
+                <Card key={index}>
                   <View style={styles.group_img_con}>
                     <Image source={item.image} style={styles.group_img} />
                   </View>
@@ -82,7 +109,7 @@ const Groups = () => {
                       style={{
                         position: 'relative',
                         width: '100%',
-                        height: '80%',
+                        height: '50%',
                         display: 'flex',
                         justifyContent: 'space-between',
                       }}>
@@ -91,16 +118,38 @@ const Groups = () => {
                         Members: {item.Number_Of_Members}
                       </Text>
                     </View>
-                    <TouchableOpacity style={styles.group_btn}>
+                    <TouchableOpacity
+                      onPress={toggleModal}
+                      style={styles.group_btn}>
                       <Three_btn_menu width={30} height={30} />
                     </TouchableOpacity>
                   </View>
-                </TouchableOpacity>
+                </Card>
               ))}
             </View>
           </ScrollView>
         </View>
       </View>
+      {/* Modal1 */}
+      <BottomModal Visibility={isModalVisible} hide={toggleModal}>
+        <Text
+          style={{
+            fontSize: 20,
+            color: COLORS.primary,
+          }}>
+          Modal
+        </Text>
+      </BottomModal>
+      {/* modal2 */}
+      <CenterHalf Visibility={isModalVisible2} hide={toggleModal2}>
+        <Text
+          style={{
+            fontSize: 20,
+            color: COLORS.primary,
+          }}>
+          Modal2
+        </Text>
+      </CenterHalf>
     </Screen>
   );
 };
@@ -146,13 +195,21 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 50,
     borderRadius: 10,
-    backgroundColor: COLORS.gray,
+    backgroundColor: COLORS.lightGray,
     display: 'flex',
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 10,
     marginBottom: 15,
+    shadowColor: COLORS.black,
+    shadowOffset: {
+      width: 0,
+      height: 3,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3,
+    elevation: 3,
   },
 
   // search input field
@@ -169,22 +226,7 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 'auto',
     marginTop: 10,
-    paddingBottom: 160,
-  },
-
-  // available therapist card
-  group_card: {
-    position: 'relative',
-    width: '100%',
-    height: 100,
-    borderRadius: 10,
-    padding: 10,
-    marginTop: 10,
-    display: 'flex',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    backgroundColor: COLORS.lightGray,
+    paddingBottom: 220,
   },
 
   // available therapist image container

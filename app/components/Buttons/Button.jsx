@@ -1,24 +1,21 @@
 /* eslint-disable prettier/prettier */
-import {Pressable, TouchableOpacity, Text, View} from 'react-native';
-import {ICONS, Back} from '../constants';
+import {Pressable, TouchableOpacity, Text} from 'react-native';
 
-export const CurvedButton = ({text, onPress, color, radius}) => {
+// constants
+import {Back} from '../../constants';
+
+export const CurvedButton = props => {
   return (
-    <TouchableOpacity
+    <Pressable
+      // disabled={props.disabled}
       style={{
-        backgroundColor: '#fff',
-        width: 180,
-        padding: 15,
-        borderRadius: radius,
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
+        ...props.style,
       }}
-      onPress={onPress}>
-      <Text style={{color: color, fontSize: 18, fontWeight: 'bold'}}>
-        {text}
+      onPress={props.onPress}>
+      <Text style={{color: props.textColor, fontSize: 18, fontWeight: 'bold'}}>
+        {props.text}
       </Text>
-    </TouchableOpacity>
+    </Pressable>
   );
 };
 

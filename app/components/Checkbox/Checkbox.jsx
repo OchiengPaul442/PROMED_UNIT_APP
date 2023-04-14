@@ -2,7 +2,7 @@ import React from 'react';
 import {Text, View} from 'react-native';
 
 // constants
-import {COLORS} from '../constants';
+import {COLORS} from '../../constants';
 // checkbox
 import CheckBox from '@react-native-community/checkbox';
 
