@@ -40,7 +40,7 @@ const PasswordRecovery = ({navigation}) => {
             text="Submit Request"
             bgColor={COLORS.secondary}
             textColor={COLORS.primary}
-            onPress={() => navigation.navigate('ChangePassword')}
+            onPress={() => navigation.push('ChangePassword')}
             w="100%"
           />
           <View style={styles.separatorWrapper}>
@@ -52,7 +52,7 @@ const PasswordRecovery = ({navigation}) => {
             text="Sign Up"
             bgColor={COLORS.primary}
             textColor={COLORS.white}
-            onPress={() => navigation.navigate('Register')}
+            onPress={() => navigation.push('Register')}
             w="100%"
           />
         </View>

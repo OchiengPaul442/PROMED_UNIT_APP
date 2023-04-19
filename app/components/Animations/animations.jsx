@@ -1,6 +1,7 @@
 import React from 'react';
 import Lottie from 'lottie-react-native';
 
+//Confirmed animation
 export const ConfirmedAnimation = () => {
   return (
     <Lottie
@@ -12,6 +13,7 @@ export const ConfirmedAnimation = () => {
   );
 };
 
+//Bad animation
 export const BadAnimation = () => {
   return (
     <Lottie
@@ -23,6 +25,7 @@ export const BadAnimation = () => {
   );
 };
 
+// Unhappy animation
 export const UnHappyAnimation = () => {
   return (
     <Lottie
@@ -34,6 +37,7 @@ export const UnHappyAnimation = () => {
   );
 };
 
+// Well animation
 export const WellAnimation = () => {
   return (
     <Lottie
@@ -45,6 +49,7 @@ export const WellAnimation = () => {
   );
 };
 
+// Happy animation
 export const HappyAnimation = () => {
   return (
     <Lottie
@@ -56,6 +61,7 @@ export const HappyAnimation = () => {
   );
 };
 
+// Excellent animation
 export const ExcellentAnimation = () => {
   return (
     <Lottie

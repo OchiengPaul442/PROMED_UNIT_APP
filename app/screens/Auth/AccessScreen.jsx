@@ -1,10 +1,16 @@
 import {View, Text, Image, SafeAreaView, StyleSheet} from 'react-native';
 
 // components
-import {FocusedStatusBar, RecButton} from '../../components';
+import {
+  FocusedStatusBar,
+  RecButton,
+  RegisterIcon,
+  GuestIcon,
+  SigninIcon,
+} from '../../components';
 
 // constants
-import {COLORS, Signin, Register, Guest, Logo} from '../../constants';
+import {COLORS, Logo} from '../../constants';
 
 const AccessScreen = ({navigation}) => {
   return (
@@ -26,19 +32,19 @@ const AccessScreen = ({navigation}) => {
         <View style={styles.buttons}>
           <RecButton
             text="Sign In"
-            onPress={() => navigation.navigate('Login')}
+            onPress={() => navigation.push('Login')}
             bgColor={COLORS.white}
             textColor={COLORS.primary}
             w={300}
-            icon={<Signin width={20} height={20} />}
+            icon={<SigninIcon width={20} height={20} />}
           />
           <RecButton
             text="Register"
-            onPress={() => navigation.navigate('Register')}
+            onPress={() => navigation.push('Register')}
             bgColor={COLORS.white}
             textColor={COLORS.primary}
             w={300}
-            icon={<Register width={20} height={20} />}
+            icon={<RegisterIcon width={20} height={20} />}
           />
           <RecButton
             text="Continue as Guest"
@@ -46,7 +52,7 @@ const AccessScreen = ({navigation}) => {
             textColor={COLORS.primary}
             w={300}
             onPress={() => navigation.navigate('Home_root')}
-            icon={<Guest width={20} height={20} />}
+            icon={<GuestIcon width={20} height={20} />}
           />
         </View>
       </View>

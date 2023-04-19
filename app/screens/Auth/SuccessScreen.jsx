@@ -33,7 +33,7 @@ const SuccessScreen = ({navigation}) => {
           text="Continue to Login"
           bgColor={COLORS.secondary}
           textColor={COLORS.primary}
-          onPress={() => navigation.navigate('Login')}
+          onPress={() => navigation.push('Login')}
           w="100%"
         />
       </View>

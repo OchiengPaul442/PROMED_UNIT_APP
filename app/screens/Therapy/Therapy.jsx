@@ -9,7 +9,8 @@ import {
 import React from 'react';
 
 // constants
-import {COLORS, Three_btn_menu} from '../../constants';
+import {COLORS} from '../../constants';
+import {Menu} from '../../components';
 
 // layout
 import Screen from '../../layout/Screen';
@@ -97,7 +98,7 @@ const Therapy = () => {
                       <TouchableOpacity
                         onPress={toggleModal}
                         style={styles.Therapist_btn}>
-                        <Three_btn_menu width={30} height={30} />
+                        <Menu width={30} height={30} fill={COLORS.black} />
                       </TouchableOpacity>
                     </View>
                   </Card>

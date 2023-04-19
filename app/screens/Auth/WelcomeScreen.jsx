@@ -45,7 +45,7 @@ const WelcomeScreen = ({navigation}) => {
               shadowRadius: 6.27,
               elevation: 5,
             }}
-            onPress={() => navigation.navigate('Access')}
+            onPress={() => navigation.push('Access')}
           />
         </View>
       </View>

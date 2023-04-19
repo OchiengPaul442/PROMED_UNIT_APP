@@ -111,7 +111,7 @@ const RegistrationScreen = ({navigation}) => {
             text="Sign Up"
             bgColor={COLORS.primary}
             textColor={COLORS.white}
-            onPress={() => navigation.navigate('Login')}
+            onPress={() => navigation.push('Login')}
             w="100%"
           />
           <View style={styles.separatorWrapper}>
@@ -123,7 +123,7 @@ const RegistrationScreen = ({navigation}) => {
             text="Login"
             bgColor={COLORS.secondary}
             textColor={COLORS.primary}
-            onPress={() => navigation.navigate('Login')}
+            onPress={() => navigation.push('Login')}
             w="100%"
           />
         </View>

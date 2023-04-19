@@ -10,7 +10,8 @@ import {
 import React from 'react';
 
 // constants
-import {COLORS, Three_btn_menu, Plus} from '../../constants';
+import {COLORS} from '../../constants';
+import {Menu, Plus} from '../../components';
 
 // screen layout
 import Screen from '../../layout/Screen';
@@ -78,7 +79,7 @@ const Groups = () => {
           <TouchableOpacity
             onPress={toggleModal2}
             style={styles.Add_group_btn_icon}>
-            <Plus width={30} height={30} />
+            <Plus width={30} height={30} fill={COLORS.black} />
           </TouchableOpacity>
         </View>
 
@@ -121,7 +122,7 @@ const Groups = () => {
                     <TouchableOpacity
                       onPress={toggleModal}
                       style={styles.group_btn}>
-                      <Three_btn_menu width={30} height={30} />
+                      <Menu width={30} height={30} fill={COLORS.black} />
                     </TouchableOpacity>
                   </View>
                 </Card>

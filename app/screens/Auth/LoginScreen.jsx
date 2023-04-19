@@ -66,7 +66,7 @@ const LoginScreen = ({navigation}) => {
           <Checkbox text="Remember me" />
           <View>
             <TouchableOpacity
-              onPress={() => navigation.navigate('PasswordRecovery')}
+              onPress={() => navigation.push('PasswordRecovery')}
               style={styles.fwdPassword}>
               <Text style={styles.fwdText}>Forgot Password</Text>
             </TouchableOpacity>
@@ -91,7 +91,7 @@ const LoginScreen = ({navigation}) => {
             text="Sign Up"
             bgColor={COLORS.primary}
             textColor={COLORS.white}
-            onPress={() => navigation.navigate('Register')}
+            onPress={() => navigation.push('Register')}
             w="100%"
           />
         </View>
