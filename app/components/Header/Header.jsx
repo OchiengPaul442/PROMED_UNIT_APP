@@ -3,7 +3,7 @@ import {COLORS, Profile} from '../../constants';
 import React from 'react';
 
 // icons
-import {Bell} from '../../components';
+import {Bell} from '../';
 
 const Header = () => {
   // Get users info

@@ -1,8 +1,15 @@
-import {View, Text, SafeAreaView, StyleSheet, ScrollView} from 'react-native';
+import {
+  View,
+  Text,
+  SafeAreaView,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+} from 'react-native';
 import React from 'react';
 
 // components
-import {FocusedStatusBar, BackButton} from '../components';
+import {FocusedStatusBar, BackBtn} from '../components';
 
 // constants
 import {COLORS} from '../constants';
@@ -21,9 +28,11 @@ const AuthScreen = props => {
 
       {/* form head */}
       <View style={styles.formHead}>
-        <View style={styles.formbackButton}>
-          <BackButton onPress={() => navigation.goBack()} />
-        </View>
+        <TouchableOpacity
+          onPress={() => navigation.goBack()}
+          style={styles.formbackButton}>
+          <BackBtn width={30} height={30} fill={COLORS.secondary} />
+        </TouchableOpacity>
         <Text style={styles.formHeadText}>{props.form_title}</Text>
       </View>
 

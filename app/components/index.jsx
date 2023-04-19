@@ -1,7 +1,9 @@
-import Header from './Header/Header';
-import FocusedStatusBar from './FocusedStatusBar/FocusedStatusBar';
+import FocusedStatusBar from './focusedStatusBar/FocusedStatusBar';
 import {BottomModal, CenterHalf} from './Modals/Modals';
 import Checkbox from './Checkbox/Checkbox';
+
+// Header
+export {default as Header} from './header/Header';
 
 // Buttons
 export {RecButton, BackButton, CurvedButton} from './Buttons/Button';
@@ -31,4 +33,4 @@ export {
   RegisterIcon,
 } from './icons/Icons';
 
-export {CenterHalf, BottomModal, Header, FocusedStatusBar, Checkbox};
+export {CenterHalf, BottomModal, FocusedStatusBar, Checkbox};
