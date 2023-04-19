@@ -27,10 +27,13 @@ export const COLORS = {
   lightGray: '#F5F6F8',
   gray: '#BEC1D2',
   darkGray: '#898C95',
-  yellow: '#FFD573',
+  orange: '#FD7846',
+  cyan: '#06535D',
+  yellow: '#FFCB4B',
   darkGreen: '#0B8457',
   peach: '#FFDBD7',
   red: '#FF0000',
+  Tuscany: '#F4EDE8',
 };
 
 // GLOBAL SIZES

@@ -9,13 +9,20 @@ import {
 import React from 'react';
 
 // constants
-import {COLORS, Three_btn_menu} from '../../constants';
+import {COLORS} from '../../constants';
+import {Menu} from '../../components';
 
 // layout
 import Screen from '../../layout/Screen';
 
 // diagnosis tool
 import DiagnosisTools from '../../services/diagnosisTool/DiagnosisTools';
+
+// Card
+import Card from '../../components/Cards/Card';
+
+// modal
+import {BottomModal} from '../../components';
 
 const Therapy = () => {
   // List of available therapist
@@ -46,6 +53,13 @@ const Therapy = () => {
     },
   ];
 
+  // Modal
+  const [isModalVisible, setModalVisible] = React.useState(false);
+
+  const toggleModal = () => {
+    setModalVisible(!isModalVisible);
+  };
+
   return (
     <Screen>
       <View style={styles.Therapy_Screen}>
@@ -62,7 +76,7 @@ const Therapy = () => {
               <View style={styles.Therapist_list}>
                 {/* list of available therapist */}
                 {therapist.map((item, index) => (
-                  <TouchableOpacity key={index} style={styles.Therapist_card}>
+                  <Card key={index}>
                     <View style={styles.Therapist_img_con}>
                       <Image source={item.image} style={styles.Therapist_img} />
                     </View>
@@ -81,17 +95,29 @@ const Therapy = () => {
                         </Text>
                         <Text style={styles.Therapist_title}>{item.title}</Text>
                       </View>
-                      <TouchableOpacity style={styles.Therapist_btn}>
-                        <Three_btn_menu width={30} height={30} />
+                      <TouchableOpacity
+                        onPress={toggleModal}
+                        style={styles.Therapist_btn}>
+                        <Menu width={30} height={30} fill={COLORS.black} />
                       </TouchableOpacity>
                     </View>
-                  </TouchableOpacity>
+                  </Card>
                 ))}
               </View>
             </View>
           </ScrollView>
         </View>
       </View>
+      {/* Modal */}
+      <BottomModal Visibility={isModalVisible} hide={toggleModal}>
+        <Text
+          style={{
+            fontSize: 20,
+            color: COLORS.primary,
+          }}>
+          Modal
+        </Text>
+      </BottomModal>
     </Screen>
   );
 };
@@ -145,22 +171,7 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 'auto',
     marginTop: 10,
-    paddingBottom: 160,
-  },
-
-  // available therapist card
-  Therapist_card: {
-    position: 'relative',
-    width: '100%',
-    height: 100,
-    borderRadius: 10,
-    padding: 10,
-    marginTop: 10,
-    display: 'flex',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    backgroundColor: COLORS.lightGray,
+    paddingBottom: 110,
   },
 
   // available therapist image container

@@ -1,27 +1,34 @@
-import {RecButton, BackButton, CurvedButton} from './Button';
-import FocusedStatusBar from './FocusedStatusBar';
-import Checkbox from './Checkbox';
-import {
-  ConfirmedAnimation,
-  BadAnimation,
-  HappyAnimation,
-  ExcellentAnimation,
-  UnHappyAnimation,
-  WellAnimation,
-} from './animations';
-import Header from './Header';
+import Header from './Header/Header';
+import FocusedStatusBar from './FocusedStatusBar/FocusedStatusBar';
+import {BottomModal, CenterHalf} from './Modals/Modals';
+import Checkbox from './Checkbox/Checkbox';
 
+// Buttons
+export {RecButton, BackButton, CurvedButton} from './Buttons/Button';
+
+// animations
 export {
-  Header,
-  RecButton,
-  BackButton,
-  CurvedButton,
-  FocusedStatusBar,
-  Checkbox,
   ConfirmedAnimation,
   BadAnimation,
   HappyAnimation,
   ExcellentAnimation,
   UnHappyAnimation,
   WellAnimation,
-};
+} from './animations/animations';
+
+// icons
+export {
+  BackBtn,
+  Bell,
+  Group,
+  Home,
+  Menu,
+  Therapist,
+  Boticon,
+  Plus,
+  SigninIcon,
+  GuestIcon,
+  RegisterIcon,
+} from './icons/Icons';
+
+export {CenterHalf, BottomModal, Header, FocusedStatusBar, Checkbox};

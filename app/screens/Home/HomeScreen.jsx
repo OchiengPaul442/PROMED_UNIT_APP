@@ -1,10 +1,4 @@
-import {
-  View,
-  Text,
-  ScrollView,
-  StyleSheet,
-  TouchableOpacity,
-} from 'react-native';
+import {View, Text, ScrollView, StyleSheet} from 'react-native';
 import React from 'react';
 
 // constants
@@ -15,6 +9,9 @@ import Screen from '../../layout/Screen';
 
 // services
 import MoodTracker from '../../services/moodTracker/MoodTracker';
+
+// Card
+import Card from '../../components/Cards/Card';
 
 const HomeScreen = () => {
   // Get users info
@@ -115,7 +112,7 @@ const HomeScreen = () => {
               <Text style={styles.Heading_title}>Daily Mental Health Tips</Text>
               <View style={styles.Tips}>
                 {tipcard.map(tip => (
-                  <TouchableOpacity key={tip.id} style={styles.Tip_card}>
+                  <Card key={tip.id}>
                     <View
                       style={{
                         backgroundColor: randomColor(),
@@ -131,7 +128,7 @@ const HomeScreen = () => {
                       <Text style={styles.Tip_Title}>{tip.title}</Text>
                       <Text style={styles.Tip_Text}>{tip.text}</Text>
                     </View>
-                  </TouchableOpacity>
+                  </Card>
                 ))}
               </View>
             </View>
@@ -197,20 +194,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingBottom: 200,
     zIndex: 1,
-  },
-
-  // This is the card for each tip
-  Tip_card: {
-    width: '100%',
-    height: 100,
-    display: 'flex',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    backgroundColor: COLORS.lightGray,
-    borderRadius: 10,
-    marginTop: 15,
-    padding: 10,
   },
 
   Tip_Title: {

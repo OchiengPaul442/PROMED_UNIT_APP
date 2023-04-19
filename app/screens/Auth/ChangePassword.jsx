@@ -60,7 +60,7 @@ const ChangePassword = ({navigation}) => {
         {/* Buttons */}
         <View style={styles.recButton}>
           <RecButton
-            onPress={() => navigation.navigate('Success')}
+            onPress={() => navigation.push('Success')}
             text="Change Password"
             bgColor={COLORS.secondary}
             textColor={COLORS.primary}

@@ -1,6 +1,9 @@
 import {StyleSheet, Text, View, Image, TouchableOpacity} from 'react-native';
-import {COLORS, Profile, Bell} from '../constants';
+import {COLORS, Profile} from '../../constants';
 import React from 'react';
+
+// icons
+import {Bell} from '../../components';
 
 const Header = () => {
   // Get users info
@@ -28,7 +31,7 @@ const Header = () => {
         </View>
         <TouchableOpacity style={styles.iconCon}>
           <View>
-            <Bell width={30} height={30} />
+            <Bell width={30} height={30} fill={COLORS.white} />
           </View>
         </TouchableOpacity>
       </View>
