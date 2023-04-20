@@ -11,13 +11,10 @@ import React from 'react';
 
 // constants
 import {COLORS} from '../../constants';
-import {Menu, Plus} from '../../components';
+import {Menu, Plus, Card} from '../../components';
 
 // screen layout
 import Screen from '../../layout/Screen';
-
-// card
-import Card from '../../components/Cards/Card';
 
 // modal
 import {BottomModal, CenterHalf} from '../../components';
@@ -101,8 +98,13 @@ const Groups = () => {
             </Text>
             <View style={styles.Group_list}>
               {groups.map((item, index) => (
-                <Card key={index}>
-                  <View style={styles.group_img_con}>
+                <Card bgColor={COLORS.Tuscany} height={90} key={index}>
+                  <View
+                    style={{
+                      width: '20%',
+                      height: '100%',
+                      ...styles.group_img_con,
+                    }}>
                     <Image source={item.image} style={styles.group_img} />
                   </View>
                   <View style={styles.group_info}>

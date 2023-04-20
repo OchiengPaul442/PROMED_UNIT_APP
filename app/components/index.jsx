@@ -8,6 +8,9 @@ export {default as Header} from './header/Header';
 // Buttons
 export {RecButton, BackButton, CurvedButton} from './Buttons/Button';
 
+// cards
+export {default as Card} from './Cards/Card';
+
 // animations
 export {
   ConfirmedAnimation,
@@ -31,6 +34,9 @@ export {
   SigninIcon,
   GuestIcon,
   RegisterIcon,
+  MessageIcon,
+  CallIcon,
+  DateIcon,
 } from './icons/Icons';
 
 export {CenterHalf, BottomModal, FocusedStatusBar, Checkbox};

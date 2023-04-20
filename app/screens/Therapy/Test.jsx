@@ -100,7 +100,7 @@ const Test = ({route, navigation}) => {
                 Questions
               </Text>
               <TouchableOpacity onPress={() => navigation.goBack()}>
-                <BackBtn width={30} height={30} fill={COLORS.yellow} />
+                <BackBtn width={30} height={30} fill={COLORS.secondary} />
               </TouchableOpacity>
             </View>
 
@@ -133,7 +133,6 @@ const Test = ({route, navigation}) => {
                     backgroundColor: COLORS.secondary,
                     width: '100%',
                     height: 50,
-                    marginTop: 20,
                     borderRadius: 50,
                     display: 'flex',
                     justifyContent: 'center',
@@ -208,8 +207,8 @@ const styles = StyleSheet.create({
   // question form
   questions: {
     width: '100%',
-    paddingTop: 25,
-    paddingBottom: 200,
+    paddingTop: 40,
+    paddingBottom: 190,
   },
 
   // Styles for a group of related form elements

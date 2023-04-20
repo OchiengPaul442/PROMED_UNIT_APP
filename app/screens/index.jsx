@@ -18,3 +18,4 @@ export {default as About} from './Home/About';
 export {default as Terms} from './Therapy/Terms';
 export {default as Test} from './Therapy/Test';
 export {default as TestResult} from './Therapy/TestResult';
+export {default as TherapistScreen} from './Therapy/Therapist';

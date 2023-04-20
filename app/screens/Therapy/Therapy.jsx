@@ -10,7 +10,7 @@ import React from 'react';
 
 // constants
 import {COLORS} from '../../constants';
-import {Menu} from '../../components';
+import {Menu, Card} from '../../components';
 
 // layout
 import Screen from '../../layout/Screen';
@@ -18,13 +18,10 @@ import Screen from '../../layout/Screen';
 // diagnosis tool
 import DiagnosisTools from '../../services/diagnosisTool/DiagnosisTools';
 
-// Card
-import Card from '../../components/Cards/Card';
-
 // modal
 import {BottomModal} from '../../components';
 
-const Therapy = () => {
+const Therapy = ({navigation}) => {
   // List of available therapist
   const therapist = [
     {
@@ -76,8 +73,24 @@ const Therapy = () => {
               <View style={styles.Therapist_list}>
                 {/* list of available therapist */}
                 {therapist.map((item, index) => (
-                  <Card key={index}>
-                    <View style={styles.Therapist_img_con}>
+                  <Card
+                    onPress={() =>
+                      navigation.push('Therapist', {
+                        name: item.name,
+                        location: item.location,
+                        title: item.title,
+                        image: item.image,
+                      })
+                    }
+                    bgColor={COLORS.Tuscany}
+                    height={90}
+                    key={index}>
+                    <View
+                      style={{
+                        width: '20%',
+                        height: '100%',
+                        ...styles.Therapist_img_con,
+                      }}>
                       <Image source={item.image} style={styles.Therapist_img} />
                     </View>
                     <View style={styles.Therapist_info}>
@@ -177,8 +190,6 @@ const styles = StyleSheet.create({
   // available therapist image container
   Therapist_img_con: {
     position: 'relative',
-    width: 80,
-    height: 80,
     borderRadius: 40,
     overflow: 'hidden',
   },

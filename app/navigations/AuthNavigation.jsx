@@ -25,6 +25,7 @@ import {
   Terms,
   Test,
   TestResult,
+  TherapistScreen,
 } from '../screens';
 
 const AuthStack = createStackNavigator();
@@ -129,9 +130,13 @@ const TherapyStackScreen = () => {
       <TherapyStack.Screen name="Terms" component={Terms} />
       <TherapyStack.Screen name="Test" component={Test} />
       <TherapyStack.Screen name="TestResults" component={TestResult} />
+      <TherapyStack.Screen name="Therapist" component={TherapistScreen} />
     </TherapyStack.Navigator>
   );
 };
+
+// Group stack screen
+const GroupStackScreen = () => {};
 
 export default AuthNavigation;
 

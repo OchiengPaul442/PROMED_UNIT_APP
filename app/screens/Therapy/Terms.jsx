@@ -54,7 +54,7 @@ const Terms = ({route, navigation}) => {
                 Pre-condtion terms
               </Text>
               <TouchableOpacity onPress={() => navigation.goBack()}>
-                <BackBtn width={30} height={30} fill={COLORS.yellow} />
+                <BackBtn width={30} height={30} fill={COLORS.secondary} />
               </TouchableOpacity>
             </View>
 

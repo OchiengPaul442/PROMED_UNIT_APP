@@ -3,15 +3,13 @@ import React from 'react';
 
 // constants
 import {COLORS} from '../../constants';
+import {Card} from '../../components';
 
 // screen layout
 import Screen from '../../layout/Screen';
 
 // services
 import MoodTracker from '../../services/moodTracker/MoodTracker';
-
-// Card
-import Card from '../../components/Cards/Card';
 
 const HomeScreen = () => {
   // Get users info
@@ -112,7 +110,7 @@ const HomeScreen = () => {
               <Text style={styles.Heading_title}>Daily Mental Health Tips</Text>
               <View style={styles.Tips}>
                 {tipcard.map(tip => (
-                  <Card key={tip.id}>
+                  <Card bgColor={COLORS.Tuscany} height={90} key={tip.id}>
                     <View
                       style={{
                         backgroundColor: randomColor(),
