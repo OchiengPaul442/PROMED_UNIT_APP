@@ -6,8 +6,11 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import React from 'react';
+//General styles
+import Styles from '../../constants/Styles';
 
-import {COLORS} from '../../constants';
+// constants
+import {COLORS, SIZES} from '../../constants';
 import {BackBtn} from '../../components';
 
 // screen
@@ -28,19 +31,17 @@ const TestResult = ({route, navigation}) => {
     },
   ];
 
-  const condition = summary[0].partial_diagnosis;
-
   return (
     <Screen>
-      <View style={styles.Test_Screen}>
+      <View style={Styles.Container}>
         {/* intro text */}
         <View style={styles.section_title}>
-          <Text style={styles.title_text}>{title}</Text>
-          <Text style={styles.title_text}>Test Results</Text>
+          <Text style={Styles.Screen_headings}>{title}</Text>
+          <Text style={Styles.Screen_headings}>Test Results</Text>
         </View>
 
-        {/* Body */}
-        <View style={styles.Content}>
+        {/* Content section */}
+        <View style={Styles.Content}>
           <ScrollView showsVerticalScrollIndicator={false}>
             <View
               style={{
@@ -49,16 +50,11 @@ const TestResult = ({route, navigation}) => {
                 justifyContent: 'space-between',
                 flexDirection: 'row-reverse',
                 paddingVertical: 10,
+                paddingHorizontal: 10,
               }}>
-              <Text
-                style={{
-                  color: COLORS.primary,
-                  fontSize: 15,
-                }}>
-                Test Results
-              </Text>
+              <Text style={Styles.heading}>Test Results</Text>
               <TouchableOpacity onPress={() => navigation.push('Therapy')}>
-                <BackBtn width={30} height={30} fill={COLORS.secondary} />
+                <BackBtn width={30} height={30} fill={COLORS.primary} />
               </TouchableOpacity>
             </View>
 
@@ -70,7 +66,7 @@ const TestResult = ({route, navigation}) => {
                   justifyContent: 'center',
                   alignItems: 'center',
                   width: '100%',
-                  height: 'auto',
+                  height: '100%',
                 }}>
                 <View style={styles.Outer_ring}>
                   <View style={styles.result_box}>
@@ -170,19 +166,6 @@ const TestResult = ({route, navigation}) => {
 export default TestResult;
 
 const styles = StyleSheet.create({
-  // This is the Container that holds the main content
-  Content: {
-    position: 'relative',
-    width: '100%',
-    height: '100%',
-    paddingTop: 10,
-    paddingBottom: 30,
-    paddingHorizontal: 10,
-    backgroundColor: COLORS.white,
-    borderTopLeftRadius: 30,
-    borderTopRightRadius: 30,
-  },
-
   // This is the box that contains the title
   section_title: {
     position: 'relative',
@@ -193,12 +176,6 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
     justifyContent: 'center',
     alignItems: 'center',
-  },
-
-  title_text: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: COLORS.white,
   },
 
   // Outer ring
@@ -215,12 +192,12 @@ const styles = StyleSheet.create({
   // results
   results: {
     width: '100%',
-    height: 'auto',
+    height: '100%',
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
-    paddingTop: 20,
-    PaddingBottom: 100,
+    paddingHorizontal: 10,
+    paddingBottom: 200,
   },
 
   // result text
@@ -257,12 +234,11 @@ const styles = StyleSheet.create({
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
-    paddingVertical: 10,
-    paddingHorizontal: 10,
+    paddingTop: 10,
   },
 
   summary_text: {
-    fontSize: 18,
+    fontSize: SIZES.medium,
     fontWeight: 'bold',
     display: 'flex',
     justifyContent: 'flex-start',
@@ -282,7 +258,7 @@ const styles = StyleSheet.create({
     height: 'auto',
     marginTop: 20,
     borderRadius: 10,
-    backgroundColor: COLORS.secondary,
+    backgroundColor: COLORS.lightGray,
     display: 'flex',
     padding: 10,
     shadowColor: COLORS.black,
@@ -296,7 +272,7 @@ const styles = StyleSheet.create({
   },
 
   summary_card_title: {
-    fontSize: 16,
+    fontSize: SIZES.medium,
     fontWeight: 'bold',
     color: COLORS.black,
     marginRight: 10,
@@ -305,7 +281,7 @@ const styles = StyleSheet.create({
   summary_card_text: {
     display: 'flex',
     flexWrap: 'wrap',
-    fontSize: 16,
+    fontSize: SIZES.medium,
     color: COLORS.black,
   },
 });

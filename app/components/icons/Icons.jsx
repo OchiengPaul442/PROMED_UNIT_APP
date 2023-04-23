@@ -294,3 +294,65 @@ export const DateIcon = props => {
     </Svg>
   );
 };
+
+// confirmations icon
+export const ConfirmIcon = props => {
+  return (
+    <Svg
+      width={props.width}
+      height={props.height}
+      viewBox="0 0 64 64"
+      fill={props.fill}
+      xmlns="http://www.w3.org/2000/svg"
+      fillRule="evenodd"
+      clipRule="evenodd"
+      strokeLinejoin="round"
+      strokeMiterlimit={2}>
+      <G transform="translate(-640 -320)">
+        <Path d="M0 0H1280V800H0z" fill="none" />
+        <Path
+          d="M672.021 328c13.258 0 24.022 10.764 24.022 24.021 0 13.258-10.764 24.022-24.022 24.022-13.257 0-24.021-10.764-24.021-24.022C648 338.764 658.764 328 672.021 328zm15.73 14.828l-22.628 22.628-9.123-9.124 2.767-2.766 6.295 6.295L684.922 340l2.829 2.828z"
+          transform="matrix(1 0 0 .99911 0 .25)"
+        />
+      </G>
+    </Svg>
+  );
+};
+
+// Edit icon
+export const EditIcon = props => {
+  return (
+    <Svg
+      width={props.width}
+      height={props.height}
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg">
+      <G
+        stroke="#292D32"
+        strokeWidth={1.5}
+        strokeMiterlimit={10}
+        strokeLinecap="round"
+        strokeLinejoin="round">
+        <Path d="M13.26 3.6l-8.21 8.69c-.31.33-.61.98-.67 1.43l-.37 3.24c-.13 1.17.71 1.97 1.87 1.77l3.22-.55c.45-.08 1.08-.41 1.39-.75l8.21-8.69c1.42-1.5 2.06-3.21-.15-5.3-2.2-2.07-3.87-1.34-5.29.16zM11.89 5.05a6.126 6.126 0 005.45 5.15M3 22h18" />
+      </G>
+    </Svg>
+  );
+};
+
+// send message icon
+export const SendIcon = props => {
+  return (
+    <Svg
+      width={props.width}
+      height={props.height}
+      viewBox="0 0 24 24"
+      fill={props.fill}
+      xmlns="http://www.w3.org/2000/svg">
+      <Path
+        d="M16.19 2H7.81C4.17 2 2 4.17 2 7.81v8.37C2 19.83 4.17 22 7.81 22h8.37c3.64 0 5.81-2.17 5.81-5.81V7.81C22 4.17 19.83 2 16.19 2zM8.47 8.98l3-3c.07-.07.15-.12.24-.16.18-.08.39-.08.57 0 .09.04.17.09.24.16l3 3c.29.29.29.77 0 1.06-.15.15-.34.22-.53.22s-.38-.07-.53-.22l-1.72-1.72v6.19c0 .41-.34.75-.75.75s-.75-.34-.75-.75V8.32l-1.72 1.72c-.29.29-.77.29-1.06 0a.755.755 0 01.01-1.06zm9.77 8.24c-2.01.67-4.12 1.01-6.24 1.01s-4.23-.34-6.24-1.01a.753.753 0 01-.47-.95c.13-.39.56-.61.95-.47 3.72 1.24 7.81 1.24 11.53 0 .39-.13.82.08.95.47.12.4-.09.82-.48.95z"
+        fill={props.fill}
+      />
+    </Svg>
+  );
+};

@@ -1,53 +1,50 @@
 import {
-  View,
-  Text,
-  ScrollView,
   StyleSheet,
+  Text,
+  View,
   SafeAreaView,
   TouchableOpacity,
+  ScrollView,
   TextInput,
   Keyboard,
 } from 'react-native';
 import React from 'react';
+import {COLORS} from '../../constants';
 import {FocusedStatusBar, BackBtn, SendIcon} from '../../components';
 
-// constants
-import {COLORS} from '../../constants';
-
-const Bot = ({navigation}) => {
+const Groupchat = ({route, navigation}) => {
   // text input
   const [text, onChangeText] = React.useState('');
 
+  // get params
+  const {groupname} = route.params;
+
   // Define a state variable to store the keyboard height
-  const [keyboardHeight, setKeyboardHeight] = React.useState(0);
+  const [keyboardStatus, setKeyboardStatus] = React.useState(0);
 
   // hide navigator on this screen
   React.useEffect(() => {
     // detect keyoard and get its height
-    const keyboardDidShowListener = Keyboard.addListener(
-      'keyboardDidShow',
-      e => {
-        // Set the keyboard height to the endCoordinates.height of the event
-        setKeyboardHeight(e.endCoordinates.height);
-      },
-    );
-    const keyboardDidHideListener = Keyboard.addListener(
-      'keyboardDidHide',
-      () => {
-        // Set the keyboard height back to zero
-        setKeyboardHeight(0);
-      },
-    );
+    const keyboardOpen = Keyboard.addListener('keyboardDidShow', () => {
+      // Set the keyboard height to the endCoordinates.height of the event
+      setKeyboardStatus(1);
+    });
+    const keyboardClosed = Keyboard.addListener('keyboardDidHide', () => {
+      // Set the keyboard height back to zero
+      setKeyboardStatus(0);
+    });
+
     // hide bottom tab
     navigation.setOptions({
       tabBarStyle: {
         display: 'none',
       },
     });
+
     return () => {
       // Remove the listeners when the component is unmounted
-      keyboardDidShowListener.remove();
-      keyboardDidHideListener.remove();
+      keyboardOpen.remove();
+      keyboardClosed.remove();
 
       // for Bottom tab
       navigation.setOptions({
@@ -60,7 +57,8 @@ const Bot = ({navigation}) => {
     <SafeAreaView>
       {/* StatusBar */}
       <FocusedStatusBar backgroundColor={COLORS.primary} />
-      <View style={styles.Bot_Screen}>
+
+      <View style={styles.groupchat_screen}>
         {/* Head */}
         <View
           style={{
@@ -84,7 +82,7 @@ const Bot = ({navigation}) => {
                 fontWeight: 'bold',
                 color: COLORS.white,
               }}>
-              ChatBot
+              {groupname}
             </Text>
           </View>
         </View>
@@ -98,7 +96,7 @@ const Bot = ({navigation}) => {
             </ScrollView>
           </View>
           <View
-            style={{bottom: keyboardHeight ? 18 : 2, ...styles.inputfield_con}}>
+            style={{bottom: keyboardStatus ? 18 : 2, ...styles.inputfield_con}}>
             <TextInput
               onChangeText={onChangeText}
               value={text}
@@ -115,10 +113,11 @@ const Bot = ({navigation}) => {
   );
 };
 
-// Styles
+export default Groupchat;
+
 const styles = StyleSheet.create({
   // This is the main container that holds all the components
-  Bot_Screen: {
+  groupchat_screen: {
     width: '100%',
     height: '100%',
     display: 'flex',
@@ -197,20 +196,4 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 10,
     backgroundColor: COLORS.tertiary,
   },
-
-  // This is the body header that contains the title
-  Heading_container: {
-    width: '100%',
-    height: 'auto',
-    display: 'flex',
-    marginBottom: 30,
-  },
-
-  // This is the body header title
-  Heading_title: {
-    fontSize: 15,
-    color: COLORS.primary,
-  },
 });
-
-export default Bot;

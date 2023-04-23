@@ -4,7 +4,7 @@ import React from 'react';
 const Card = props => {
   return (
     <TouchableOpacity
-      onPress={props.onPress}
+      onPress={props.Press}
       style={{
         height: props.height,
         backgroundColor: props.bgColor,
@@ -20,6 +20,7 @@ export default Card;
 const styles = StyleSheet.create({
   // This is the card for each tip
   Tip_card: {
+    position: 'relative',
     width: '100%',
     display: 'flex',
     flexDirection: 'row',

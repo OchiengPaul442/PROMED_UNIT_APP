@@ -1,9 +1,12 @@
 import {View, Text, ScrollView, StyleSheet} from 'react-native';
 import React from 'react';
 
+//General styles
+import Styles from '../../constants/Styles';
+
 // constants
-import {COLORS} from '../../constants';
-import {Card} from '../../components';
+import {COLORS, SIZES} from '../../constants';
+import {Card, CenterHalf} from '../../components';
 
 // screen layout
 import Screen from '../../layout/Screen';
@@ -12,6 +15,13 @@ import Screen from '../../layout/Screen';
 import MoodTracker from '../../services/moodTracker/MoodTracker';
 
 const HomeScreen = () => {
+  // model
+  const [open, setOpen] = React.useState(false);
+
+  const toggleModal = () => {
+    setOpen(!open);
+  };
+
   // Get users info
   const [user, setUser] = React.useState({
     name: 'Kirabo',
@@ -87,7 +97,7 @@ const HomeScreen = () => {
 
   return (
     <Screen>
-      <View style={styles.Home_screen_con}>
+      <View style={Styles.Container}>
         {/* intro text */}
         <View style={styles.greeting_container}>
           <Text style={styles.greeting}>{greeting}</Text>
@@ -98,19 +108,24 @@ const HomeScreen = () => {
         </View>
 
         {/* Body */}
-        <View style={styles.Content}>
+        <View style={Styles.Content}>
           <ScrollView showsVerticalScrollIndicator={false}>
             <View style={styles.Heading_container}>
-              <Text style={styles.Heading_title}>How do you feel today?</Text>
+              <Text style={Styles.heading}>How do you feel today?</Text>
               {/* mood tracker */}
               <MoodTracker />
             </View>
+
             {/* daily mental health Tips */}
             <View style={styles.Health_tips}>
-              <Text style={styles.Heading_title}>Daily Mental Health Tips</Text>
+              <Text style={Styles.heading}>Daily Mental Health Tips</Text>
               <View style={styles.Tips}>
                 {tipcard.map(tip => (
-                  <Card bgColor={COLORS.Tuscany} height={90} key={tip.id}>
+                  <Card
+                    Press={toggleModal}
+                    bgColor={COLORS.lightGray}
+                    height={90}
+                    key={tip.id}>
                     <View
                       style={{
                         backgroundColor: randomColor(),
@@ -123,8 +138,8 @@ const HomeScreen = () => {
                       <Text style={styles.Tip_Number}>{tip.id}</Text>
                     </View>
                     <View style={styles.Tip_Container}>
-                      <Text style={styles.Tip_Title}>{tip.title}</Text>
-                      <Text style={styles.Tip_Text}>{tip.text}</Text>
+                      <Text style={Styles.title}>{tip.title}</Text>
+                      <Text style={Styles.text}>{tip.text}</Text>
                     </View>
                   </Card>
                 ))}
@@ -133,44 +148,23 @@ const HomeScreen = () => {
           </ScrollView>
         </View>
       </View>
+
+      {/* model */}
+      <CenterHalf Visibility={open} hide={toggleModal}>
+        <Text style={{color: COLORS.black}}>Health Tip</Text>
+      </CenterHalf>
     </Screen>
   );
 };
 
 // Styles
 const styles = StyleSheet.create({
-  // This is the main container that holds all the components
-  Home_screen_con: {
-    width: '100%',
-    height: '100%',
-    position: 'relative',
-  },
-
-  // This is the Container that holds the main content
-  Content: {
-    position: 'relative',
-    width: '100%',
-    height: '100%',
-    paddingTop: 10,
-    paddingBottom: 30,
-    paddingHorizontal: 10,
-    backgroundColor: COLORS.white,
-    borderTopLeftRadius: 30,
-    borderTopRightRadius: 30,
-  },
-
   // This is the body header that contains the title
   Heading_container: {
     width: '100%',
     height: 'auto',
     display: 'flex',
-    marginBottom: 30,
-  },
-
-  // This is the body header title
-  Heading_title: {
-    fontSize: 15,
-    color: COLORS.primary,
+    paddingHorizontal: 10,
   },
 
   // This is the body content that contains the feelings and Tips sections
@@ -180,6 +174,8 @@ const styles = StyleSheet.create({
     display: 'flex',
     flexDirection: 'column',
     justifyContent: 'space-between',
+    paddingHorizontal: 10,
+    paddingBottom: 200,
   },
 
   // This is the Tips section that contains the cards for different Tips
@@ -190,24 +186,13 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingBottom: 200,
     zIndex: 1,
-  },
-
-  Tip_Title: {
-    fontSize: 15,
-    color: COLORS.primary,
-  },
-
-  Tip_Text: {
-    fontSize: 12,
-    color: COLORS.black,
   },
 
   // This is the text for the tip number
   Tip_Number: {
     color: COLORS.white,
-    fontSize: 20,
+    fontSize: SIZES.large,
     fontWeight: 'bold',
   },
 
@@ -228,19 +213,19 @@ const styles = StyleSheet.create({
 
   // This is the greeting message
   greeting: {
-    fontSize: 20,
+    fontSize: SIZES.large,
     color: COLORS.white,
   },
 
   // This is the user's name
   username: {
-    fontSize: 18,
+    fontSize: SIZES.medium,
     color: COLORS.white,
   },
 
   // This is the session information
   sessions: {
-    fontSize: 12,
+    fontSize: SIZES.small,
     color: COLORS.secondary,
   },
 });

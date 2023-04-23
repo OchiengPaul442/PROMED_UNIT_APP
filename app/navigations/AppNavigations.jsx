@@ -1,7 +1,10 @@
+import {StyleSheet, Text, View} from 'react-native';
 import React from 'react';
-import {StyleSheet} from 'react-native';
+
+import {NavigationContainer} from '@react-navigation/native';
 import {createStackNavigator} from '@react-navigation/stack';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
+import {createDrawerNavigator} from '@react-navigation/drawer';
 
 // constants
 import {COLORS} from '../constants';
@@ -26,9 +29,21 @@ import {
   Test,
   TestResult,
   TherapistScreen,
+  ConfirmationScreen,
+  Notifications,
+  Groupchat,
+  Profile,
+  Splash,
 } from '../screens';
 
+// stacks
 const AuthStack = createStackNavigator();
+const BottomTabStack = createBottomTabNavigator();
+const TherapyStack = createStackNavigator();
+const GroupStack = createStackNavigator();
+const DrawerStack = createDrawerNavigator();
+const ProfileStack = createStackNavigator();
+
 // Auth stack
 const AuthNavigation = () => {
   return (
@@ -43,14 +58,23 @@ const AuthNavigation = () => {
       <AuthStack.Screen name="ChangePassword" component={ChangePassword} />
       <AuthStack.Screen name="Success" component={SuccessScreen} />
       <AuthStack.Screen name="Register" component={RegistrationScreen} />
-      <AuthStack.Screen name="Home_root" component={BottomTabs} />
     </AuthStack.Navigator>
   );
 };
 
-// stacks
-const BottomTabStack = createBottomTabNavigator();
-const TherapyStack = createStackNavigator();
+// Drawer stack
+const DrawerStackScreen = () => {
+  return (
+    <DrawerStack.Navigator
+      screenOptions={{
+        headerShown: false,
+      }}>
+      <DrawerStack.Screen name="Home_root" component={BottomTabs} />
+      <DrawerStack.Screen name="Profile_root" component={ProfileStackScreen} />
+      <DrawerStack.Screen name="Notification" component={Notifications} />
+    </DrawerStack.Navigator>
+  );
+};
 
 //Bottom nav stack
 const BottomTabs = () => {
@@ -90,8 +114,8 @@ const BottomTabs = () => {
         }}
       />
       <BottomTabStack.Screen
-        name="Groups"
-        component={Groups}
+        name="Groups_root"
+        component={GroupStackScreen}
         options={{
           tabBarIcon: ({focused}) => (
             <Group
@@ -103,7 +127,7 @@ const BottomTabs = () => {
         }}
       />
       <BottomTabStack.Screen
-        name="Bot"
+        name="Bot_root"
         component={Bot}
         options={{
           tabBarIcon: ({focused}) => (
@@ -131,25 +155,67 @@ const TherapyStackScreen = () => {
       <TherapyStack.Screen name="Test" component={Test} />
       <TherapyStack.Screen name="TestResults" component={TestResult} />
       <TherapyStack.Screen name="Therapist" component={TherapistScreen} />
+      <TherapyStack.Screen name="Confirmation" component={ConfirmationScreen} />
     </TherapyStack.Navigator>
   );
 };
 
 // Group stack screen
-const GroupStackScreen = () => {};
+const GroupStackScreen = () => {
+  return (
+    <GroupStack.Navigator
+      screenOptions={{
+        headerShown: false,
+      }}>
+      <GroupStack.Screen name="Groups" component={Groups} />
+      <GroupStack.Screen name="Groupchat" component={Groupchat} />
+    </GroupStack.Navigator>
+  );
+};
 
-export default AuthNavigation;
+// Profile stack screen
+const ProfileStackScreen = () => {
+  return (
+    <ProfileStack.Navigator>
+      <ProfileStack.Screen name="Profile" component={Profile} />
+    </ProfileStack.Navigator>
+  );
+};
+
+// Root Navigation stack
+const AppNavigations = () => {
+  const [isLoading, setIsLoading] = React.useState(true);
+  const [userToken, setUserToken] = React.useState(true);
+
+  React.useEffect(() => {
+    setTimeout(() => {
+      setIsLoading(false);
+    }, 1000);
+  }, []);
+
+  if (isLoading) {
+    return <Splash />;
+  }
+
+  return (
+    <NavigationContainer>
+      {userToken ? <DrawerStackScreen /> : <AuthNavigation />}
+    </NavigationContainer>
+  );
+};
+
+export default AppNavigations;
 
 const styles = StyleSheet.create({
   menuBar: {
-    height: 55,
     position: 'absolute',
+    width: 'auto',
+    height: 55,
     left: 5,
     right: 5,
     bottom: 5,
-    alignSelf: 'center',
     backgroundColor: COLORS.primary,
-    borderRadius: 30,
+    borderRadius: 20,
     shadowColor: COLORS.black,
     shadowOffset: {
       width: 0,
@@ -157,6 +223,16 @@ const styles = StyleSheet.create({
     },
     shadowOpacity: 0.25,
     shadowRadius: 3,
-    elevation: 3,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: {width: 0, height: 10},
+        shadowOpacity: 0.5,
+        shadowRadius: 10,
+      },
+      android: {
+        elevation: 20,
+      },
+    }),
   },
 });

@@ -11,6 +11,9 @@ export {RecButton, BackButton, CurvedButton} from './Buttons/Button';
 // cards
 export {default as Card} from './Cards/Card';
 
+// date & time picker
+export {Datepicker, Timepicker} from './date&timepicker/Date_time';
+
 // animations
 export {
   ConfirmedAnimation,
@@ -37,6 +40,9 @@ export {
   MessageIcon,
   CallIcon,
   DateIcon,
+  ConfirmIcon,
+  EditIcon,
+  SendIcon,
 } from './icons/Icons';
 
 export {CenterHalf, BottomModal, FocusedStatusBar, Checkbox};

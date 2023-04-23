@@ -8,18 +8,17 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import React from 'react';
+//General styles
+import Styles from '../../constants/Styles';
 
 // constants
 import {COLORS} from '../../constants';
-import {Menu, Plus, Card} from '../../components';
+import {Menu, Plus, Card, BottomModal, CenterHalf} from '../../components';
 
 // screen layout
 import Screen from '../../layout/Screen';
 
-// modal
-import {BottomModal, CenterHalf} from '../../components';
-
-const Groups = () => {
+const Groups = ({navigation}) => {
   // List of available Groups
   const groups = [
     {
@@ -54,8 +53,6 @@ const Groups = () => {
     },
   ];
 
-  // modal
-
   // Modal
   const [isModalVisible, setModalVisible] = React.useState(false);
   const [isModalVisible2, setModalVisible2] = React.useState(false);
@@ -70,7 +67,7 @@ const Groups = () => {
 
   return (
     <Screen>
-      <View style={styles.Groups_Screen}>
+      <View style={Styles.Container}>
         {/* Add Group Button */}
         <View style={styles.Add_group_btn}>
           <TouchableOpacity
@@ -81,10 +78,10 @@ const Groups = () => {
         </View>
 
         {/* Content */}
-        <View style={styles.Content}>
+        <View style={Styles.Content}>
           <ScrollView showsVerticalScrollIndicator={false}>
             {/* Search input field section */}
-            <View style={styles.Search_input_con}>
+            <View style={styles.Search_input_container}>
               <TextInput
                 style={styles.Search_input}
                 placeholderTextColor={COLORS.black}
@@ -93,21 +90,29 @@ const Groups = () => {
             </View>
 
             {/* list of available Groups */}
-            <Text style={styles.Heading_title}>
+            <Text style={{paddingHorizontal: 10, ...Styles.heading}}>
               List of communities to join:
             </Text>
             <View style={styles.Group_list}>
               {groups.map((item, index) => (
-                <Card bgColor={COLORS.Tuscany} height={90} key={index}>
+                <Card
+                  Press={() =>
+                    navigation.push('Groupchat', {
+                      groupname: item.name,
+                    })
+                  }
+                  bgColor={COLORS.Tuscany}
+                  height={90}
+                  key={index}>
                   <View
                     style={{
                       width: '20%',
                       height: '100%',
-                      ...styles.group_img_con,
+                      ...styles.group_image_container,
                     }}>
-                    <Image source={item.image} style={styles.group_img} />
+                    <Image source={item.image} style={styles.group_image} />
                   </View>
-                  <View style={styles.group_info}>
+                  <View style={styles.group_information}>
                     <View
                       style={{
                         position: 'relative',
@@ -116,8 +121,8 @@ const Groups = () => {
                         display: 'flex',
                         justifyContent: 'space-between',
                       }}>
-                      <Text style={styles.group_name}>{item.name}</Text>
-                      <Text style={styles.group_title}>
+                      <Text style={Styles.heading}>{item.name}</Text>
+                      <Text style={Styles.text}>
                         Members: {item.Number_Of_Members}
                       </Text>
                     </View>
@@ -133,6 +138,7 @@ const Groups = () => {
           </ScrollView>
         </View>
       </View>
+
       {/* Modal1 */}
       <BottomModal Visibility={isModalVisible} hide={toggleModal}>
         <Text
@@ -143,6 +149,7 @@ const Groups = () => {
           Modal
         </Text>
       </BottomModal>
+
       {/* modal2 */}
       <CenterHalf Visibility={isModalVisible2} hide={toggleModal2}>
         <Text
@@ -159,25 +166,6 @@ const Groups = () => {
 
 // Styles
 const styles = StyleSheet.create({
-  // This is the main container that holds all the components
-  Groups_Screen: {
-    width: '100%',
-    height: '100%',
-    position: 'relative',
-  },
-
-  // This is the Content that holds the main content
-  Content: {
-    position: 'relative',
-    width: '100%',
-    height: '100%',
-    paddingTop: 10,
-    paddingBottom: 30,
-    paddingHorizontal: 10,
-    backgroundColor: COLORS.white,
-    borderTopLeftRadius: 30,
-    borderTopRightRadius: 30,
-  },
   // This is the body header that contains the title
   Heading_container: {
     width: '100%',
@@ -186,14 +174,8 @@ const styles = StyleSheet.create({
     marginBottom: 30,
   },
 
-  // This is the body header title
-  Heading_title: {
-    fontSize: 15,
-    color: COLORS.primary,
-  },
-
   // search input field container
-  Search_input_con: {
+  Search_input_container: {
     position: 'relative',
     width: '100%',
     height: 50,
@@ -229,11 +211,12 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 'auto',
     marginTop: 10,
-    paddingBottom: 220,
+    paddingHorizontal: 10,
+    paddingBottom: 230,
   },
 
   // available therapist image container
-  group_img_con: {
+  group_image_container: {
     position: 'relative',
     width: 80,
     height: 80,
@@ -242,7 +225,7 @@ const styles = StyleSheet.create({
   },
 
   // available therapist image
-  group_img: {
+  group_image: {
     position: 'absolute',
     width: '100%',
     height: '100%',
@@ -250,7 +233,7 @@ const styles = StyleSheet.create({
   },
 
   // available therapist info
-  group_info: {
+  group_information: {
     position: 'relative',
     left: -40,
     width: '60%',
@@ -259,43 +242,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-  },
-
-  // available therapist name
-  group_name: {
-    fontSize: 15,
-    color: COLORS.primary,
-  },
-
-  // available therapist title
-  group_title: {
-    fontSize: 12,
-    color: COLORS.black,
-  },
-
-  // available therapist location
-  Therapist_location: {
-    fontSize: 12,
-    color: COLORS.black,
-  },
-
-  // available therapist rating
-  Therapist_rating: {
-    position: 'relative',
-    width: 30,
-    height: 30,
-    marginTop: 4,
-    borderRadius: 15,
-    backgroundColor: COLORS.primary,
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-
-  // available therapist rating text
-  Therapist_rating_text: {
-    fontSize: 12,
-    color: COLORS.white,
   },
 
   // available therapist button
