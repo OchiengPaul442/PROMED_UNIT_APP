@@ -102,10 +102,10 @@ const Test = ({route, navigation}) => {
               <View style={styles.questionForm}>
                 {/* form items */}
                 {formItems.map(item => (
-                  <View key={item.id} style={styles.Qgroup}>
-                    <Text style={styles.Qlabel}>{item.label}</Text>
+                  <View key={item.id} style={Styles.Qgroup}>
+                    <Text style={Styles.Qlabel}>{item.label}</Text>
                     <TextInput
-                      style={styles.Qinput}
+                      style={Styles.Qinput}
                       placeholder={item.placeholder}
                     />
                   </View>
@@ -153,38 +153,5 @@ const styles = StyleSheet.create({
     paddingTop: 40,
     paddingBottom: 200,
     paddingHorizontal: 10,
-  },
-
-  //   FORM STYLES FOR THE DIAGNOSIS SCREEN //
-  // Styles for a label associated with a form input field
-  Qlabel: {
-    fontSize: SIZES.medium,
-    color: COLORS.black,
-    paddingHorizontal: 5,
-    paddingBottom: 5,
-  },
-
-  // Styles for a group of related form elements
-  Qgroup: {
-    width: '100%',
-    height: 70,
-    display: 'flex',
-    flexDirection: 'column',
-    justifyContent: 'space-between',
-    position: 'relative',
-    marginBottom: 40,
-  },
-
-  // Styles for a form input field
-  Qinput: {
-    position: 'relative',
-    width: '100%',
-    height: 50,
-    borderWidth: 1,
-    borderColor: COLORS.primary,
-    borderRadius: 10,
-    fontSize: 13,
-    padding: 5,
-    color: COLORS.black,
   },
 });

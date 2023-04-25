@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import React from 'react';
 import {FocusedStatusBar, BackBtn, SendIcon} from '../../components';
+import {useFocusEffect} from '@react-navigation/native';
 
 // constants
 import {COLORS} from '../../constants';
@@ -21,40 +22,35 @@ const Bot = ({navigation}) => {
   // Define a state variable to store the keyboard height
   const [keyboardHeight, setKeyboardHeight] = React.useState(0);
 
-  // hide navigator on this screen
+  // Keyboard event
   React.useEffect(() => {
-    // detect keyoard and get its height
-    const keyboardDidShowListener = Keyboard.addListener(
-      'keyboardDidShow',
-      e => {
-        // Set the keyboard height to the endCoordinates.height of the event
-        setKeyboardHeight(e.endCoordinates.height);
-      },
-    );
-    const keyboardDidHideListener = Keyboard.addListener(
-      'keyboardDidHide',
-      () => {
-        // Set the keyboard height back to zero
-        setKeyboardHeight(0);
-      },
-    );
-    // hide bottom tab
-    navigation.setOptions({
-      tabBarStyle: {
-        display: 'none',
-      },
+    Keyboard.addListener('keyboardDidShow', e => {
+      setKeyboardHeight(e.endCoordinates.height);
     });
-    return () => {
-      // Remove the listeners when the component is unmounted
-      keyboardDidShowListener.remove();
-      keyboardDidHideListener.remove();
 
-      // for Bottom tab
+    Keyboard.addListener('keyboardDidHide', () => {
+      setKeyboardHeight(0);
+    });
+  }, []);
+
+  // useFocusEffect hook
+  useFocusEffect(
+    React.useCallback(() => {
+      // Hide bottom navigator when this screen is focused
       navigation.setOptions({
-        tabBarStyle: undefined,
+        tabBarStyle: {
+          display: 'none',
+        },
       });
-    };
-  }, [navigation]);
+
+      return () => {
+        // Show bottom navigator when this screen is unfocused
+        navigation.setOptions({
+          tabBarStyle: undefined,
+        });
+      };
+    }, [navigation]),
+  );
 
   return (
     <SafeAreaView>
@@ -72,9 +68,7 @@ const Bot = ({navigation}) => {
             justifyContent: 'space-between',
             alignItems: 'flex-start',
           }}>
-          <TouchableOpacity
-            style={(padding = 10)}
-            onPress={() => navigation.goBack()}>
+          <TouchableOpacity onPress={() => navigation.goBack()}>
             <BackBtn width={30} height={30} fill={COLORS.secondary} />
           </TouchableOpacity>
           <View>

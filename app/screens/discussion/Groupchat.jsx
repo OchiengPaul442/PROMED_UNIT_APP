@@ -11,6 +11,7 @@ import {
 import React from 'react';
 import {COLORS} from '../../constants';
 import {FocusedStatusBar, BackBtn, SendIcon} from '../../components';
+import {useFocusEffect} from '@react-navigation/native';
 
 const Groupchat = ({route, navigation}) => {
   // text input
@@ -19,39 +20,38 @@ const Groupchat = ({route, navigation}) => {
   // get params
   const {groupname} = route.params;
 
-  // Define a state variable to store the keyboard height
-  const [keyboardStatus, setKeyboardStatus] = React.useState(0);
+  // Height of the keyboard
+  const [keyboardHeight, setKeyboardHeight] = React.useState(0);
 
-  // hide navigator on this screen
+  // Keyboard event
   React.useEffect(() => {
-    // detect keyoard and get its height
-    const keyboardOpen = Keyboard.addListener('keyboardDidShow', () => {
-      // Set the keyboard height to the endCoordinates.height of the event
-      setKeyboardStatus(1);
-    });
-    const keyboardClosed = Keyboard.addListener('keyboardDidHide', () => {
-      // Set the keyboard height back to zero
-      setKeyboardStatus(0);
+    Keyboard.addListener('keyboardDidShow', e => {
+      setKeyboardHeight(e.endCoordinates.height);
     });
 
-    // hide bottom tab
-    navigation.setOptions({
-      tabBarStyle: {
-        display: 'none',
-      },
+    Keyboard.addListener('keyboardDidHide', () => {
+      setKeyboardHeight(0);
     });
+  }, []);
 
-    return () => {
-      // Remove the listeners when the component is unmounted
-      keyboardOpen.remove();
-      keyboardClosed.remove();
-
-      // for Bottom tab
-      navigation.setOptions({
-        tabBarStyle: undefined,
+  // useFocusEffect hook
+  useFocusEffect(
+    React.useCallback(() => {
+      // Hide bottom navigator when this screen is focused
+      navigation.getParent()?.setOptions({
+        tabBarStyle: {
+          display: 'none',
+        },
       });
-    };
-  }, [navigation]);
+
+      return () => {
+        // Show bottom navigator when this screen is unfocused
+        navigation.getParent()?.setOptions({
+          tabBarStyle: styles.menuBar,
+        });
+      };
+    }, [navigation]),
+  );
 
   return (
     <SafeAreaView>
@@ -96,7 +96,7 @@ const Groupchat = ({route, navigation}) => {
             </ScrollView>
           </View>
           <View
-            style={{bottom: keyboardStatus ? 18 : 2, ...styles.inputfield_con}}>
+            style={{bottom: keyboardHeight ? 18 : 2, ...styles.inputfield_con}}>
             <TextInput
               onChangeText={onChangeText}
               value={text}
@@ -116,6 +116,31 @@ const Groupchat = ({route, navigation}) => {
 export default Groupchat;
 
 const styles = StyleSheet.create({
+  menuBar: {
+    position: 'absolute',
+    bottom: 3,
+    marginHorizontal: 3,
+    backgroundColor: COLORS.primary,
+    borderRadius: 20,
+    shadowColor: COLORS.black,
+    shadowOffset: {
+      width: 0,
+      height: 3,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: {width: 0, height: 10},
+        shadowOpacity: 0.5,
+        shadowRadius: 10,
+      },
+      android: {
+        elevation: 20,
+      },
+    }),
+  },
   // This is the main container that holds all the components
   groupchat_screen: {
     width: '100%',

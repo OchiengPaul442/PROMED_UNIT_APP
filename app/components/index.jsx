@@ -43,6 +43,8 @@ export {
   ConfirmIcon,
   EditIcon,
   SendIcon,
+  ProfileIcon,
+  LogoutIcon,
 } from './icons/Icons';
 
 export {CenterHalf, BottomModal, FocusedStatusBar, Checkbox};

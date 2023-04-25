@@ -1,4 +1,4 @@
-import {View, Text, ScrollView, StyleSheet} from 'react-native';
+import {View, Text, ScrollView, StyleSheet, FlatList} from 'react-native';
 import React from 'react';
 
 //General styles
@@ -17,9 +17,11 @@ import MoodTracker from '../../services/moodTracker/MoodTracker';
 const HomeScreen = () => {
   // model
   const [open, setOpen] = React.useState(false);
+  const [selectedTip, setSelectedTip] = React.useState(null);
 
   const toggleModal = () => {
     setOpen(!open);
+    // setSelectedTip(null);
   };
 
   // Get users info
@@ -70,27 +72,27 @@ const HomeScreen = () => {
   const tipcard = [
     {
       id: 1,
-      title: 'Be Kind to your self',
+      title: 'Be Kind to your self1',
       text: 'Lorem ipsum dolor sit amet, consectetur adipiscing eli Lorem ipsum dolor sit amet, consectetur adipiscing eli',
     },
     {
       id: 2,
-      title: 'Be Kind to your self',
+      title: 'Be Kind to your sel2',
       text: 'Lorem ipsum dolor sit amet, consectetur adipiscing eli Lorem ipsum dolor sit amet, consectetur adipiscing eli',
     },
     {
       id: 3,
-      title: 'Be Kind to your self',
+      title: 'Be Kind to your sel3',
       text: 'Lorem ipsum dolor sit amet, consectetur adipiscing eli Lorem ipsum dolor sit amet, consectetur adipiscing eli',
     },
     {
       id: 4,
-      title: 'Be Kind to your self',
+      title: 'Be Kind to your sel4',
       text: 'Lorem ipsum dolor sit amet, consectetur adipiscing eli Lorem ipsum dolor sit amet, consectetur adipiscing eli',
     },
     {
       id: 5,
-      title: 'Be Kind to your self',
+      title: 'Be Kind to your sel5',
       text: 'Lorem ipsum dolor sit amet, consectetur adipiscing eli Lorem ipsum dolor sit amet, consectetur adipiscing eli',
     },
   ];
@@ -119,40 +121,51 @@ const HomeScreen = () => {
             {/* daily mental health Tips */}
             <View style={styles.Health_tips}>
               <Text style={Styles.heading}>Daily Mental Health Tips</Text>
-              <View style={styles.Tips}>
-                {tipcard.map(tip => (
-                  <Card
-                    Press={toggleModal}
-                    bgColor={COLORS.lightGray}
-                    height={90}
-                    key={tip.id}>
-                    <View
-                      style={{
-                        backgroundColor: randomColor(),
-                        width: 50,
-                        height: 50,
-                        borderRadius: 50,
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                      }}>
-                      <Text style={styles.Tip_Number}>{tip.id}</Text>
-                    </View>
-                    <View style={styles.Tip_Container}>
-                      <Text style={Styles.title}>{tip.title}</Text>
-                      <Text style={Styles.text}>{tip.text}</Text>
-                    </View>
-                  </Card>
-                ))}
-              </View>
+              <FlatList
+                style={{marginTop: 15}}
+                scrollEnabled={false}
+                data={tipcard}
+                keyExtractor={(item, index) => index.toString()}
+                renderItem={({item, index}) => (
+                  <View key={item.id} style={{paddingHorizontal: 10}}>
+                    <Card
+                      Press={() => {
+                        setSelectedTip(item);
+                        toggleModal();
+                      }}
+                      bgColor={COLORS.lightGray}
+                      height={90}>
+                      <View
+                        style={{
+                          backgroundColor: randomColor(),
+                          width: 50,
+                          height: 50,
+                          borderRadius: 50,
+                          justifyContent: 'center',
+                          alignItems: 'center',
+                        }}>
+                        <Text style={styles.Tip_Number}>{item.id}</Text>
+                      </View>
+                      <View style={styles.Tip_Container}>
+                        <Text style={Styles.title}>{item.title}</Text>
+                        <Text style={Styles.text}>{item.text}</Text>
+                      </View>
+                    </Card>
+                  </View>
+                )}
+              />
             </View>
           </ScrollView>
         </View>
       </View>
 
       {/* model */}
-      <CenterHalf Visibility={open} hide={toggleModal}>
-        <Text style={{color: COLORS.black}}>Health Tip</Text>
-      </CenterHalf>
+      {selectedTip ? (
+        <CenterHalf Visibility={open} hide={toggleModal}>
+          <Text style={{color: COLORS.black}}>{selectedTip.title}</Text>
+          <Text style={{color: COLORS.black}}>{selectedTip.text}</Text>
+        </CenterHalf>
+      ) : null}
     </Screen>
   );
 };
@@ -174,19 +187,7 @@ const styles = StyleSheet.create({
     display: 'flex',
     flexDirection: 'column',
     justifyContent: 'space-between',
-    paddingHorizontal: 10,
     paddingBottom: 200,
-  },
-
-  // This is the Tips section that contains the cards for different Tips
-  Tips: {
-    width: '100%',
-    height: 'auto',
-    display: 'flex',
-    flexDirection: 'column',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    zIndex: 1,
   },
 
   // This is the text for the tip number
@@ -199,7 +200,7 @@ const styles = StyleSheet.create({
   // This is the container for the tip content
   Tip_Container: {
     padding: 10,
-    width: '90%',
+    flex: 1,
     position: 'relative', // adding this property to make it relative to its parent
   },
 

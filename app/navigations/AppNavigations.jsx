@@ -5,12 +5,20 @@ import {NavigationContainer} from '@react-navigation/native';
 import {createStackNavigator} from '@react-navigation/stack';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import {createDrawerNavigator} from '@react-navigation/drawer';
-
 // constants
 import {COLORS} from '../constants';
+import Styles from '../constants/Styles';
 
 // icons
-import {Group, Home, Therapist, Boticon} from '../components';
+import {
+  Group,
+  ProfileIcon,
+  Bell,
+  Home,
+  Therapist,
+  Boticon,
+  LogoutIcon,
+} from '../components';
 
 // screens
 import {
@@ -65,13 +73,51 @@ const AuthNavigation = () => {
 // Drawer stack
 const DrawerStackScreen = () => {
   return (
-    <DrawerStack.Navigator
-      screenOptions={{
-        headerShown: false,
-      }}>
-      <DrawerStack.Screen name="Home_root" component={BottomTabs} />
-      <DrawerStack.Screen name="Profile_root" component={ProfileStackScreen} />
-      <DrawerStack.Screen name="Notification" component={Notifications} />
+    <DrawerStack.Navigator>
+      <DrawerStack.Screen
+        options={{
+          headerShown: false,
+          drawerLabel: () => <Text style={Styles.title2}>Home</Text>,
+          drawerIcon: () => (
+            <Home fill={COLORS.black} width="20px" height="20px" />
+          ),
+        }}
+        name="HomeScreen"
+        component={BottomTabs}
+      />
+      <DrawerStack.Screen
+        options={{
+          headerShown: false,
+          drawerLabel: () => <Text style={Styles.title2}>Profile</Text>,
+          drawerIcon: () => (
+            <ProfileIcon fill={COLORS.black} width="20px" height="20px" />
+          ),
+        }}
+        name="Profile_root"
+        component={ProfileStackScreen}
+      />
+      <DrawerStack.Screen
+        options={{
+          headerShown: false,
+          drawerLabel: () => <Text style={Styles.title2}>Notifications</Text>,
+          drawerIcon: () => (
+            <Bell fill={COLORS.black} width="20px" height="20px" />
+          ),
+        }}
+        name="Notification"
+        component={Notifications}
+      />
+      <DrawerStack.Screen
+        options={{
+          headerShown: false,
+          drawerLabel: () => <Text style={Styles.title2}>Logout</Text>,
+          drawerIcon: () => (
+            <LogoutIcon fill={COLORS.black} width="20px" height="20px" />
+          ),
+        }}
+        name="Logout"
+        component={''}
+      />
     </DrawerStack.Navigator>
   );
 };
@@ -84,8 +130,22 @@ const BottomTabs = () => {
       screenOptions={{
         headerShown: false,
         tabBarShowLabel: false,
-        tabBarStyle: styles.menuBar,
         tabBarHideOnKeyboard: true,
+        tabBarStyle: styles.menuBar,
+        tabBarVisibilityAnimationConfig: {
+          show: {
+            animation: 'timing',
+            config: {
+              duration: 300,
+            },
+          },
+          hide: {
+            animation: 'timing',
+            config: {
+              duration: 300,
+            },
+          },
+        },
       }}>
       <BottomTabStack.Screen
         name="Home"
@@ -176,7 +236,10 @@ const GroupStackScreen = () => {
 // Profile stack screen
 const ProfileStackScreen = () => {
   return (
-    <ProfileStack.Navigator>
+    <ProfileStack.Navigator
+      screenOptions={{
+        headerShown: false,
+      }}>
       <ProfileStack.Screen name="Profile" component={Profile} />
     </ProfileStack.Navigator>
   );
@@ -209,11 +272,8 @@ export default AppNavigations;
 const styles = StyleSheet.create({
   menuBar: {
     position: 'absolute',
-    width: 'auto',
-    height: 55,
-    left: 5,
-    right: 5,
-    bottom: 5,
+    bottom: 3,
+    marginHorizontal: 3,
     backgroundColor: COLORS.primary,
     borderRadius: 20,
     shadowColor: COLORS.black,

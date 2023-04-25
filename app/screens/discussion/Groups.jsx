@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import React from 'react';
+
 //General styles
 import Styles from '../../constants/Styles';
 
@@ -101,7 +102,7 @@ const Groups = ({navigation}) => {
                       groupname: item.name,
                     })
                   }
-                  bgColor={COLORS.Tuscany}
+                  bgColor={COLORS.lightGray}
                   height={90}
                   key={index}>
                   <View

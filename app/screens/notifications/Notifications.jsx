@@ -173,7 +173,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: COLORS.Tuscany,
+    backgroundColor: COLORS.lightGray,
     borderRadius: 10,
     padding: 10,
     shadowColor: COLORS.black,

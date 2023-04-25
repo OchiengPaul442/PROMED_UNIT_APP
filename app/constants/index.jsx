@@ -3,9 +3,9 @@
 import Logo from '../assets/images/Logo.png';
 import RightPam from '../assets/images/right.png';
 import LeftPam from '../assets/images/left.png';
-import Profile from '../assets/images/profilepic.jpg';
+import ProfileImage from '../assets/images/profilepic.jpg';
 
-export {Logo, RightPam, LeftPam, Profile};
+export {Logo, RightPam, LeftPam, ProfileImage};
 
 // COLORS
 export const COLORS = {

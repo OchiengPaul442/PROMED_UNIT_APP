@@ -56,4 +56,36 @@ export default Style = StyleSheet.create({
     fontSize: SIZES.small,
     color: COLORS.primary,
   },
+
+  // FORM ELEMENT STYLES //
+  Qlabel: {
+    fontSize: SIZES.medium,
+    color: COLORS.black,
+    paddingHorizontal: 5,
+    paddingBottom: 5,
+  },
+
+  // Styles for a group of related form elements
+  Qgroup: {
+    width: '100%',
+    height: 70,
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'space-between',
+    position: 'relative',
+    marginBottom: 40,
+  },
+
+  // Styles for a form input field
+  Qinput: {
+    position: 'relative',
+    width: '100%',
+    height: 50,
+    borderWidth: 1,
+    borderColor: COLORS.primary,
+    borderRadius: 10,
+    fontSize: 13,
+    padding: 5,
+    color: COLORS.black,
+  },
 });

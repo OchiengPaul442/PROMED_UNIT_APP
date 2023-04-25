@@ -1,8 +1,7 @@
 import {StyleSheet, Text, View, Image, TouchableOpacity} from 'react-native';
-import {COLORS, Profile} from '../../constants';
+import {COLORS, ProfileImage} from '../../constants';
 import React from 'react';
 import {useNavigation} from '@react-navigation/native';
-import {DrawerActions} from '@react-navigation/native';
 
 // icons
 import {Bell} from '../icons/Icons';
@@ -29,7 +28,7 @@ const Header = () => {
               height: 48,
               borderRadius: 50,
             }}
-            source={Profile}
+            source={ProfileImage}
           />
         </TouchableOpacity>
         {/* Date section */}
