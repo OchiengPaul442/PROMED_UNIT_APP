@@ -5,13 +5,18 @@ import {
   ScrollView,
   TouchableOpacity,
   SafeAreaView,
+  FlatList,
 } from 'react-native';
 import React from 'react';
 import {COLORS} from '../../constants';
-import {BackBtn, FocusedStatusBar, CenterHalf} from '../../components';
+import {BackBtn, FocusedStatusBar, CenterHalf, Card} from '../../components';
+//General styles
+import Styles from '../../constants/Styles';
 
 const Notifications = ({navigation}) => {
+  // modal
   const [open, setOpen] = React.useState(false);
+  const [selectedNotification, setSelectedNotification] = React.useState(null);
 
   const toggleModal = () => {
     setOpen(!open);
@@ -38,32 +43,37 @@ const Notifications = ({navigation}) => {
   const notificationList = [
     {
       id: 1,
-      title: 'New session',
+      title: 'New session1',
       description: 'You have a new session with your therapist',
     },
     {
       id: 2,
-      title: 'New session',
+      title: 'New session2',
       description: 'You have a new session with your therapist',
     },
     {
       id: 3,
-      title: 'New session',
+      title: 'New session3',
       description: 'You have a new session with your therapist',
     },
     {
       id: 4,
-      title: 'New session',
+      title: 'New session4',
       description: 'You have a new session with your therapist',
     },
     {
       id: 5,
-      title: 'New session',
+      title: 'New session5',
       description: 'You have a new session with your therapist',
     },
     {
       id: 6,
-      title: 'New session',
+      title: 'New session6',
+      description: 'You have a new session with your therapist',
+    },
+    {
+      id: 6,
+      title: 'New session6',
       description: 'You have a new session with your therapist',
     },
   ];
@@ -110,34 +120,51 @@ const Notifications = ({navigation}) => {
         {/* Content section */}
         <View style={styles.notification_container}>
           <ScrollView showsVerticalScrollIndicator={false}>
-            {notificationList.map(notif => (
-              <TouchableOpacity
-                onPress={toggleModal}
-                key={notif.id}
-                style={styles.notification}>
-                <View
-                  style={{
-                    backgroundColor: randomColor(),
-                    ...styles.notification_number,
-                  }}>
-                  <Text>{notif.id}</Text>
+            <FlatList
+              scrollEnabled={false}
+              data={notificationList}
+              keyExtractor={(item, index) => index.toString()}
+              renderItem={({item, index}) => (
+                <View style={{paddingHorizontal: 10}}>
+                  <Card
+                    Press={() => {
+                      setSelectedNotification(item);
+                      toggleModal();
+                    }}
+                    bgColor={COLORS.lightGray}
+                    height={90}>
+                    <View
+                      style={{
+                        backgroundColor: randomColor(),
+                        ...styles.notification_number,
+                      }}>
+                      <Text>{item.id}</Text>
+                    </View>
+                    <View style={{width: '100%', paddingHorizontal: 10}}>
+                      <Text style={styles.notification_title}>
+                        {item.title}
+                      </Text>
+                      <Text style={styles.notification_description}>
+                        {item.description}
+                      </Text>
+                    </View>
+                  </Card>
                 </View>
-                <View style={{width: '100%', paddingHorizontal: 10}}>
-                  <Text style={styles.notification_title}>{notif.title}</Text>
-                  <Text style={styles.notification_description}>
-                    {notif.description}
-                  </Text>
-                </View>
-              </TouchableOpacity>
-            ))}
+              )}
+            />
           </ScrollView>
         </View>
       </View>
 
       {/* model */}
-      <CenterHalf Visibility={open} hide={toggleModal}>
-        <Text style={{color: COLORS.black}}>Notification</Text>
-      </CenterHalf>
+      {selectedNotification ? (
+        <CenterHalf Visibility={open} hide={toggleModal}>
+          <Text style={Styles.title}>{selectedNotification.title}</Text>
+          <Text style={{paddingVertical: 10, ...Styles.text}}>
+            {selectedNotification.description}
+          </Text>
+        </CenterHalf>
+      ) : null}
     </SafeAreaView>
   );
 };
@@ -160,30 +187,7 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 30,
     borderTopRightRadius: 30,
     paddingTop: 12,
-    paddingHorizontal: 10,
-    paddingBottom: 100,
-  },
-
-  notification: {
-    position: 'relative',
-    width: '100%',
-    height: 95,
-    marginBottom: 15,
-    display: 'flex',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    backgroundColor: COLORS.lightGray,
-    borderRadius: 10,
-    padding: 10,
-    shadowColor: COLORS.black,
-    shadowOffset: {
-      width: 0,
-      height: 5,
-    },
-    shadowOpacity: 0.6,
-    shadowRadius: 4,
-    elevation: 5,
+    paddingBottom: 120,
   },
 
   notification_number: {

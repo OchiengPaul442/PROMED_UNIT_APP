@@ -214,7 +214,7 @@ const Profile = ({navigation}) => {
                         onPress={toggleModal2}
                         text="Delete Account"
                         textColor={COLORS.white}
-                        bgColor={COLORS.red}
+                        bgColor={COLORS.tertiary}
                       />
                     </View>
                   </View>
@@ -224,26 +224,76 @@ const Profile = ({navigation}) => {
           </View>
         </View>
       </View>
+
       {/* MODAL1 */}
       <CenterHalf Visibility={isModalVisible} hide={toggleModal}>
-        <Text
+        <Text style={Styles.title}>Edit details</Text>
+        <View
           style={{
-            fontSize: 20,
-            color: COLORS.primary,
+            width: '100%',
+            position: 'relative',
           }}>
-          Modal1
-        </Text>
+          <View style={Styles.Qgroup}>
+            <Text style={Styles.Qlabel}>Username</Text>
+            <TextInput style={Styles.Qinput} />
+          </View>
+          <View style={Styles.Qgroup}>
+            <Text style={Styles.Qlabel}>Email address</Text>
+            <TextInput style={Styles.Qinput} />
+          </View>
+          <View style={Styles.Qgroup}>
+            <Text style={Styles.Qlabel}>Phone number</Text>
+            <TextInput style={Styles.Qinput} />
+          </View>
+          <View
+            style={{
+              width: '100%',
+              flexDirection: 'row',
+              justifyContent: 'flex-start',
+              alignItems: 'center',
+            }}>
+            <RecButton
+              w={100}
+              text="Edit data"
+              bgColor={COLORS.primary}
+              textColor={COLORS.white}
+            />
+            <RecButton
+              onPress={toggleModal}
+              w={100}
+              text="Close"
+              bgColor={COLORS.tertiary}
+              textColor={COLORS.white}
+            />
+          </View>
+        </View>
       </CenterHalf>
 
       {/* MODAL2 */}
       <CenterHalf Visibility={isModalVisible2} hide={toggleModal2}>
-        <Text
+        <Text style={Styles.title}>Are You sure about this?</Text>
+        <View
           style={{
-            fontSize: 20,
-            color: COLORS.primary,
+            width: 'auto',
+            position: 'relative',
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-around',
           }}>
-          Modal2
-        </Text>
+          <RecButton
+            text="Yes"
+            w={100}
+            bgColor={COLORS.red}
+            textColor={COLORS.white}
+          />
+          <RecButton
+            onPress={toggleModal2}
+            text="No"
+            w={100}
+            bgColor={COLORS.primary}
+            textColor={COLORS.white}
+          />
+        </View>
       </CenterHalf>
     </SafeAreaView>
   );

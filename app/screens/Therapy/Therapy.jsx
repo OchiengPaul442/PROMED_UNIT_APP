@@ -5,6 +5,7 @@ import {
   StyleSheet,
   TouchableOpacity,
   Image,
+  FlatList,
 } from 'react-native';
 import React from 'react';
 //General styles
@@ -60,6 +61,7 @@ const Therapy = ({navigation}) => {
 
   // Modal
   const [isModalVisible, setModalVisible] = React.useState(false);
+  const [selectedTherapist, setSelectedTherapist] = React.useState(null);
 
   const toggleModal = () => {
     setModalVisible(!isModalVisible);
@@ -79,50 +81,66 @@ const Therapy = ({navigation}) => {
 
             {/* Therapist list */}
             <View style={styles.Therapist_Container}>
-              <Text style={Styles.heading}>Available Therapist</Text>
+              <Text style={{paddingHorizontal: 10, ...Styles.heading}}>
+                Available Therapist
+              </Text>
               <View style={styles.Therapist_list}>
-                {therapist.map((item, index) => (
-                  <Card
-                    Press={() =>
-                      navigation.push('Therapist', {
-                        name: item.name,
-                        location: item.location,
-                        title: item.title,
-                        image: item.image,
-                      })
-                    }
-                    bgColor={COLORS.lightGray}
-                    height={90}
-                    key={index}>
-                    <View
-                      style={{
-                        width: '20%',
-                        height: '100%',
-                        ...styles.image_container,
-                      }}>
-                      <Image source={item.image} style={styles.Therapist_img} />
+                <FlatList
+                  style={{marginTop: 15}}
+                  scrollEnabled={false}
+                  data={therapist}
+                  keyExtractor={(item, index) => index.toString()}
+                  renderItem={({item, index}) => (
+                    <View style={{paddingHorizontal: 10}}>
+                      <Card
+                        Press={() =>
+                          navigation.push('Therapist', {
+                            name: item.name,
+                            location: item.location,
+                            title: item.title,
+                            image: item.image,
+                          })
+                        }
+                        bgColor={COLORS.lightGray}
+                        height={90}
+                        key={index}>
+                        <View
+                          style={{
+                            width: '20%',
+                            height: '100%',
+                            ...styles.image_container,
+                          }}>
+                          <Image
+                            source={item.image}
+                            style={styles.Therapist_img}
+                          />
+                        </View>
+                        <View style={styles.Therapist_information}>
+                          <View
+                            style={{
+                              position: 'relative',
+                              width: '100%',
+                              height: '80%',
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                            }}>
+                            <Text style={Styles.title}>{item.name}</Text>
+                            <Text style={Styles.text}>{item.location}</Text>
+                            <Text style={Styles.text}>{item.title}</Text>
+                          </View>
+                        </View>
+                        <TouchableOpacity
+                          onPress={() => {
+                            setSelectedTherapist(item);
+                            toggleModal();
+                          }}
+                          style={styles.Therapist_btn}>
+                          <Menu width={30} height={30} fill={COLORS.black} />
+                        </TouchableOpacity>
+                      </Card>
                     </View>
-                    <View style={styles.Therapist_information}>
-                      <View
-                        style={{
-                          position: 'relative',
-                          width: '100%',
-                          height: '80%',
-                          display: 'flex',
-                          justifyContent: 'space-between',
-                        }}>
-                        <Text style={Styles.title}>{item.name}</Text>
-                        <Text style={Styles.text}>{item.location}</Text>
-                        <Text style={Styles.text}>{item.title}</Text>
-                      </View>
-                    </View>
-                    <TouchableOpacity
-                      onPress={toggleModal}
-                      style={styles.Therapist_btn}>
-                      <Menu width={30} height={30} fill={COLORS.black} />
-                    </TouchableOpacity>
-                  </Card>
-                ))}
+                  )}
+                />
               </View>
             </View>
           </ScrollView>
@@ -130,15 +148,29 @@ const Therapy = ({navigation}) => {
       </View>
 
       {/* Modal */}
-      <BottomModal Visibility={isModalVisible} hide={toggleModal}>
-        <Text
-          style={{
-            fontSize: 20,
-            color: COLORS.primary,
-          }}>
-          Modal
-        </Text>
-      </BottomModal>
+      {selectedTherapist ? (
+        <BottomModal Visibility={isModalVisible} hide={toggleModal}>
+          <Text style={{textAlign: 'left', width: '100%', ...Styles.heading2}}>
+            {selectedTherapist.name}
+          </Text>
+          <TouchableOpacity
+            onPress={() =>
+              navigation.push('Therapist', {
+                name: selectedTherapist.name,
+                location: selectedTherapist.location,
+                title: selectedTherapist.title,
+                image: selectedTherapist.image,
+              })
+            }
+            style={{paddingVertical: 10}}>
+            <Text style={Styles.title}>Schedule a Session</Text>
+          </TouchableOpacity>
+          <View style={styles.separator}></View>
+          <TouchableOpacity onPress={toggleModal} style={{paddingVertical: 10}}>
+            <Text style={Styles.title}>Close</Text>
+          </TouchableOpacity>
+        </BottomModal>
+      ) : null}
     </Screen>
   );
 };
@@ -159,7 +191,6 @@ const styles = StyleSheet.create({
     position: 'relative',
     width: '100%',
     height: 'auto',
-    paddingHorizontal: 10,
   },
 
   // available therapist list
@@ -167,7 +198,7 @@ const styles = StyleSheet.create({
     position: 'relative',
     width: '100%',
     height: 'auto',
-    paddingBottom: 120,
+    paddingBottom: 100,
   },
 
   // available therapist image container
@@ -202,6 +233,13 @@ const styles = StyleSheet.create({
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
+  },
+
+  // separator
+  separator: {
+    width: '100%',
+    height: 1,
+    backgroundColor: COLORS.black,
   },
 });
 

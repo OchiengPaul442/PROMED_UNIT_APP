@@ -21,7 +21,6 @@ const HomeScreen = () => {
 
   const toggleModal = () => {
     setOpen(!open);
-    // setSelectedTip(null);
   };
 
   // Get users info
@@ -147,8 +146,12 @@ const HomeScreen = () => {
                         <Text style={styles.Tip_Number}>{item.id}</Text>
                       </View>
                       <View style={styles.Tip_Container}>
-                        <Text style={Styles.title}>{item.title}</Text>
-                        <Text style={Styles.text}>{item.text}</Text>
+                        <Text style={Styles.title}>
+                          {item.title.substring(0, 30)}
+                        </Text>
+                        <Text style={Styles.text}>
+                          {item.text.substring(0, 85) + '...'}
+                        </Text>
                       </View>
                     </Card>
                   </View>
@@ -162,8 +165,10 @@ const HomeScreen = () => {
       {/* model */}
       {selectedTip ? (
         <CenterHalf Visibility={open} hide={toggleModal}>
-          <Text style={{color: COLORS.black}}>{selectedTip.title}</Text>
-          <Text style={{color: COLORS.black}}>{selectedTip.text}</Text>
+          <Text style={Styles.title}>{selectedTip.title}</Text>
+          <Text style={{paddingVertical: 10, ...Styles.text}}>
+            {selectedTip.text}
+          </Text>
         </CenterHalf>
       ) : null}
     </Screen>
@@ -187,7 +192,7 @@ const styles = StyleSheet.create({
     display: 'flex',
     flexDirection: 'column',
     justifyContent: 'space-between',
-    paddingBottom: 200,
+    paddingBottom: 190,
   },
 
   // This is the text for the tip number
