@@ -1,4 +1,11 @@
-import {View, Text, ScrollView, StyleSheet, FlatList} from 'react-native';
+import {
+  View,
+  Text,
+  ScrollView,
+  StyleSheet,
+  FlatList,
+  TouchableOpacity,
+} from 'react-native';
 import React from 'react';
 
 //General styles
@@ -113,13 +120,18 @@ const HomeScreen = () => {
           <ScrollView showsVerticalScrollIndicator={false}>
             <View style={styles.Heading_container}>
               <Text style={Styles.heading}>How do you feel today?</Text>
+              <Text style={Styles.text2}>
+                Track Your Mood to get customized daily health tips
+              </Text>
               {/* mood tracker */}
               <MoodTracker />
             </View>
 
             {/* daily mental health Tips */}
             <View style={styles.Health_tips}>
-              <Text style={Styles.heading}>Daily Mental Health Tips</Text>
+              <Text style={{paddingHorizontal: 10, ...Styles.heading}}>
+                Daily Mental Health Tips
+              </Text>
               <FlatList
                 style={{marginTop: 15}}
                 scrollEnabled={false}
@@ -169,6 +181,15 @@ const HomeScreen = () => {
           <Text style={{paddingVertical: 10, ...Styles.text}}>
             {selectedTip.text}
           </Text>
+          <TouchableOpacity onPress={toggleModal}>
+            <Text
+              style={{
+                paddingVertical: 10,
+                color: COLORS.red,
+              }}>
+              Close
+            </Text>
+          </TouchableOpacity>
         </CenterHalf>
       ) : null}
     </Screen>
@@ -183,6 +204,7 @@ const styles = StyleSheet.create({
     height: 'auto',
     display: 'flex',
     paddingHorizontal: 10,
+    marginBottom: 15,
   },
 
   // This is the body content that contains the feelings and Tips sections

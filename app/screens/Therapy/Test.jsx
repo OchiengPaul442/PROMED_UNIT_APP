@@ -85,13 +85,19 @@ const Test = ({route, navigation}) => {
             <View
               style={{
                 width: '100%',
-                display: 'flex',
-                justifyContent: 'space-between',
-                flexDirection: 'row-reverse',
                 paddingTop: 10,
                 paddingHorizontal: 10,
               }}>
-              <Text style={Styles.heading}>Questions</Text>
+              <Text
+                style={{width: '100%', textAlign: 'center', ...Styles.heading}}>
+                Questions
+              </Text>
+            </View>
+            <View
+              style={{
+                paddingVertical: 15,
+                paddingLeft: 15,
+              }}>
               <TouchableOpacity onPress={() => navigation.goBack()}>
                 <BackBtn width={30} height={30} fill={COLORS.primary} />
               </TouchableOpacity>

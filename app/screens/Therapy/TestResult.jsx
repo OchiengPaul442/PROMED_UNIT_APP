@@ -46,13 +46,23 @@ const TestResult = ({route, navigation}) => {
             <View
               style={{
                 width: '100%',
-                display: 'flex',
-                justifyContent: 'space-between',
-                flexDirection: 'row-reverse',
                 paddingVertical: 10,
                 paddingHorizontal: 10,
               }}>
-              <Text style={Styles.heading}>Test Results</Text>
+              <Text
+                style={{
+                  width: '100%',
+                  textAlign: 'center',
+                  ...Styles.heading,
+                }}>
+                Test Results
+              </Text>
+            </View>
+            <View
+              style={{
+                paddingLeft: 15,
+                paddingVertical: 15,
+              }}>
               <TouchableOpacity onPress={() => navigation.push('Therapy')}>
                 <BackBtn width={30} height={30} fill={COLORS.primary} />
               </TouchableOpacity>
@@ -197,7 +207,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 10,
-    paddingBottom: 200,
+    paddingBottom: 235,
   },
 
   // result text

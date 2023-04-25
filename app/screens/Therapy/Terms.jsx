@@ -42,13 +42,23 @@ const Terms = ({route, navigation}) => {
             <View
               style={{
                 width: '100%',
-                display: 'flex',
-                justifyContent: 'space-between',
-                flexDirection: 'row-reverse',
                 paddingVertical: 10,
                 paddingHorizontal: 10,
               }}>
-              <Text style={Styles.heading}>Pre-condtion terms</Text>
+              <Text
+                style={{
+                  width: '100%',
+                  textAlign: 'center',
+                  ...Styles.heading,
+                }}>
+                Pre-condtion terms
+              </Text>
+            </View>
+            <View
+              style={{
+                paddingVertical: 15,
+                paddingLeft: 15,
+              }}>
               <TouchableOpacity onPress={() => navigation.goBack()}>
                 <BackBtn width={30} height={30} fill={COLORS.primary} />
               </TouchableOpacity>

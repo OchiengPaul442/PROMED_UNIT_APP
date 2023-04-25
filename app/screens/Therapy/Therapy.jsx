@@ -167,7 +167,7 @@ const Therapy = ({navigation}) => {
           </TouchableOpacity>
           <View style={styles.separator}></View>
           <TouchableOpacity onPress={toggleModal} style={{paddingVertical: 10}}>
-            <Text style={Styles.title}>Close</Text>
+            <Text style={{color: COLORS.red}}>Close</Text>
           </TouchableOpacity>
         </BottomModal>
       ) : null}

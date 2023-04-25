@@ -88,4 +88,60 @@ export default Style = StyleSheet.create({
     padding: 5,
     color: COLORS.black,
   },
+
+  // CHAT FORM ELEMENT STYLES //
+  chats: {
+    position: 'relative',
+    width: '100%',
+    height: '92%',
+    borderTopRightRadius: 30,
+    borderTopLeftRadius: 30,
+    padding: 10,
+  },
+
+  inputfield_con: {
+    position: 'relative',
+    width: '100%',
+    height: 50,
+    paddingHorizontal: 28,
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  inputfield: {
+    width: '100%',
+    height: 45,
+    position: 'relative',
+    padding: 10,
+    backgroundColor: COLORS.darkGray,
+    borderRadius: 10,
+  },
+
+  leftChat: {
+    color: COLORS.white,
+    width: 'auto',
+    height: 'auto',
+    textAlign: 'left',
+    padding: 15,
+    marginBottom: 15,
+    borderTopLeftRadius: 10,
+    borderTopRightRadius: 10,
+    borderBottomRightRadius: 10,
+    backgroundColor: COLORS.cyan,
+  },
+
+  rightChat: {
+    color: COLORS.white,
+    width: 'auto',
+    height: 'auto',
+    textAlign: 'right',
+    padding: 15,
+    marginBottom: 15,
+    borderBottomLeftRadius: 10,
+    borderTopLeftRadius: 10,
+    borderTopRightRadius: 10,
+    backgroundColor: COLORS.tertiary,
+  },
 });

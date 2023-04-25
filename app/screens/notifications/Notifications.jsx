@@ -163,6 +163,15 @@ const Notifications = ({navigation}) => {
           <Text style={{paddingVertical: 10, ...Styles.text}}>
             {selectedNotification.description}
           </Text>
+          <TouchableOpacity onPress={toggleModal}>
+            <Text
+              style={{
+                paddingVertical: 10,
+                color: COLORS.red,
+              }}>
+              Close
+            </Text>
+          </TouchableOpacity>
         </CenterHalf>
       ) : null}
     </SafeAreaView>

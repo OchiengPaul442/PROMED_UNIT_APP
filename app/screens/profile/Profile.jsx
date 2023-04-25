@@ -172,6 +172,7 @@ const Profile = ({navigation}) => {
                         <Text style={Styles.Qlabel}>Old Password</Text>
                         <TextInput
                           style={Styles.Qinput}
+                          placeholderTextColor={COLORS.gray}
                           placeholder="Old Password"
                         />
                       </View>
@@ -179,14 +180,16 @@ const Profile = ({navigation}) => {
                         <Text style={Styles.Qlabel}>New Password</Text>
                         <TextInput
                           style={Styles.Qinput}
-                          placeholder="Old Password"
+                          placeholderTextColor={COLORS.gray}
+                          placeholder="New Password"
                         />
                       </View>
                       <View style={{width: '100%', ...Styles.Qgroup}}>
                         <Text style={Styles.Qlabel}>Confirm Password</Text>
                         <TextInput
                           style={Styles.Qinput}
-                          placeholder="Old Password"
+                          placeholderTextColor={COLORS.gray}
+                          placeholder="Confirm Password"
                         />
                       </View>
                       {/* submit button */}

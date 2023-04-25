@@ -38,8 +38,8 @@ const ConfirmationScreen = ({route, navigation}) => {
                   alignItems: 'center',
                 }}>
                 <Text style={Styles.text}>ID: 2203942034802</Text>
-                <TouchableOpacity>
-                  <EditIcon width={20} height={20} />
+                <TouchableOpacity onPress={() => navigation.goBack()}>
+                  <EditIcon width={20} height={20} fill={COLORS.black} />
                 </TouchableOpacity>
               </View>
               <View style={styles.Therapist_details}>

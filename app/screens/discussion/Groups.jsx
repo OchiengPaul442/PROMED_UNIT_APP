@@ -91,12 +91,14 @@ const Groups = ({navigation}) => {
         <View style={Styles.Content}>
           <ScrollView showsVerticalScrollIndicator={false}>
             {/* Search input field section */}
-            <View style={styles.Search_input_container}>
-              <TextInput
-                style={styles.Search_input}
-                placeholderTextColor={COLORS.black}
-                placeholder="Search ..."
-              />
+            <View style={{paddingHorizontal: 10}}>
+              <View style={styles.Search_input_container}>
+                <TextInput
+                  style={styles.Search_input}
+                  placeholderTextColor={COLORS.black}
+                  placeholder="Search ..."
+                />
+              </View>
             </View>
 
             {/* list of available Groups */}
@@ -180,7 +182,7 @@ const Groups = ({navigation}) => {
           </TouchableOpacity>
           <View style={styles.separator}></View>
           <TouchableOpacity onPress={toggleModal} style={{paddingVertical: 10}}>
-            <Text style={Styles.title}>Close</Text>
+            <Text style={{color: COLORS.red}}>Close</Text>
           </TouchableOpacity>
         </BottomModal>
       ) : null}
@@ -198,6 +200,7 @@ const Groups = ({navigation}) => {
         <TextInput
           style={{marginVertical: 10, ...Styles.Qinput}}
           placeholder="Group name"
+          placeholderTextColor={COLORS.gray}
         />
         <RecButton
           text="Create Group"

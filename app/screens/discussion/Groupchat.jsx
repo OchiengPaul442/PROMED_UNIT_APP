@@ -12,6 +12,7 @@ import React from 'react';
 import {COLORS} from '../../constants';
 import {FocusedStatusBar, BackBtn, SendIcon} from '../../components';
 import {useFocusEffect} from '@react-navigation/native';
+import Styles from '../../constants/Styles';
 
 const Groupchat = ({route, navigation}) => {
   // text input
@@ -21,16 +22,16 @@ const Groupchat = ({route, navigation}) => {
   const {groupname} = route.params;
 
   // Height of the keyboard
-  const [keyboardHeight, setKeyboardHeight] = React.useState(0);
+  const [keyboardHeight2, setKeyboardHeight2] = React.useState(0);
 
   // Keyboard event
   React.useEffect(() => {
     Keyboard.addListener('keyboardDidShow', e => {
-      setKeyboardHeight(e.endCoordinates.height);
+      setKeyboardHeight2(e.endCoordinates.height);
     });
 
     Keyboard.addListener('keyboardDidHide', () => {
-      setKeyboardHeight(0);
+      setKeyboardHeight2(0);
     });
   }, []);
 
@@ -72,7 +73,7 @@ const Groupchat = ({route, navigation}) => {
           }}>
           <TouchableOpacity
             style={(padding = 10)}
-            onPress={() => navigation.goBack()}>
+            onPress={() => navigation.push('Groups')}>
             <BackBtn width={30} height={30} fill={COLORS.secondary} />
           </TouchableOpacity>
           <View>
@@ -89,19 +90,22 @@ const Groupchat = ({route, navigation}) => {
 
         {/* Content */}
         <View style={styles.Content}>
-          <View style={styles.chats}>
+          <View style={Styles.chats}>
             <ScrollView showsVerticalScrollIndicator={false}>
-              <Text style={styles.leftChat}>Hello world</Text>
-              <Text style={styles.rightChat}>Hello world</Text>
+              <Text style={Styles.leftChat}>Hello world</Text>
+              <Text style={Styles.rightChat}>Hello world</Text>
             </ScrollView>
           </View>
           <View
-            style={{bottom: keyboardHeight ? 18 : 2, ...styles.inputfield_con}}>
+            style={{
+              bottom: keyboardHeight2 ? 18 : 2,
+              ...Styles.inputfield_con,
+            }}>
             <TextInput
               onChangeText={onChangeText}
               value={text}
               placeholder="Ask me..."
-              style={styles.inputfield}
+              style={Styles.inputfield}
             />
             <TouchableOpacity>
               <SendIcon width={50} height={50} fill={COLORS.tertiary} />
@@ -165,60 +169,5 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.white,
     borderTopLeftRadius: 30,
     borderTopRightRadius: 30,
-  },
-
-  chats: {
-    position: 'relative',
-    width: '100%',
-    height: '92%',
-    borderTopRightRadius: 30,
-    borderTopLeftRadius: 30,
-    padding: 10,
-  },
-
-  inputfield_con: {
-    position: 'relative',
-    width: '100%',
-    height: 50,
-    paddingHorizontal: 28,
-    display: 'flex',
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-
-  inputfield: {
-    width: '100%',
-    height: 45,
-    position: 'relative',
-    padding: 10,
-    backgroundColor: COLORS.darkGray,
-    borderRadius: 10,
-  },
-
-  leftChat: {
-    color: COLORS.white,
-    width: 'auto',
-    height: 'auto',
-    textAlign: 'left',
-    padding: 15,
-    marginBottom: 15,
-    borderTopLeftRadius: 10,
-    borderTopRightRadius: 10,
-    borderBottomRightRadius: 10,
-    backgroundColor: COLORS.cyan,
-  },
-
-  rightChat: {
-    color: COLORS.white,
-    width: 'auto',
-    height: 'auto',
-    textAlign: 'right',
-    padding: 15,
-    marginBottom: 15,
-    borderBottomLeftRadius: 10,
-    borderTopLeftRadius: 10,
-    borderTopRightRadius: 10,
-    backgroundColor: COLORS.tertiary,
   },
 });

@@ -1,10 +1,12 @@
-import {StyleSheet, Text, View} from 'react-native';
 import React from 'react';
+import {StyleSheet, Text, View} from 'react-native';
 
+// navigation
 import {NavigationContainer} from '@react-navigation/native';
 import {createStackNavigator} from '@react-navigation/stack';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import {createDrawerNavigator} from '@react-navigation/drawer';
+
 // constants
 import {COLORS} from '../constants';
 import Styles from '../constants/Styles';
@@ -72,58 +74,56 @@ const AuthNavigation = () => {
 
 // Drawer stack
 const DrawerStackScreen = () => {
+  //Define an array of drawer items with their names, components and icons
+  const drawers = [
+    {name: 'HomeScreen', label: 'Home', component: BottomTabs, icon: Home},
+    {
+      name: 'Profile_root',
+      label: 'Profile',
+      component: ProfileStackScreen,
+      icon: ProfileIcon,
+    },
+    {
+      name: 'Notification',
+      label: 'Notification',
+      component: Notifications,
+      icon: Bell,
+    },
+    {name: 'Logout', label: 'Logout', component: '', icon: LogoutIcon},
+  ];
+
   return (
     <DrawerStack.Navigator>
-      <DrawerStack.Screen
-        options={{
-          headerShown: false,
-          drawerLabel: () => <Text style={Styles.title2}>Home</Text>,
-          drawerIcon: () => (
-            <Home fill={COLORS.black} width="20px" height="20px" />
-          ),
-        }}
-        name="HomeScreen"
-        component={BottomTabs}
-      />
-      <DrawerStack.Screen
-        options={{
-          headerShown: false,
-          drawerLabel: () => <Text style={Styles.title2}>Profile</Text>,
-          drawerIcon: () => (
-            <ProfileIcon fill={COLORS.black} width="20px" height="20px" />
-          ),
-        }}
-        name="Profile_root"
-        component={ProfileStackScreen}
-      />
-      <DrawerStack.Screen
-        options={{
-          headerShown: false,
-          drawerLabel: () => <Text style={Styles.title2}>Notifications</Text>,
-          drawerIcon: () => (
-            <Bell fill={COLORS.black} width="20px" height="20px" />
-          ),
-        }}
-        name="Notification"
-        component={Notifications}
-      />
-      <DrawerStack.Screen
-        options={{
-          headerShown: false,
-          drawerLabel: () => <Text style={Styles.title2}>Logout</Text>,
-          drawerIcon: () => (
-            <LogoutIcon fill={COLORS.black} width="20px" height="20px" />
-          ),
-        }}
-        name="Logout"
-        component={''}
-      />
+      {drawers.map(drawer => (
+        <DrawerStack.Screen
+          key={drawer.name}
+          options={{
+            headerShown: false,
+            drawerLabel: () => (
+              <Text style={Styles.title2}>{drawer.label}</Text>
+            ),
+            drawerIcon: () => (
+              <drawer.icon fill={COLORS.black} width="20px" height="20px" />
+            ),
+          }}
+          name={drawer.name}
+          component={drawer.component}
+        />
+      ))}
     </DrawerStack.Navigator>
   );
 };
 
 //Bottom nav stack
 const BottomTabs = () => {
+  //Define an array of tab icons with their names and components
+  const tabs = [
+    {name: 'Home', icon: Home, component: HomeScreen},
+    {name: 'Therapy_root', icon: Therapist, component: TherapyStackScreen},
+    {name: 'Groups_root', icon: Group, component: GroupStackScreen},
+    {name: 'Bot_root', icon: Boticon, component: Bot},
+  ];
+
   return (
     <BottomTabStack.Navigator
       initialRouteName="Home"
@@ -132,73 +132,23 @@ const BottomTabs = () => {
         tabBarShowLabel: false,
         tabBarHideOnKeyboard: true,
         tabBarStyle: styles.menuBar,
-        tabBarVisibilityAnimationConfig: {
-          show: {
-            animation: 'timing',
-            config: {
-              duration: 300,
-            },
-          },
-          hide: {
-            animation: 'timing',
-            config: {
-              duration: 300,
-            },
-          },
-        },
       }}>
-      <BottomTabStack.Screen
-        name="Home"
-        component={HomeScreen}
-        options={{
-          tabBarIcon: ({focused}) => (
-            <Home
-              fill={focused ? COLORS.secondary : COLORS.white}
-              width="30px"
-              height="30px"
-            />
-          ),
-        }}
-      />
-      <BottomTabStack.Screen
-        name="Therapy_root"
-        component={TherapyStackScreen}
-        options={{
-          tabBarIcon: ({focused}) => (
-            <Therapist
-              fill={focused ? COLORS.secondary : COLORS.white}
-              width="30px"
-              height="30px"
-            />
-          ),
-        }}
-      />
-      <BottomTabStack.Screen
-        name="Groups_root"
-        component={GroupStackScreen}
-        options={{
-          tabBarIcon: ({focused}) => (
-            <Group
-              fill={focused ? COLORS.secondary : COLORS.white}
-              width="30px"
-              height="30px"
-            />
-          ),
-        }}
-      />
-      <BottomTabStack.Screen
-        name="Bot_root"
-        component={Bot}
-        options={{
-          tabBarIcon: ({focused}) => (
-            <Boticon
-              fill={focused ? COLORS.secondary : COLORS.white}
-              width="30px"
-              height="30px"
-            />
-          ),
-        }}
-      />
+      {tabs.map(tab => (
+        <BottomTabStack.Screen
+          key={tab.name}
+          name={tab.name}
+          component={tab.component}
+          options={{
+            tabBarIcon: ({focused}) => (
+              <tab.icon
+                fill={focused ? COLORS.secondary : COLORS.white}
+                width="30px"
+                height="30px"
+              />
+            ),
+          }}
+        />
+      ))}
     </BottomTabStack.Navigator>
   );
 };
@@ -224,6 +174,7 @@ const TherapyStackScreen = () => {
 const GroupStackScreen = () => {
   return (
     <GroupStack.Navigator
+      initialRouteName="Groups"
       screenOptions={{
         headerShown: false,
       }}>
