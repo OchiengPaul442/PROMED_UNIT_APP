@@ -199,7 +199,7 @@ const ProfileStackScreen = () => {
 // Root Navigation stack
 const AppNavigations = () => {
   const [isLoading, setIsLoading] = React.useState(true);
-  const [userToken, setUserToken] = React.useState(true);
+  const [userToken, setUserToken] = React.useState(false);
 
   React.useEffect(() => {
     setTimeout(() => {

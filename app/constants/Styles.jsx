@@ -57,7 +57,7 @@ export default Style = StyleSheet.create({
     color: COLORS.primary,
   },
 
-  // FORM ELEMENT STYLES //
+  // FORM ELEMENT STYLES  //
   Qlabel: {
     fontSize: SIZES.medium,
     color: COLORS.black,
@@ -143,5 +143,78 @@ export default Style = StyleSheet.create({
     borderTopLeftRadius: 10,
     borderTopRightRadius: 10,
     backgroundColor: COLORS.tertiary,
+  },
+
+  // AUTH FORM STYLES //
+  // Styles for the form section within the main container
+  form: {
+    width: '100%',
+    height: '100%',
+    position: 'relative',
+    paddingBottom: 10,
+    paddingTop: 12,
+    paddingHorizontal: 10,
+  },
+
+  // Styles for a group of related form elements
+  group: {
+    width: '100%',
+    height: 50,
+    position: 'relative',
+    marginBottom: 40,
+  },
+
+  // Styles for a form input field
+  input: {
+    position: 'relative',
+    bottom: 10,
+    width: '100%',
+    height: '100%',
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.primary,
+    fontSize: 18,
+    color: COLORS.primary,
+    padding: 10,
+    marginTop: 10,
+  },
+
+  // Styles for a label associated with a form input field
+  label: {
+    position: 'relative',
+    left: 0,
+    fontSize: 18,
+    color: COLORS.primary,
+    paddingHorizontal: 5,
+  },
+
+  // Styles for a button or link to recover a forgotten password
+  recButton: {
+    width: '100%',
+    height: 200,
+    alignItems: 'center',
+  },
+
+  // Styles for a separator element used to visually divide sections of the form
+  separatorWrapper: {
+    width: '100%',
+    height: 50,
+    padding: 10,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  // Styles for the separator line within the separator element
+  separator: {
+    width: '30%',
+    height: 1,
+    backgroundColor: COLORS.primary,
+  },
+
+  // Styles for text within the separator element
+  separatorText: {
+    color: COLORS.primary,
+    fontSize: 18,
+    paddingHorizontal: 10,
   },
 });

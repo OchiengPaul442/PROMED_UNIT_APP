@@ -12,6 +12,7 @@ import {RecButton, Checkbox} from '../../components';
 
 // constants
 import {COLORS} from '../../constants';
+import Styles from '../../constants/Styles';
 
 //layout
 import AuthScreen from '../../layout/AuthScreen';
@@ -21,6 +22,12 @@ const LoginScreen = ({navigation}) => {
   const [password, setPassword] = React.useState('');
   // handle username
   const [username, setUsername] = React.useState('');
+  // Remember me
+  const [agree, setAgree] = React.useState(false);
+
+  const toggleCheckbox = () => {
+    setAgree(!agree);
+  };
 
   // list of items in the form with their labels and placeholders for the input fields respectively using maps and their own keys
   const formItems = [
@@ -40,13 +47,13 @@ const LoginScreen = ({navigation}) => {
 
   return (
     <AuthScreen form_title="SIGN IN FORM">
-      <View style={styles.form}>
+      <View style={Styles.form}>
         {/* form items */}
         {formItems.map(item => (
-          <View key={item.id} style={styles.group}>
-            <Text style={styles.label}>{item.label}</Text>
+          <View key={item.id} style={Styles.group}>
+            <Text style={Styles.label}>{item.label}</Text>
             <TextInput
-              style={styles.input}
+              style={Styles.input}
               placeholder={item.placeholder}
               value={item.value}
               onChangeText={text => {
@@ -63,7 +70,11 @@ const LoginScreen = ({navigation}) => {
 
         {/* Remember me and forgot password */}
         <View style={styles.wrapper}>
-          <Checkbox text="Remember me" />
+          <Checkbox
+            text="Remember me"
+            setAgree={toggleCheckbox}
+            agree={agree}
+          />
           <View>
             <TouchableOpacity
               onPress={() => navigation.push('PasswordRecovery')}
@@ -74,7 +85,7 @@ const LoginScreen = ({navigation}) => {
         </View>
 
         {/* Buttons */}
-        <View style={styles.recButton}>
+        <View style={Styles.recButton}>
           <RecButton
             text="Login"
             bgColor={COLORS.secondary}
@@ -82,10 +93,10 @@ const LoginScreen = ({navigation}) => {
             onPress={() => navigation.navigate('Register')}
             w="100%"
           />
-          <View style={styles.separatorWrapper}>
-            <View style={styles.separator}></View>
-            <Text style={styles.separatorText}>OR</Text>
-            <View style={styles.separator}></View>
+          <View style={Styles.separatorWrapper}>
+            <View style={Styles.separator}></View>
+            <Text style={Styles.separatorText}>OR</Text>
+            <View style={Styles.separator}></View>
           </View>
           <RecButton
             text="Sign Up"
@@ -102,45 +113,6 @@ const LoginScreen = ({navigation}) => {
 
 // styles
 const styles = StyleSheet.create({
-  // Styles for the form section within the main container
-  form: {
-    width: '100%',
-    height: '100%',
-    position: 'relative',
-    paddingBottom: 10,
-    paddingTop: 12,
-  },
-
-  // Styles for a group of related form elements
-  group: {
-    width: '100%',
-    height: 50,
-    position: 'relative',
-    marginBottom: 30,
-  },
-
-  // Styles for a form input field
-  input: {
-    width: '100%',
-    height: '100%',
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.primary,
-    fontSize: 18,
-    color: COLORS.primary,
-    padding: 10,
-    marginTop: 10,
-  },
-
-  // Styles for a label associated with a form input field
-  label: {
-    position: 'absolute',
-    left: 0,
-    top: -10,
-    fontSize: 18,
-    color: COLORS.primary,
-    paddingHorizontal: 5,
-  },
-
   // Styles for a wrapper element containing multiple form elements
   wrapper: {
     width: '100%',
@@ -163,37 +135,6 @@ const styles = StyleSheet.create({
   fwdText: {
     color: COLORS.primary,
     fontSize: 18,
-  },
-
-  // Styles for a button or link to recover a forgotten password
-  recButton: {
-    width: '100%',
-    height: 200,
-    alignItems: 'center',
-  },
-
-  // Styles for a separator element used to visually divide sections of the form
-  separatorWrapper: {
-    width: '100%',
-    height: 50,
-    padding: 10,
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-
-  // Styles for the separator line within the separator element
-  separator: {
-    width: '30%',
-    height: 1,
-    backgroundColor: COLORS.primary,
-  },
-
-  // Styles for text within the separator element
-  separatorText: {
-    color: COLORS.primary,
-    fontSize: 18,
-    paddingHorizontal: 10,
   },
 });
 

@@ -5,6 +5,7 @@ import {FocusedStatusBar, CurvedButton} from '../../components';
 
 // Constants
 import {COLORS, SIZES, RightPam, LeftPam} from '../../constants';
+import Styles from '../../constants/Styles';
 
 const WelcomeScreen = ({navigation}) => {
   return (
@@ -62,6 +63,7 @@ const styles = StyleSheet.create({
     height: '100%',
     alignItems: 'center',
   },
+
   detail: {
     position: 'absolute',
     bottom: 80,
@@ -70,22 +72,25 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+
   detailHeading: {
-    fontSize: SIZES.extraExtraExtraLarge,
+    fontSize: SIZES.xxl,
     color: COLORS.white,
     fontWeight: 'bold',
   },
+
   detailText: {
     textAlign: 'center',
-    fontSize: SIZES.large,
+    fontSize: 15,
     color: COLORS.white,
-    fontWeight: '300',
     paddingTop: 10,
-    width: 240,
+    width: 230,
   },
+
   button: {
     marginTop: 40,
   },
+
   images: {
     position: 'absolute',
     top: 90,

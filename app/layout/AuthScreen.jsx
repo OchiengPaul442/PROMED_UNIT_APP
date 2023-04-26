@@ -97,6 +97,5 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 30,
     position: 'relative',
     paddingTop: 30,
-    paddingHorizontal: 10,
   },
 });

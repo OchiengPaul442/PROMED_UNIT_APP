@@ -10,7 +10,7 @@ import {
 } from '../../components';
 
 // constants
-import {COLORS, Logo} from '../../constants';
+import {COLORS, Logo, FONTS} from '../../constants';
 
 const AccessScreen = ({navigation}) => {
   return (
@@ -26,7 +26,10 @@ const AccessScreen = ({navigation}) => {
 
       {/* Buttons */}
       <View style={styles.buttonSection}>
-        <Text style={styles.buttonHead}>
+        <Text
+          style={{
+            ...styles.buttonHead,
+          }}>
           Please signin / Register to continue
         </Text>
         <View style={styles.buttons}>
@@ -62,6 +65,7 @@ const AccessScreen = ({navigation}) => {
 
 // styles
 const styles = StyleSheet.create({
+  // main container
   container: {
     position: 'relative',
     flex: 1,
@@ -70,18 +74,23 @@ const styles = StyleSheet.create({
     height: '100%',
     alignItems: 'center',
   },
+
+  // logo section
   Logo: {
     alignItems: 'center',
     justifyContent: 'center',
     position: 'absolute',
     top: 50,
   },
+
   logoText: {
     fontSize: 35,
     fontWeight: 'bold',
     color: COLORS.white,
     marginBottom: 20,
   },
+
+  // buttons section
   buttonSection: {
     position: 'absolute',
     bottom: 50,
@@ -89,6 +98,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+
   buttonHead: {
     fontSize: 24,
     width: 300,

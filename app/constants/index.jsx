@@ -35,3 +35,14 @@ export const SIZES = {
   xl: 24,
   xxl: 32,
 };
+
+// GLOBAL FONTS
+export const FONTS = {
+  Regular: 'RobotoSerif-Regular',
+  Bold: 'RobotoSerif-Bold',
+  Italic: 'RobotoSerif-Italic',
+  Medium: 'RobotoSerif-Medium',
+  Light: 'RobotoSerif-Light',
+  SemiBold: 'RobotoSerif-SemiBold',
+  ExtraBold: 'RobotoSerif-ExtraBold',
+};
