@@ -5,12 +5,15 @@ import {
   StyleSheet,
   TouchableOpacity,
   Image,
+  FlatList,
 } from 'react-native';
 import React from 'react';
+//General styles
+import Styles from '../../constants/Styles';
 
 // constants
 import {COLORS} from '../../constants';
-import {Menu} from '../../components';
+import {Menu, Card} from '../../components';
 
 // layout
 import Screen from '../../layout/Screen';
@@ -18,13 +21,10 @@ import Screen from '../../layout/Screen';
 // diagnosis tool
 import DiagnosisTools from '../../services/diagnosisTool/DiagnosisTools';
 
-// Card
-import Card from '../../components/Cards/Card';
-
 // modal
 import {BottomModal} from '../../components';
 
-const Therapy = () => {
+const Therapy = ({navigation}) => {
   // List of available therapist
   const therapist = [
     {
@@ -51,10 +51,17 @@ const Therapy = () => {
       title: 'Psychiatrist',
       image: require('../../assets/images/profilepic.jpg'),
     },
+    {
+      name: 'Dr. Richard Doe',
+      location: 'Lagos, Nigeria',
+      title: 'Psychiatrist',
+      image: require('../../assets/images/profilepic.jpg'),
+    },
   ];
 
   // Modal
   const [isModalVisible, setModalVisible] = React.useState(false);
+  const [selectedTherapist, setSelectedTherapist] = React.useState(null);
 
   const toggleModal = () => {
     setModalVisible(!isModalVisible);
@@ -62,104 +69,125 @@ const Therapy = () => {
 
   return (
     <Screen>
-      <View style={styles.Therapy_Screen}>
+      <View style={Styles.Container}>
         {/* Content */}
-        <View style={styles.Content}>
+        <View style={Styles.Content}>
           <ScrollView showsVerticalScrollIndicator={false}>
+            {/* Diagnosis Tools */}
             <View style={styles.Heading_container}>
-              <Text style={styles.Heading_title}>Self Diagnosis</Text>
-              {/* Diagnosis Tools */}
+              <Text style={Styles.heading}>Self Diagnosis</Text>
               <DiagnosisTools />
             </View>
-            <View style={styles.Therapist_Con}>
-              <Text style={styles.Heading_title}>Available Therapist</Text>
+
+            {/* Therapist list */}
+            <View style={styles.Therapist_Container}>
+              <Text style={{paddingHorizontal: 10, ...Styles.heading}}>
+                Available Therapist
+              </Text>
               <View style={styles.Therapist_list}>
-                {/* list of available therapist */}
-                {therapist.map((item, index) => (
-                  <Card key={index}>
-                    <View style={styles.Therapist_img_con}>
-                      <Image source={item.image} style={styles.Therapist_img} />
+                <FlatList
+                  style={{marginTop: 15}}
+                  scrollEnabled={false}
+                  data={therapist}
+                  keyExtractor={(item, index) => index.toString()}
+                  renderItem={({item, index}) => (
+                    <View style={{paddingHorizontal: 10}}>
+                      <Card
+                        Press={() =>
+                          navigation.push('Therapist', {
+                            name: item.name,
+                            location: item.location,
+                            title: item.title,
+                            image: item.image,
+                          })
+                        }
+                        bgColor={COLORS.lightGray}
+                        height={90}
+                        key={index}>
+                        <View
+                          style={{
+                            width: '20%',
+                            height: '100%',
+                            ...styles.image_container,
+                          }}>
+                          <Image
+                            source={item.image}
+                            style={styles.Therapist_img}
+                          />
+                        </View>
+                        <View style={styles.Therapist_information}>
+                          <View
+                            style={{
+                              position: 'relative',
+                              width: '100%',
+                              height: '80%',
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                            }}>
+                            <Text style={Styles.title}>{item.name}</Text>
+                            <Text style={Styles.text}>{item.location}</Text>
+                            <Text style={Styles.text}>{item.title}</Text>
+                          </View>
+                        </View>
+                        <TouchableOpacity
+                          onPress={() => {
+                            setSelectedTherapist(item);
+                            toggleModal();
+                          }}
+                          style={styles.Therapist_btn}>
+                          <Menu width={30} height={30} fill={COLORS.black} />
+                        </TouchableOpacity>
+                      </Card>
                     </View>
-                    <View style={styles.Therapist_info}>
-                      <View
-                        style={{
-                          position: 'relative',
-                          width: '100%',
-                          height: '80%',
-                          display: 'flex',
-                          justifyContent: 'space-between',
-                        }}>
-                        <Text style={styles.Therapist_name}>{item.name}</Text>
-                        <Text style={styles.Therapist_location}>
-                          {item.location}
-                        </Text>
-                        <Text style={styles.Therapist_title}>{item.title}</Text>
-                      </View>
-                      <TouchableOpacity
-                        onPress={toggleModal}
-                        style={styles.Therapist_btn}>
-                        <Menu width={30} height={30} fill={COLORS.black} />
-                      </TouchableOpacity>
-                    </View>
-                  </Card>
-                ))}
+                  )}
+                />
               </View>
             </View>
           </ScrollView>
         </View>
       </View>
+
       {/* Modal */}
-      <BottomModal Visibility={isModalVisible} hide={toggleModal}>
-        <Text
-          style={{
-            fontSize: 20,
-            color: COLORS.primary,
-          }}>
-          Modal
-        </Text>
-      </BottomModal>
+      {selectedTherapist ? (
+        <BottomModal Visibility={isModalVisible} hide={toggleModal}>
+          <Text style={{textAlign: 'left', width: '100%', ...Styles.heading2}}>
+            {selectedTherapist.name}
+          </Text>
+          <TouchableOpacity
+            onPress={() =>
+              navigation.push('Therapist', {
+                name: selectedTherapist.name,
+                location: selectedTherapist.location,
+                title: selectedTherapist.title,
+                image: selectedTherapist.image,
+              })
+            }
+            style={{paddingVertical: 10}}>
+            <Text style={Styles.title}>Schedule a Session</Text>
+          </TouchableOpacity>
+          <View style={styles.separator}></View>
+          <TouchableOpacity onPress={toggleModal} style={{paddingVertical: 10}}>
+            <Text style={{color: COLORS.red}}>Close</Text>
+          </TouchableOpacity>
+        </BottomModal>
+      ) : null}
     </Screen>
   );
 };
 
 // Styles
 const styles = StyleSheet.create({
-  // This is the main container that holds all the components
-  Therapy_Screen: {
-    width: '100%',
-    height: '100%',
-    position: 'relative',
-  },
-
-  // This is the Content that holds the main content
-  Content: {
-    position: 'relative',
-    width: '100%',
-    height: '100%',
-    paddingTop: 10,
-    paddingBottom: 30,
-    paddingHorizontal: 10,
-    backgroundColor: COLORS.white,
-    borderTopLeftRadius: 30,
-    borderTopRightRadius: 30,
-  },
-
   // This is the body header that contains the title
   Heading_container: {
     width: '100%',
     height: 'auto',
     display: 'flex',
     marginBottom: 20,
-  },
-
-  // This is the body header title
-  Heading_title: {
-    fontSize: 15,
-    color: COLORS.primary,
+    paddingHorizontal: 10,
   },
 
   // available therapist container
-  Therapist_Con: {
+  Therapist_Container: {
     position: 'relative',
     width: '100%',
     height: 'auto',
@@ -170,15 +198,12 @@ const styles = StyleSheet.create({
     position: 'relative',
     width: '100%',
     height: 'auto',
-    marginTop: 10,
-    paddingBottom: 110,
+    paddingBottom: 100,
   },
 
   // available therapist image container
-  Therapist_img_con: {
+  image_container: {
     position: 'relative',
-    width: 80,
-    height: 80,
     borderRadius: 40,
     overflow: 'hidden',
   },
@@ -192,9 +217,8 @@ const styles = StyleSheet.create({
   },
 
   // available therapist info
-  Therapist_info: {
+  Therapist_information: {
     position: 'relative',
-    left: -40,
     width: '60%',
     height: 'auto',
     display: 'flex',
@@ -203,49 +227,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
 
-  // available therapist name
-  Therapist_name: {
-    fontSize: 15,
-    color: COLORS.primary,
-  },
-
-  // available therapist title
-  Therapist_title: {
-    fontSize: 12,
-    color: COLORS.black,
-  },
-
-  // available therapist location
-  Therapist_location: {
-    fontSize: 12,
-    color: COLORS.black,
-  },
-
-  // available therapist rating
-  Therapist_rating: {
-    position: 'relative',
-    width: 30,
-    height: 30,
-    marginTop: 4,
-    borderRadius: 15,
-    backgroundColor: COLORS.primary,
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-
-  // available therapist rating text
-  Therapist_rating_text: {
-    fontSize: 12,
-    color: COLORS.white,
-  },
-
   // available therapist button
   Therapist_btn: {
     position: 'relative',
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
+  },
+
+  // separator
+  separator: {
+    width: '100%',
+    height: 1,
+    backgroundColor: COLORS.black,
   },
 });
 

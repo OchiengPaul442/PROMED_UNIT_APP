@@ -1,36 +1,37 @@
 import {
-  View,
-  Text,
-  ScrollView,
   StyleSheet,
+  Text,
+  View,
   SafeAreaView,
   TouchableOpacity,
+  ScrollView,
   TextInput,
   Keyboard,
 } from 'react-native';
 import React from 'react';
+import {COLORS} from '../../constants';
 import {FocusedStatusBar, BackBtn, SendIcon} from '../../components';
 import {useFocusEffect} from '@react-navigation/native';
 import Styles from '../../constants/Styles';
 
-// constants
-import {COLORS} from '../../constants';
-
-const Bot = ({navigation}) => {
+const Groupchat = ({route, navigation}) => {
   // text input
   const [text, onChangeText] = React.useState('');
 
-  // Define a state variable to store the keyboard height
-  const [keyboardHeight, setKeyboardHeight] = React.useState(0);
+  // get params
+  const {groupname} = route.params;
+
+  // Height of the keyboard
+  const [keyboardHeight2, setKeyboardHeight2] = React.useState(0);
 
   // Keyboard event
   React.useEffect(() => {
     Keyboard.addListener('keyboardDidShow', e => {
-      setKeyboardHeight(e.endCoordinates.height);
+      setKeyboardHeight2(e.endCoordinates.height);
     });
 
     Keyboard.addListener('keyboardDidHide', () => {
-      setKeyboardHeight(0);
+      setKeyboardHeight2(0);
     });
   }, []);
 
@@ -38,7 +39,7 @@ const Bot = ({navigation}) => {
   useFocusEffect(
     React.useCallback(() => {
       // Hide bottom navigator when this screen is focused
-      navigation.setOptions({
+      navigation.getParent()?.setOptions({
         tabBarStyle: {
           display: 'none',
         },
@@ -46,8 +47,8 @@ const Bot = ({navigation}) => {
 
       return () => {
         // Show bottom navigator when this screen is unfocused
-        navigation.setOptions({
-          tabBarStyle: undefined,
+        navigation.getParent()?.setOptions({
+          tabBarStyle: styles.menuBar,
         });
       };
     }, [navigation]),
@@ -57,7 +58,8 @@ const Bot = ({navigation}) => {
     <SafeAreaView>
       {/* StatusBar */}
       <FocusedStatusBar backgroundColor={COLORS.primary} />
-      <View style={styles.Bot_Screen}>
+
+      <View style={styles.groupchat_screen}>
         {/* Head */}
         <View
           style={{
@@ -69,7 +71,9 @@ const Bot = ({navigation}) => {
             justifyContent: 'space-between',
             alignItems: 'flex-start',
           }}>
-          <TouchableOpacity onPress={() => navigation.goBack()}>
+          <TouchableOpacity
+            style={(padding = 10)}
+            onPress={() => navigation.push('Groups')}>
             <BackBtn width={30} height={30} fill={COLORS.secondary} />
           </TouchableOpacity>
           <View>
@@ -79,7 +83,7 @@ const Bot = ({navigation}) => {
                 fontWeight: 'bold',
                 color: COLORS.white,
               }}>
-              ChatBot
+              {groupname}
             </Text>
           </View>
         </View>
@@ -93,7 +97,10 @@ const Bot = ({navigation}) => {
             </ScrollView>
           </View>
           <View
-            style={{bottom: keyboardHeight ? 18 : 2, ...Styles.inputfield_con}}>
+            style={{
+              bottom: keyboardHeight2 ? 18 : 2,
+              ...Styles.inputfield_con,
+            }}>
             <TextInput
               onChangeText={onChangeText}
               value={text}
@@ -110,10 +117,36 @@ const Bot = ({navigation}) => {
   );
 };
 
-// Styles
+export default Groupchat;
+
 const styles = StyleSheet.create({
+  menuBar: {
+    position: 'absolute',
+    bottom: 3,
+    marginHorizontal: 3,
+    backgroundColor: COLORS.primary,
+    borderRadius: 20,
+    shadowColor: COLORS.black,
+    shadowOffset: {
+      width: 0,
+      height: 3,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: {width: 0, height: 10},
+        shadowOpacity: 0.5,
+        shadowRadius: 10,
+      },
+      android: {
+        elevation: 20,
+      },
+    }),
+  },
   // This is the main container that holds all the components
-  Bot_Screen: {
+  groupchat_screen: {
     width: '100%',
     height: '100%',
     display: 'flex',
@@ -137,20 +170,4 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 30,
     borderTopRightRadius: 30,
   },
-
-  // This is the body header that contains the title
-  Heading_container: {
-    width: '100%',
-    height: 'auto',
-    display: 'flex',
-    marginBottom: 30,
-  },
-
-  // This is the body header title
-  Heading_title: {
-    fontSize: 15,
-    color: COLORS.primary,
-  },
 });
-
-export default Bot;

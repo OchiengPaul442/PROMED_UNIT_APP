@@ -79,7 +79,7 @@ const LoginScreen = ({navigation}) => {
             text="Login"
             bgColor={COLORS.secondary}
             textColor={COLORS.primary}
-            onPress={() => navigation.navigate('Home_root')}
+            onPress={() => navigation.navigate('Register')}
             w="100%"
           />
           <View style={styles.separatorWrapper}>

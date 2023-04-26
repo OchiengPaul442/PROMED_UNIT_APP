@@ -1,8 +1,19 @@
-import {View, Text, ScrollView, StyleSheet} from 'react-native';
+import {
+  View,
+  Text,
+  ScrollView,
+  StyleSheet,
+  FlatList,
+  TouchableOpacity,
+} from 'react-native';
 import React from 'react';
 
+//General styles
+import Styles from '../../constants/Styles';
+
 // constants
-import {COLORS} from '../../constants';
+import {COLORS, SIZES} from '../../constants';
+import {Card, CenterHalf} from '../../components';
 
 // screen layout
 import Screen from '../../layout/Screen';
@@ -10,10 +21,15 @@ import Screen from '../../layout/Screen';
 // services
 import MoodTracker from '../../services/moodTracker/MoodTracker';
 
-// Card
-import Card from '../../components/Cards/Card';
-
 const HomeScreen = () => {
+  // model
+  const [open, setOpen] = React.useState(false);
+  const [selectedTip, setSelectedTip] = React.useState(null);
+
+  const toggleModal = () => {
+    setOpen(!open);
+  };
+
   // Get users info
   const [user, setUser] = React.useState({
     name: 'Kirabo',
@@ -62,34 +78,34 @@ const HomeScreen = () => {
   const tipcard = [
     {
       id: 1,
-      title: 'Be Kind to your self',
+      title: 'Be Kind to your self1',
       text: 'Lorem ipsum dolor sit amet, consectetur adipiscing eli Lorem ipsum dolor sit amet, consectetur adipiscing eli',
     },
     {
       id: 2,
-      title: 'Be Kind to your self',
+      title: 'Be Kind to your sel2',
       text: 'Lorem ipsum dolor sit amet, consectetur adipiscing eli Lorem ipsum dolor sit amet, consectetur adipiscing eli',
     },
     {
       id: 3,
-      title: 'Be Kind to your self',
+      title: 'Be Kind to your sel3',
       text: 'Lorem ipsum dolor sit amet, consectetur adipiscing eli Lorem ipsum dolor sit amet, consectetur adipiscing eli',
     },
     {
       id: 4,
-      title: 'Be Kind to your self',
+      title: 'Be Kind to your sel4',
       text: 'Lorem ipsum dolor sit amet, consectetur adipiscing eli Lorem ipsum dolor sit amet, consectetur adipiscing eli',
     },
     {
       id: 5,
-      title: 'Be Kind to your self',
+      title: 'Be Kind to your sel5',
       text: 'Lorem ipsum dolor sit amet, consectetur adipiscing eli Lorem ipsum dolor sit amet, consectetur adipiscing eli',
     },
   ];
 
   return (
     <Screen>
-      <View style={styles.Home_screen_con}>
+      <View style={Styles.Container}>
         {/* intro text */}
         <View style={styles.greeting_container}>
           <Text style={styles.greeting}>{greeting}</Text>
@@ -100,79 +116,95 @@ const HomeScreen = () => {
         </View>
 
         {/* Body */}
-        <View style={styles.Content}>
+        <View style={Styles.Content}>
           <ScrollView showsVerticalScrollIndicator={false}>
             <View style={styles.Heading_container}>
-              <Text style={styles.Heading_title}>How do you feel today?</Text>
+              <Text style={Styles.heading}>How do you feel today?</Text>
+              <Text style={Styles.text2}>
+                Track Your Mood to get customized daily health tips
+              </Text>
               {/* mood tracker */}
               <MoodTracker />
             </View>
+
             {/* daily mental health Tips */}
             <View style={styles.Health_tips}>
-              <Text style={styles.Heading_title}>Daily Mental Health Tips</Text>
-              <View style={styles.Tips}>
-                {tipcard.map(tip => (
-                  <Card key={tip.id}>
-                    <View
-                      style={{
-                        backgroundColor: randomColor(),
-                        width: 50,
-                        height: 50,
-                        borderRadius: 50,
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                      }}>
-                      <Text style={styles.Tip_Number}>{tip.id}</Text>
-                    </View>
-                    <View style={styles.Tip_Container}>
-                      <Text style={styles.Tip_Title}>{tip.title}</Text>
-                      <Text style={styles.Tip_Text}>{tip.text}</Text>
-                    </View>
-                  </Card>
-                ))}
-              </View>
+              <Text style={{paddingHorizontal: 10, ...Styles.heading}}>
+                Daily Mental Health Tips
+              </Text>
+              <FlatList
+                style={{marginTop: 15}}
+                scrollEnabled={false}
+                data={tipcard}
+                keyExtractor={(item, index) => index.toString()}
+                renderItem={({item, index}) => (
+                  <View key={item.id} style={{paddingHorizontal: 10}}>
+                    <Card
+                      Press={() => {
+                        setSelectedTip(item);
+                        toggleModal();
+                      }}
+                      bgColor={COLORS.lightGray}
+                      height={90}>
+                      <View
+                        style={{
+                          backgroundColor: randomColor(),
+                          width: 50,
+                          height: 50,
+                          borderRadius: 50,
+                          justifyContent: 'center',
+                          alignItems: 'center',
+                        }}>
+                        <Text style={styles.Tip_Number}>{item.id}</Text>
+                      </View>
+                      <View style={styles.Tip_Container}>
+                        <Text style={Styles.title}>
+                          {item.title.substring(0, 30)}
+                        </Text>
+                        <Text style={Styles.text}>
+                          {item.text.substring(0, 85) + '...'}
+                        </Text>
+                      </View>
+                    </Card>
+                  </View>
+                )}
+              />
             </View>
           </ScrollView>
         </View>
       </View>
+
+      {/* model */}
+      {selectedTip ? (
+        <CenterHalf Visibility={open} hide={toggleModal}>
+          <Text style={Styles.title}>{selectedTip.title}</Text>
+          <Text style={{paddingVertical: 10, ...Styles.text}}>
+            {selectedTip.text}
+          </Text>
+          <TouchableOpacity onPress={toggleModal}>
+            <Text
+              style={{
+                paddingVertical: 10,
+                color: COLORS.red,
+              }}>
+              Close
+            </Text>
+          </TouchableOpacity>
+        </CenterHalf>
+      ) : null}
     </Screen>
   );
 };
 
 // Styles
 const styles = StyleSheet.create({
-  // This is the main container that holds all the components
-  Home_screen_con: {
-    width: '100%',
-    height: '100%',
-    position: 'relative',
-  },
-
-  // This is the Container that holds the main content
-  Content: {
-    position: 'relative',
-    width: '100%',
-    height: '100%',
-    paddingTop: 10,
-    paddingBottom: 30,
-    paddingHorizontal: 10,
-    backgroundColor: COLORS.white,
-    borderTopLeftRadius: 30,
-    borderTopRightRadius: 30,
-  },
-
   // This is the body header that contains the title
   Heading_container: {
     width: '100%',
     height: 'auto',
     display: 'flex',
-    marginBottom: 30,
-  },
-
-  // This is the body header title
-  Heading_title: {
-    fontSize: 15,
-    color: COLORS.primary,
+    paddingHorizontal: 10,
+    marginBottom: 15,
   },
 
   // This is the body content that contains the feelings and Tips sections
@@ -182,41 +214,20 @@ const styles = StyleSheet.create({
     display: 'flex',
     flexDirection: 'column',
     justifyContent: 'space-between',
-  },
-
-  // This is the Tips section that contains the cards for different Tips
-  Tips: {
-    width: '100%',
-    height: 'auto',
-    display: 'flex',
-    flexDirection: 'column',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingBottom: 200,
-    zIndex: 1,
-  },
-
-  Tip_Title: {
-    fontSize: 15,
-    color: COLORS.primary,
-  },
-
-  Tip_Text: {
-    fontSize: 12,
-    color: COLORS.black,
+    paddingBottom: 190,
   },
 
   // This is the text for the tip number
   Tip_Number: {
     color: COLORS.white,
-    fontSize: 20,
+    fontSize: SIZES.large,
     fontWeight: 'bold',
   },
 
   // This is the container for the tip content
   Tip_Container: {
     padding: 10,
-    width: '90%',
+    flex: 1,
     position: 'relative', // adding this property to make it relative to its parent
   },
 
@@ -230,19 +241,19 @@ const styles = StyleSheet.create({
 
   // This is the greeting message
   greeting: {
-    fontSize: 20,
+    fontSize: SIZES.large,
     color: COLORS.white,
   },
 
   // This is the user's name
   username: {
-    fontSize: 18,
+    fontSize: SIZES.medium,
     color: COLORS.white,
   },
 
   // This is the session information
   sessions: {
-    fontSize: 12,
+    fontSize: SIZES.small,
     color: COLORS.secondary,
   },
 });

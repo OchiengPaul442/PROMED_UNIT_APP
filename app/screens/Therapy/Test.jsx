@@ -7,16 +7,15 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import React from 'react';
+//General styles
+import Styles from '../../constants/Styles';
 
 // screen
 import Screen from '../../layout/Screen';
 
 // constants
-import {COLORS} from '../../constants';
+import {COLORS, SIZES} from '../../constants';
 import {BackBtn, CurvedButton} from '../../components';
-
-// navigation
-import {useNavigation} from '@react-navigation/native';
 
 const Test = ({route, navigation}) => {
   // handle password
@@ -25,7 +24,6 @@ const Test = ({route, navigation}) => {
   const [input3, setInput3] = React.useState('');
   const [input4, setInput4] = React.useState('');
   const [input5, setInput5] = React.useState('');
-  const [input6, setInput6] = React.useState('');
 
   // list of items in the form with their labels and placeholders for the input fields respectively using maps and their own keys
   const formItems = [
@@ -74,55 +72,47 @@ const Test = ({route, navigation}) => {
 
   return (
     <Screen>
-      <View style={styles.Test_Screen}>
+      <View style={Styles.Container}>
         {/* intro text */}
         <View style={styles.section_title}>
-          <Text style={styles.title_text}>{title}</Text>
-          <Text style={styles.title_text}>Test Questions</Text>
+          <Text style={Styles.Screen_headings}>{title}</Text>
+          <Text style={Styles.Screen_headings}>Test Questions</Text>
         </View>
 
-        {/* Body */}
-        <View style={styles.Content}>
+        {/* Content section */}
+        <View style={Styles.Content}>
           <ScrollView showsVerticalScrollIndicator={false}>
             <View
               style={{
                 width: '100%',
-                display: 'flex',
-                justifyContent: 'space-between',
-                flexDirection: 'row-reverse',
-                paddingVertical: 10,
+                paddingTop: 10,
+                paddingHorizontal: 10,
               }}>
               <Text
-                style={{
-                  color: COLORS.primary,
-                  fontSize: 15,
-                }}>
+                style={{width: '100%', textAlign: 'center', ...Styles.heading}}>
                 Questions
               </Text>
+            </View>
+            <View
+              style={{
+                paddingVertical: 15,
+                paddingLeft: 15,
+              }}>
               <TouchableOpacity onPress={() => navigation.goBack()}>
-                <BackBtn width={30} height={30} fill={COLORS.yellow} />
+                <BackBtn width={30} height={30} fill={COLORS.primary} />
               </TouchableOpacity>
             </View>
 
             {/* The Question section */}
-            <View style={styles.questions}>
+            <View style={styles.diagnosis_questions}>
               <View style={styles.questionForm}>
                 {/* form items */}
                 {formItems.map(item => (
-                  <View key={item.id} style={styles.group}>
-                    <Text style={styles.label}>{item.label}</Text>
+                  <View key={item.id} style={Styles.Qgroup}>
+                    <Text style={Styles.Qlabel}>{item.label}</Text>
                     <TextInput
-                      style={styles.input}
+                      style={Styles.Qinput}
                       placeholder={item.placeholder}
-                      value={item.value}
-                      // onChangeText={text => {
-                      //   if (item.id === 1) {
-                      //     setUsername(text);
-                      //   } else if (item.id === 2) {
-                      //     setPassword(text);
-                      //   }
-                      // }}
-                      // secureTextEntry={item.id === 2 ? true : false}
                     />
                   </View>
                 ))}
@@ -130,22 +120,10 @@ const Test = ({route, navigation}) => {
                   text="Submit"
                   textColor={COLORS.primary}
                   style={{
+                    marginTop: 20,
                     backgroundColor: COLORS.secondary,
                     width: '100%',
                     height: 50,
-                    marginTop: 20,
-                    borderRadius: 50,
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    shadowColor: '#000',
-                    shadowOffset: {
-                      width: 0,
-                      height: 5,
-                    },
-                    shadowOpacity: 0.34,
-                    shadowRadius: 6.27,
-                    elevation: 5,
                   }}
                   onPress={() =>
                     navigation.push('TestResults', {id: id, title: title})
@@ -163,30 +141,6 @@ const Test = ({route, navigation}) => {
 export default Test;
 
 const styles = StyleSheet.create({
-  // This is the main container that holds all the components
-  Test_Screen: {
-    width: '100%',
-    height: '100%',
-    position: 'relative',
-  },
-
-  text: {
-    color: COLORS.primary,
-  },
-
-  // This is the Container that holds the main content
-  Content: {
-    position: 'relative',
-    width: '100%',
-    height: '100%',
-    paddingTop: 10,
-    paddingBottom: 30,
-    paddingHorizontal: 10,
-    backgroundColor: COLORS.white,
-    borderTopLeftRadius: 30,
-    borderTopRightRadius: 30,
-  },
-
   // This is the box that contains the title
   section_title: {
     position: 'relative',
@@ -199,46 +153,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
 
-  title_text: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: COLORS.white,
-  },
-
   // question form
-  questions: {
+  diagnosis_questions: {
     width: '100%',
-    paddingTop: 25,
+    paddingTop: 40,
     paddingBottom: 200,
-  },
-
-  // Styles for a group of related form elements
-  group: {
-    width: '100%',
-    height: 50,
-    position: 'relative',
-    marginBottom: 40,
-  },
-
-  // Styles for a form input field
-  input: {
-    width: '100%',
-    height: '100%',
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.primary,
-    fontSize: 18,
-    color: COLORS.primary,
-    padding: 10,
-    marginTop: 10,
-  },
-
-  // Styles for a label associated with a form input field
-  label: {
-    position: 'absolute',
-    left: 0,
-    top: -24,
-    fontSize: 18,
-    color: COLORS.primary,
-    paddingHorizontal: 5,
+    paddingHorizontal: 10,
   },
 });

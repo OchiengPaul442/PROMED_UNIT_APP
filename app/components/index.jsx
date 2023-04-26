@@ -1,10 +1,18 @@
-import Header from './Header/Header';
-import FocusedStatusBar from './FocusedStatusBar/FocusedStatusBar';
+import FocusedStatusBar from './focusedStatusBar/FocusedStatusBar';
 import {BottomModal, CenterHalf} from './Modals/Modals';
 import Checkbox from './Checkbox/Checkbox';
 
+// Header
+export {default as Header} from './header/Header';
+
 // Buttons
 export {RecButton, BackButton, CurvedButton} from './Buttons/Button';
+
+// cards
+export {default as Card} from './Cards/Card';
+
+// date & time picker
+export {Datepicker, Timepicker} from './date&timepicker/Date_time';
 
 // animations
 export {
@@ -29,6 +37,14 @@ export {
   SigninIcon,
   GuestIcon,
   RegisterIcon,
+  MessageIcon,
+  CallIcon,
+  DateIcon,
+  ConfirmIcon,
+  EditIcon,
+  SendIcon,
+  ProfileIcon,
+  LogoutIcon,
 } from './icons/Icons';
 
-export {CenterHalf, BottomModal, Header, FocusedStatusBar, Checkbox};
+export {CenterHalf, BottomModal, FocusedStatusBar, Checkbox};

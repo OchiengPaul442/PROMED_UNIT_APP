@@ -1,11 +1,15 @@
 import {StyleSheet, Text, View, Image, TouchableOpacity} from 'react-native';
-import {COLORS, Profile} from '../../constants';
+import {COLORS, ProfileImage} from '../../constants';
 import React from 'react';
+import {useNavigation} from '@react-navigation/native';
 
 // icons
-import {Bell} from '../../components';
+import {Bell} from '../icons/Icons';
 
 const Header = () => {
+  // navigation
+  const navigation = useNavigation();
+
   // Get users info
   const [user, setUser] = React.useState({
     date: '11 Feb 2023',
@@ -15,24 +19,26 @@ const Header = () => {
     <View style={styles.Header}>
       <View style={styles.HeadBar}>
         {/* Profile image */}
-        <View style={styles.profileImage}>
+        <TouchableOpacity
+          onPress={() => navigation.toggleDrawer()}
+          style={styles.profileImage}>
           <Image
             style={{
               width: 48,
               height: 48,
               borderRadius: 50,
             }}
-            source={Profile}
+            source={ProfileImage}
           />
-        </View>
+        </TouchableOpacity>
         {/* Date section */}
         <View style={styles.date}>
           <Text style={styles.dateText}>{user.date}</Text>
         </View>
-        <TouchableOpacity style={styles.iconCon}>
-          <View>
-            <Bell width={30} height={30} fill={COLORS.white} />
-          </View>
+        <TouchableOpacity
+          onPress={() => navigation.navigate('Notification')}
+          style={styles.iconCon}>
+          <Bell width={30} height={30} fill={COLORS.white} />
         </TouchableOpacity>
       </View>
     </View>

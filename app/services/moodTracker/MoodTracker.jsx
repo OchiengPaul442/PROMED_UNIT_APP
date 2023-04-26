@@ -8,6 +8,7 @@ import {
   HappyAnimation,
 } from '../../components';
 import React from 'react';
+import Styles from '../../constants/Styles';
 
 const MoodTracker = () => {
   // Get the user's current mood
@@ -21,7 +22,7 @@ const MoodTracker = () => {
           onPress={() => setMood('Angry')}>
           <BadAnimation />
         </TouchableOpacity>
-        <Text>Angry</Text>
+        <Text style={Styles.text}>Angry</Text>
       </View>
       <View style={styles.feelingCon}>
         <TouchableOpacity
@@ -29,7 +30,7 @@ const MoodTracker = () => {
           onPress={() => setMood('Sad')}>
           <UnHappyAnimation />
         </TouchableOpacity>
-        <Text>Sad</Text>
+        <Text style={Styles.text}>Sad</Text>
       </View>
       <View style={styles.feelingCon}>
         <TouchableOpacity
@@ -37,7 +38,7 @@ const MoodTracker = () => {
           onPress={() => setMood('Well')}>
           <WellAnimation />
         </TouchableOpacity>
-        <Text>Well</Text>
+        <Text style={Styles.text}>Well</Text>
       </View>
       <View style={styles.feelingCon}>
         <TouchableOpacity
@@ -45,7 +46,7 @@ const MoodTracker = () => {
           onPress={() => setMood('Happy')}>
           <HappyAnimation />
         </TouchableOpacity>
-        <Text>Happy</Text>
+        <Text style={Styles.text}>Happy</Text>
       </View>
     </View>
   );

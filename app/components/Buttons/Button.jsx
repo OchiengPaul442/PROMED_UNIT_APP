@@ -6,22 +6,34 @@ import {Back} from '../../constants';
 
 export const CurvedButton = props => {
   return (
-    <Pressable
+    <TouchableOpacity
       // disabled={props.disabled}
       style={{
+        borderRadius: 50,
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        shadowColor: '#000',
+        shadowOffset: {
+          width: 0,
+          height: 5,
+        },
+        shadowOpacity: 0.34,
+        shadowRadius: 6.27,
+        elevation: 5,
         ...props.style,
       }}
       onPress={props.onPress}>
       <Text style={{color: props.textColor, fontSize: 18, fontWeight: 'bold'}}>
         {props.text}
       </Text>
-    </Pressable>
+    </TouchableOpacity>
   );
 };
 
 export const RecButton = props => {
   return (
-    <Pressable
+    <TouchableOpacity
       style={{
         position: 'relative',
         backgroundColor: props.bgColor,
@@ -52,7 +64,7 @@ export const RecButton = props => {
       <Text style={{color: props.textColor, fontSize: 18, fontWeight: 'bold'}}>
         {props.text}
       </Text>
-    </Pressable>
+    </TouchableOpacity>
   );
 };
 

@@ -51,7 +51,7 @@ const AccessScreen = ({navigation}) => {
             bgColor={COLORS.white}
             textColor={COLORS.primary}
             w={300}
-            onPress={() => navigation.navigate('Home_root')}
+            onPress={() => navigation.navigate('App')}
             icon={<GuestIcon width={20} height={20} />}
           />
         </View>

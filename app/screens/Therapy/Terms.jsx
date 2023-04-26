@@ -4,15 +4,16 @@ import {
   View,
   ScrollView,
   TouchableOpacity,
-  Pressable,
 } from 'react-native';
 import React from 'react';
+//General styles
+import Styles from '../../constants/Styles';
 
 // screen
 import Screen from '../../layout/Screen';
 
 // constants
-import {COLORS} from '../../constants';
+import {COLORS, SIZES} from '../../constants';
 // icons
 import {BackBtn} from '../../components';
 
@@ -23,65 +24,68 @@ const Terms = ({route, navigation}) => {
   // get the params
   const {id, title} = route.params;
 
-  // disable button
-  const [disabled, setDisabled] = React.useState(true);
+  // show or hide button
+  const [showBtn, setShowBtn] = React.useState(false);
 
   return (
     <Screen>
-      <View style={styles.Terms_Screen}>
+      <View style={Styles.Container}>
         {/* intro text */}
         <View style={styles.section_title}>
-          <Text style={styles.title_text}>{title}</Text>
-          <Text style={styles.title_text}>Test</Text>
+          <Text style={Styles.Screen_headings}>{title}</Text>
+          <Text style={Styles.Screen_headings}>Test</Text>
         </View>
 
-        {/* Body */}
-        <View style={styles.Content}>
+        {/* Content section */}
+        <View style={Styles.Content}>
           <ScrollView showsVerticalScrollIndicator={false}>
             <View
               style={{
                 width: '100%',
-                display: 'flex',
-                justifyContent: 'space-between',
-                flexDirection: 'row-reverse',
                 paddingVertical: 10,
+                paddingHorizontal: 10,
               }}>
               <Text
                 style={{
-                  color: COLORS.primary,
-                  fontSize: 15,
+                  width: '100%',
+                  textAlign: 'center',
+                  ...Styles.heading,
                 }}>
                 Pre-condtion terms
               </Text>
+            </View>
+            <View
+              style={{
+                paddingVertical: 15,
+                paddingLeft: 15,
+              }}>
               <TouchableOpacity onPress={() => navigation.goBack()}>
-                <BackBtn width={30} height={30} fill={COLORS.yellow} />
+                <BackBtn width={30} height={30} fill={COLORS.primary} />
               </TouchableOpacity>
             </View>
 
             {/* The terms and conditons */}
-            <View style={{paddingBottom: 100}}>
+            <View style={{paddingBottom: 120, paddingHorizontal: 10}}>
               <View style={{paddingHorizontal: 10}}>
                 <Text style={styles.terms_title}>
-                  1. Acknowledgment of Limitations
+                  Acknowledgment of Limitations
                 </Text>
                 <Text style={styles.terms_text}>
                   The user acknowledges that the self-diagnosis test is not a
                   substitute for professional medical advice and should not be
                   relied upon as such.
                 </Text>
-                <Text style={styles.terms_title}>2. Confidentiality</Text>
+                <Text style={styles.terms_title}>Confidentiality</Text>
                 <Text style={styles.terms_text}>
                   The app will keep all user information confidential and will
                   not share it with any third party unless required by law.
                 </Text>
-                <Text style={styles.terms_title}>
-                  3. Accuracy of Information
-                </Text>
+                <Text style={styles.terms_title}>Accuracy of Information</Text>
                 <Text style={styles.terms_text}>
                   The user promises to provide accurate information to the best
                   of their knowledge.
                 </Text>
-                <Text style={styles.terms_title}>4. No Liability</Text>
+                <Text style={styles.terms_title}>No Liability</Text>
                 <Text style={styles.terms_text}>
                   The app, its creators, and its affiliates will not be liable
                   for any damages resulting from the use of the self-diagnosis
@@ -89,7 +93,11 @@ const Terms = ({route, navigation}) => {
                 </Text>
               </View>
               {/* Checkbox */}
-              <Checkbox text="By checking this, you agree to all the above terms and conditions" />
+              <Checkbox
+                agree={showBtn}
+                setAgree={() => setShowBtn(!showBtn)}
+                text="By checking this, you agree to all the above terms and conditions"
+              />
 
               {/* Button */}
               <View
@@ -100,31 +108,23 @@ const Terms = ({route, navigation}) => {
                   alignItems: 'center',
                   paddingBottom: 100,
                 }}>
-                <CurvedButton
-                  text="Proceed with the test"
-                  textColor={COLORS.primary}
-                  style={{
-                    backgroundColor: COLORS.secondary,
-                    width: 200,
-                    height: 50,
-                    marginTop: 20,
-                    borderRadius: 50,
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    shadowColor: '#000',
-                    shadowOffset: {
-                      width: 0,
-                      height: 5,
-                    },
-                    shadowOpacity: 0.34,
-                    shadowRadius: 6.27,
-                    elevation: 5,
-                  }}
-                  onPress={() =>
-                    navigation.push('Test', {id: id, title: title})
-                  }
-                />
+                {showBtn ? (
+                  <CurvedButton
+                    text="Proceed with the test"
+                    textColor={COLORS.primary}
+                    style={{
+                      backgroundColor: COLORS.secondary,
+                      width: 200,
+                      height: 50,
+                      marginTop: 20,
+                    }}
+                    onPress={() =>
+                      navigation.push('Test', {id: id, title: title})
+                    }
+                  />
+                ) : (
+                  ''
+                )}
               </View>
             </View>
           </ScrollView>
@@ -137,13 +137,6 @@ const Terms = ({route, navigation}) => {
 export default Terms;
 
 const styles = StyleSheet.create({
-  // This is the main container that holds all the components
-  Terms_Screen: {
-    width: '100%',
-    height: '100%',
-    position: 'relative',
-  },
-
   // This is the box that contains the title
   section_title: {
     position: 'relative',
@@ -156,39 +149,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
 
-  title_text: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: COLORS.white,
-  },
-
   terms_title: {
-    fontSize: 18,
-    fontWeight: 'bold',
+    fontSize: SIZES.medium,
     color: COLORS.black,
-    marginTop: 10,
-    marginBottom: 8,
-  },
-
-  terms_text: {
-    fontSize: 15,
-    position: 'relative',
-    display: 'flex',
-    flexWrap: 'wrap',
-    color: COLORS.darkGray,
     marginBottom: 10,
   },
 
-  // This is the Container that holds the main content
-  Content: {
-    position: 'relative',
-    width: '100%',
-    height: '100%',
-    paddingTop: 10,
-    paddingBottom: 30,
-    paddingHorizontal: 10,
-    backgroundColor: COLORS.white,
-    borderTopLeftRadius: 30,
-    borderTopRightRadius: 30,
+  terms_text: {
+    fontSize: SIZES.small,
+    color: COLORS.black,
+    marginBottom: 30,
   },
 });

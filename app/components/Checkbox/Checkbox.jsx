@@ -18,8 +18,8 @@ const Checkbox = props => {
         alignItems: 'center',
       }}>
       <CheckBox
-        value={agree}
-        onValueChange={() => setAgree(!agree)}
+        value={props.agree}
+        onValueChange={props.setAgree}
         tintColors={{true: COLORS.primary, false: COLORS.darkGray}}
         style={{marginRight: 10}}
       />
