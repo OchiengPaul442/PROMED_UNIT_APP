@@ -1,4 +1,10 @@
-import {View, Text, StyleSheet, TextInput} from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TextInput,
+  KeyboardAvoidingView,
+} from 'react-native';
 import React from 'react';
 
 // components
@@ -66,79 +72,81 @@ const RegistrationScreen = ({navigation}) => {
 
   return (
     <AuthScreen form_title="SIGN UP FORM">
-      <View style={Styles.form}>
-        {/* form items */}
-        {formItems.map(item => (
-          <View key={item.id} style={Styles.group}>
-            <Text style={Styles.label}>{item.label}</Text>
-            <TextInput
-              style={Styles.input}
-              placeholder={item.placeholder}
-              value={item.value}
-              onChangeText={text => {
-                if (item.id === 1) {
-                  setUsername(text);
-                } else if (item.id === 2) {
-                  setEmail(text);
-                } else if (item.id === 3) {
-                  setPhone(text);
-                } else if (item.id === 4) {
-                  setPassword(text);
-                }
-              }}
-              secureTextEntry={item.id === 4 ? true : false}
+      <KeyboardAvoidingView behavior="padding">
+        <View style={Styles.form}>
+          {/* form items */}
+          {formItems.map(item => (
+            <View key={item.id} style={Styles.group}>
+              <Text style={Styles.label}>{item.label}</Text>
+              <TextInput
+                style={Styles.input}
+                placeholder={item.placeholder}
+                value={item.value}
+                onChangeText={text => {
+                  if (item.id === 1) {
+                    setUsername(text);
+                  } else if (item.id === 2) {
+                    setEmail(text);
+                  } else if (item.id === 3) {
+                    setPhone(text);
+                  } else if (item.id === 4) {
+                    setPassword(text);
+                  }
+                }}
+                secureTextEntry={item.id === 4 ? true : false}
+              />
+            </View>
+          ))}
+
+          {/* dropdown */}
+          <View style={Styles.group}>
+            <DropDownPicker
+              listMode="SCROLLVIEW"
+              showsVerticalScrollIndicator={false}
+              open={open}
+              value={gender}
+              items={items}
+              setOpen={setOpen}
+              setValue={setGender}
+              setItems={setItems}
+              placeholder="Select your Gender"
+              style={styles.dropdown}
+              dropDownDirection="TOP"
+              dropDownContainerStyle={styles.dropdownContainer}
             />
           </View>
-        ))}
 
-        {/* dropdown */}
-        <View style={Styles.group}>
-          <DropDownPicker
-            listMode="SCROLLVIEW"
-            showsVerticalScrollIndicator={false}
-            open={open}
-            value={gender}
-            items={items}
-            setOpen={setOpen}
-            setValue={setGender}
-            setItems={setItems}
-            placeholder="Select your Gender"
-            style={styles.dropdown}
-            dropDownDirection="TOP"
-            dropDownContainerStyle={styles.dropdownContainer}
+          {/* checkbox */}
+          <Checkbox
+            text="I agree to the terms & conditions"
+            setAgree={toggleCheckbox}
+            agree={agree}
           />
-        </View>
 
-        {/* checkbox */}
-        <Checkbox
-          text="I agree to the terms & conditions"
-          setAgree={toggleCheckbox}
-          agree={agree}
-        />
-
-        {/* buttons */}
-        <View style={Styles.recButton}>
-          <RecButton
-            text="Sign Up"
-            bgColor={COLORS.primary}
-            textColor={COLORS.white}
-            onPress={() => navigation.push('Login')}
-            w="100%"
-          />
-          <View style={Styles.separatorWrapper}>
-            <View style={Styles.separator}></View>
-            <Text style={Styles.separatorText}>OR</Text>
-            <View style={Styles.separator}></View>
+          {/* buttons */}
+          <View style={Styles.recButton}>
+            <RecButton
+              text="Sign Up"
+              bgColor={COLORS.primary}
+              textColor={COLORS.white}
+              onPress={() => navigation.push('Login')}
+              w="100%"
+            />
+            <View style={Styles.separatorWrapper}>
+              <View style={Styles.separator}></View>
+              <Text style={Styles.separatorText}>OR</Text>
+              <View style={Styles.separator}></View>
+            </View>
+            <RecButton
+              text="Login"
+              bgColor={COLORS.secondary}
+              textColor={COLORS.primary}
+              onPress={() => navigation.push('Login')}
+              w="100%"
+            />
           </View>
-          <RecButton
-            text="Login"
-            bgColor={COLORS.secondary}
-            textColor={COLORS.primary}
-            onPress={() => navigation.push('Login')}
-            w="100%"
-          />
         </View>
-      </View>
+      </KeyboardAvoidingView>
     </AuthScreen>
   );
 };

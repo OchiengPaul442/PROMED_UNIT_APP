@@ -4,6 +4,7 @@ import {
   StyleSheet,
   TextInput,
   TouchableOpacity,
+  KeyboardAvoidingView,
 } from 'react-native';
 import React from 'react';
 
@@ -47,66 +48,68 @@ const LoginScreen = ({navigation}) => {
 
   return (
     <AuthScreen form_title="SIGN IN FORM">
-      <View style={Styles.form}>
-        {/* form items */}
-        {formItems.map(item => (
-          <View key={item.id} style={Styles.group}>
-            <Text style={Styles.label}>{item.label}</Text>
-            <TextInput
-              style={Styles.input}
-              placeholder={item.placeholder}
-              value={item.value}
-              onChangeText={text => {
-                if (item.id === 1) {
-                  setUsername(text);
-                } else if (item.id === 2) {
-                  setPassword(text);
-                }
-              }}
-              secureTextEntry={item.id === 2 ? true : false}
+      <KeyboardAvoidingView behavior="padding">
+        <View style={Styles.form}>
+          {/* form items */}
+          {formItems.map(item => (
+            <View key={item.id} style={Styles.group}>
+              <Text style={Styles.label}>{item.label}</Text>
+              <TextInput
+                style={Styles.input}
+                placeholder={item.placeholder}
+                value={item.value}
+                onChangeText={text => {
+                  if (item.id === 1) {
+                    setUsername(text);
+                  } else if (item.id === 2) {
+                    setPassword(text);
+                  }
+                }}
+                secureTextEntry={item.id === 2 ? true : false}
+              />
+            </View>
+          ))}
+
+          {/* Remember me and forgot password */}
+          <View style={styles.wrapper}>
+            <Checkbox
+              text="Remember me"
+              setAgree={toggleCheckbox}
+              agree={agree}
+            />
+            <View>
+              <TouchableOpacity
+                onPress={() => navigation.push('PasswordRecovery')}
+                style={styles.fwdPassword}>
+                <Text style={styles.fwdText}>Forgot Password</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          {/* Buttons */}
+          <View style={Styles.recButton}>
+            <RecButton
+              text="Login"
+              bgColor={COLORS.secondary}
+              textColor={COLORS.primary}
+              onPress={() => navigation.navigate('Register')}
+              w="100%"
+            />
+            <View style={Styles.separatorWrapper}>
+              <View style={Styles.separator}></View>
+              <Text style={Styles.separatorText}>OR</Text>
+              <View style={Styles.separator}></View>
+            </View>
+            <RecButton
+              text="Sign Up"
+              bgColor={COLORS.primary}
+              textColor={COLORS.white}
+              onPress={() => navigation.push('Register')}
+              w="100%"
             />
           </View>
-        ))}
-
-        {/* Remember me and forgot password */}
-        <View style={styles.wrapper}>
-          <Checkbox
-            text="Remember me"
-            setAgree={toggleCheckbox}
-            agree={agree}
-          />
-          <View>
-            <TouchableOpacity
-              onPress={() => navigation.push('PasswordRecovery')}
-              style={styles.fwdPassword}>
-              <Text style={styles.fwdText}>Forgot Password</Text>
-            </TouchableOpacity>
-          </View>
         </View>
-
-        {/* Buttons */}
-        <View style={Styles.recButton}>
-          <RecButton
-            text="Login"
-            bgColor={COLORS.secondary}
-            textColor={COLORS.primary}
-            onPress={() => navigation.navigate('Register')}
-            w="100%"
-          />
-          <View style={Styles.separatorWrapper}>
-            <View style={Styles.separator}></View>
-            <Text style={Styles.separatorText}>OR</Text>
-            <View style={Styles.separator}></View>
-          </View>
-          <RecButton
-            text="Sign Up"
-            bgColor={COLORS.primary}
-            textColor={COLORS.white}
-            onPress={() => navigation.push('Register')}
-            w="100%"
-          />
-        </View>
-      </View>
+      </KeyboardAvoidingView>
     </AuthScreen>
   );
 };

@@ -156,6 +156,14 @@ export default Style = StyleSheet.create({
     paddingHorizontal: 10,
   },
 
+  // form text
+  formText: {
+    fontSize: 18,
+    color: COLORS.darkGray,
+    textAlign: 'left',
+    marginBottom: 50,
+  },
+
   // Styles for a group of related form elements
   group: {
     width: '100%',
