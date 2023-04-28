@@ -1,5 +1,9 @@
-import React from 'react';
+import React, {createContext} from 'react';
 import {StyleSheet, Text, View} from 'react-native';
+// firebase imports
+import firestore from '@react-native-firebase/firestore';
+import firebase from '@react-native-firebase/app';
+import auth from '@react-native-firebase/auth';
 
 // navigation
 import {NavigationContainer} from '@react-navigation/native';
@@ -29,7 +33,6 @@ import {
   LoginScreen,
   RegistrationScreen,
   PasswordRecovery,
-  ChangePassword,
   SuccessScreen,
   HomeScreen,
   Therapy,
@@ -46,6 +49,9 @@ import {
   Splash,
 } from '../screens';
 
+// context
+import {AuthContext} from './Context/AuthContext';
+
 // stacks
 const AuthStack = createStackNavigator();
 const BottomTabStack = createBottomTabNavigator();
@@ -53,6 +59,29 @@ const TherapyStack = createStackNavigator();
 const GroupStack = createStackNavigator();
 const DrawerStack = createDrawerNavigator();
 const ProfileStack = createStackNavigator();
+
+// Handle logout
+const HandleLogout = () => {
+  const {setUserToken, setUserData} = React.useContext(AuthContext);
+
+  React.useEffect(() => {
+    firebase
+      .auth()
+      .signOut()
+      .then(() => {
+        setUserToken(null);
+        setUserData(null);
+
+        // display access screen
+        return <AccessScreen />;
+      })
+      .catch(error => {
+        console.log(error);
+      });
+  }, []);
+
+  return null;
+};
 
 // Auth stack
 const AuthNavigation = () => {
@@ -65,7 +94,6 @@ const AuthNavigation = () => {
       <AuthStack.Screen name="Access" component={AccessScreen} />
       <AuthStack.Screen name="Login" component={LoginScreen} />
       <AuthStack.Screen name="PasswordRecovery" component={PasswordRecovery} />
-      <AuthStack.Screen name="ChangePassword" component={ChangePassword} />
       <AuthStack.Screen name="Success" component={SuccessScreen} />
       <AuthStack.Screen name="Register" component={RegistrationScreen} />
     </AuthStack.Navigator>
@@ -89,7 +117,12 @@ const DrawerStackScreen = () => {
       component: Notifications,
       icon: Bell,
     },
-    {name: 'Logout', label: 'Logout', component: '', icon: LogoutIcon},
+    {
+      name: 'Logout',
+      label: 'Logout',
+      component: HandleLogout,
+      icon: LogoutIcon,
+    },
   ];
 
   return (
@@ -199,22 +232,59 @@ const ProfileStackScreen = () => {
 // Root Navigation stack
 const AppNavigations = () => {
   const [isLoading, setIsLoading] = React.useState(true);
-  const [userToken, setUserToken] = React.useState(false);
+  const [userToken, setUserToken] = React.useState(''); // initialize userToken as null
+  const [userData, setUserData] = React.useState(''); // initialize userData as an empty object
 
-  React.useEffect(() => {
-    setTimeout(() => {
-      setIsLoading(false);
-    }, 1000);
-  }, []);
+  // React.useEffect(() => {
+  //   // create a listener for authentication state changes
+  //   const unsubscribe = auth().onAuthStateChanged(user => {
+  //     // set userToken to the user object or null
+  //     setUserToken(user);
+  //     // set isLoading to false after getting the user token
+  //     setIsLoading(false);
+  //   });
 
-  if (isLoading) {
-    return <Splash />;
-  }
+  //   // return a cleanup function to unsubscribe from the listener
+  //   return unsubscribe;
+  // }, []);
+
+  // if (isLoading) {
+  //   return <Splash />;
+  // }
+
+  // get user data from the database for the logged in user
+  // const getUserData = async () => {
+  //   try {
+  //     const user = await firestore()
+  //       .collection('users')
+  //       .doc(userToken.uid)
+  //       .get();
+  //     if (user.exists) {
+  //       // set the user object in the context to the user data from the database
+  //       setUser(user.data());
+  //     } else {
+  //       console.log('User does not exist!');
+  //     }
+  //   } catch (error) {
+  //     console.log('Something went wrong with getUserData: ', error);
+  //   }
+  // };
+
+  console.log('userToken ------>', userToken);
+  console.log('userData ------>', userData);
 
   return (
-    <NavigationContainer>
-      {userToken ? <DrawerStackScreen /> : <AuthNavigation />}
-    </NavigationContainer>
+    <AuthContext.Provider
+      value={{
+        userToken,
+        setUserToken,
+        userData,
+        setUserData,
+      }}>
+      <NavigationContainer>
+        {userToken ? <DrawerStackScreen /> : <AuthNavigation />}
+      </NavigationContainer>
+    </AuthContext.Provider>
   );
 };
 

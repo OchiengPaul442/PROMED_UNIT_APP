@@ -14,6 +14,9 @@ export {default as Card} from './Cards/Card';
 // date & time picker
 export {Datepicker, Timepicker} from './date&timepicker/Date_time';
 
+// loader
+export {default as Loader} from './loader/Loader';
+
 // animations
 export {
   ConfirmedAnimation,
@@ -45,6 +48,8 @@ export {
   SendIcon,
   ProfileIcon,
   LogoutIcon,
+  ViewIconeye,
+  CloseIconeye,
 } from './icons/Icons';
 
 export {CenterHalf, BottomModal, FocusedStatusBar, Checkbox};

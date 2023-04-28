@@ -6,7 +6,8 @@ import {
   FlatList,
   TouchableOpacity,
 } from 'react-native';
-import React from 'react';
+import React, {useContext} from 'react';
+import AuthContext from '../../navigations/Context/AuthContext';
 
 //General styles
 import Styles from '../../constants/Styles';
@@ -21,7 +22,10 @@ import Screen from '../../layout/Screen';
 // services
 import MoodTracker from '../../services/moodTracker/MoodTracker';
 
-const HomeScreen = () => {
+const HomeScreen = ({navigation, route}) => {
+  // use the useContext hook to get the user data value
+  // const {userToken} = useContext(AuthContext);
+
   // model
   const [open, setOpen] = React.useState(false);
   const [selectedTip, setSelectedTip] = React.useState(null);
@@ -109,7 +113,7 @@ const HomeScreen = () => {
         {/* intro text */}
         <View style={styles.greeting_container}>
           <Text style={styles.greeting}>{greeting}</Text>
-          <Text style={styles.username}>{user.name}</Text>
+          <Text style={styles.username}>Paul</Text>
           <Text style={styles.sessions}>
             You have {user.sessions} sessions today
           </Text>

@@ -181,9 +181,8 @@ export default Style = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: COLORS.primary,
     fontSize: 18,
-    color: COLORS.primary,
+    color: COLORS.black,
     padding: 10,
-    marginTop: 10,
   },
 
   // Styles for a label associated with a form input field
@@ -224,5 +223,26 @@ export default Style = StyleSheet.create({
     color: COLORS.primary,
     fontSize: 18,
     paddingHorizontal: 10,
+  },
+
+  error: {
+    width: '100%',
+    height: 'auto',
+    color: COLORS.red,
+    position: 'relative',
+    top: -9,
+  },
+
+  icon: {
+    position: 'absolute',
+    right: 10,
+    top: 35,
+    zIndex: 100,
+  },
+
+  // LOADING STYLE //
+  lottie: {
+    width: 150,
+    height: 150,
   },
 });

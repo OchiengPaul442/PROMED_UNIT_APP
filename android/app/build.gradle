@@ -1,4 +1,5 @@
 apply plugin: "com.android.application"
+apply plugin: 'com.google.gms.google-services' // added this for firebase
 apply plugin: "com.facebook.react"
 
 import com.android.build.OutputFile
@@ -95,6 +96,7 @@ android {
 
     namespace "com.promed_unit_app"
     defaultConfig {
+        multiDexEnabled true // added for firebase
         applicationId "com.promed_unit_app"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
@@ -153,6 +155,8 @@ dependencies {
     implementation("com.facebook.react:react-android")
 
     implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.0.0")
+
+    implementation 'androidx.multidex:multidex:2.0.1' // added this for firebase
 
     debugImplementation("com.facebook.flipper:flipper:${FLIPPER_VERSION}")
     debugImplementation("com.facebook.flipper:flipper-network-plugin:${FLIPPER_VERSION}") {

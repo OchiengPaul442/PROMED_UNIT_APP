@@ -19,7 +19,7 @@ const SuccessScreen = ({navigation}) => {
 
       {/* form head */}
       <View style={styles.formHead}>
-        <Text style={styles.formHeadText}>PASSWORD CHANGED SUCCESSFULLY</Text>
+        <Text style={styles.formHeadText}>PASSWORD RESET EMAIL SENT</Text>
       </View>
 
       {/* confirmation tick */}
@@ -33,7 +33,7 @@ const SuccessScreen = ({navigation}) => {
           text="Continue to Login"
           bgColor={COLORS.secondary}
           textColor={COLORS.primary}
-          onPress={() => navigation.push('Login')}
+          onPress={() => navigation.navigate('Login')}
           w="100%"
         />
       </View>

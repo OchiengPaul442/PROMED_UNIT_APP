@@ -389,3 +389,36 @@ export const LogoutIcon = props => {
     </Svg>
   );
 };
+
+// view icon eye
+export const ViewIconeye = props => {
+  return (
+    <Svg
+      width={props.width}
+      height={props.height}
+      fill={props.fill}
+      viewBox="-3.5 0 32 32"
+      xmlns="http://www.w3.org/2000/svg">
+      <Path d="M12.406 13.844c1.188 0 2.156.969 2.156 2.156s-.969 2.125-2.156 2.125-2.125-.938-2.125-2.125.938-2.156 2.125-2.156zm0-5.313c7.063 0 12.156 6.625 12.156 6.625.344.438.344 1.219 0 1.656 0 0-5.094 6.625-12.156 6.625S.25 16.812.25 16.812c-.344-.438-.344-1.219 0-1.656 0 0 5.094-6.625 12.156-6.625zm0 12.813c2.938 0 5.344-2.406 5.344-5.344s-2.406-5.344-5.344-5.344S7.062 13.062 7.062 16s2.406 5.344 5.344 5.344z" />
+    </Svg>
+  );
+};
+
+// close icon eye
+export const CloseIconeye = props => {
+  return (
+    <Svg
+      width={props.width}
+      height={props.height}
+      fill={props.fill}
+      viewBox="0 0 48 48"
+      xmlns="http://www.w3.org/2000/svg">
+      <G data-name="Layer 2">
+        <Path fill="none" data-name="invisible box" d="M0 0H48V48H0z" />
+        <G data-name="icons Q2">
+          <Path d="M45.3 22.1C43.2 19.5 35.4 11 24 11a23.4 23.4 0 00-3.8.3l19.7 19.8a30.1 30.1 0 005.4-5.2 3 3 0 000-3.8zM41.1 38.3L29.4 26.6A5.9 5.9 0 0124 30a6 6 0 01-6-6 5.9 5.9 0 013.4-5.4L9.7 6.9a2 2 0 00-2.8 2.8l4.8 4.8a31.4 31.4 0 00-9 7.6 3 3 0 000 3.8C4.8 28.5 12.6 37 24 37a25.2 25.2 0 008.5-1.6l5.8 5.7a2 2 0 102.8-2.8z" />
+        </G>
+      </G>
+    </Svg>
+  );
+};

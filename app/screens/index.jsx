@@ -4,7 +4,6 @@ export {default as AccessScreen} from './Auth/AccessScreen';
 export {default as LoginScreen} from './Auth/LoginScreen';
 export {default as RegistrationScreen} from './Auth/RegistrationScreen';
 export {default as PasswordRecovery} from './Auth/PasswordRecovery';
-export {default as ChangePassword} from './Auth/ChangePassword';
 export {default as SuccessScreen} from './Auth/SuccessScreen';
 // App screens
 export {default as HomeScreen} from './Home/HomeScreen';
