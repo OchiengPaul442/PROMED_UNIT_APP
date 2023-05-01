@@ -1,12 +1,20 @@
 import {StyleSheet, Text, View, Image, TouchableOpacity} from 'react-native';
-import {COLORS, ProfileImage} from '../../constants';
-import React from 'react';
+import React, {useContext} from 'react';
 import {useNavigation} from '@react-navigation/native';
+
+// context
+import {AuthContext} from '../../navigations/Context/AuthContext';
+
+// constants
+import {COLORS, ProfileMale} from '../../constants';
 
 // icons
 import {Bell} from '../icons/Icons';
 
 const Header = () => {
+  // use the useContext hook to get the user data value
+  const {userData, anonymous} = useContext(AuthContext);
+
   // navigation
   const navigation = useNavigation();
 
@@ -29,7 +37,7 @@ const Header = () => {
               height: 48,
               borderRadius: 50,
             }}
-            source={ProfileImage}
+            source={userData ? {uri: userData.avatar} : ProfileMale}
           />
         </TouchableOpacity>
         {/* Date section */}

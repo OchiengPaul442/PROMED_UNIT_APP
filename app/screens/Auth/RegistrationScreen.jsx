@@ -30,7 +30,7 @@ import {
 import DropDownPicker from 'react-native-dropdown-picker';
 
 // constants
-import {COLORS} from '../../constants';
+import {COLORS, ProfileMale} from '../../constants';
 import Styles from '../../constants/Styles';
 
 //layout
@@ -123,24 +123,18 @@ const RegistrationScreen = ({navigation}) => {
                 userType: 'patient',
                 createdAt: firestore.Timestamp.fromDate(new Date()),
                 updatedAt: firestore.Timestamp.fromDate(new Date()),
-                // Generate a random Avatar for each user that signs up using unsplash
-                avatar: `https://source.unsplash.com/random/200x200?sig=${Math.floor(
-                  Math.random() * 1000,
-                )}`,
+                // generate random profile pictures fromunsplash of black people else use the default profile picture
+                avatar:
+                  `https://source.unsplash.com/collection/139386/160x160/?sig=${Math.floor(
+                    Math.random() * 1000,
+                  )}` || {ProfileMale},
               });
-          })
-          .then(() => {
-            // Get the user token with getIdToken method
-            return firebase.auth().currentUser.getIdToken();
-          })
-          .then(token => {
-            // Set the user token in the global state
-            setUserToken(token);
           })
           .then(() => {
             // Set the isLoading state to false to hide the loading screen
             setLoading(false);
             // Navigate to the next screen or show a success message
+            navigation.navigate('Login');
           })
           .catch(error => {
             // set loading to false if there is an error

@@ -123,7 +123,7 @@ const HomeScreen = ({navigation, route}) => {
           <Text style={styles.greeting}>{greeting}</Text>
           <Text style={styles.username}>
             {anonymous ? (
-              userData.name
+              'guest user'
             ) : userData ? (
               userData.userName
             ) : (

@@ -33,8 +33,6 @@ import Styles from '../../constants/Styles';
 //layout
 import AuthScreen from '../../layout/AuthScreen';
 
-// @@@@@@@@@@@@@@@@@@@ FORM VALIDATION SCHEMA @@@@@@@@@@@@@@@@@@@ //
-
 // form validation schema
 let LoginValidationSchema = object({
   email: string()
@@ -85,20 +83,6 @@ const LoginScreen = ({navigation}) => {
         .then(token => {
           // Set the user token in the global state
           setUserToken(token);
-
-          // get current user UID
-          const uid = firebase.auth().currentUser.uid;
-
-          // get the user data from firestore using the user token and set it in the global state
-          firestore()
-            .collection('Users')
-            .doc(uid)
-            .get()
-            .then(documentSnapshot => {
-              if (documentSnapshot.exists) {
-                setUserData(documentSnapshot.data());
-              }
-            });
         })
         .then(() => {
           // set loading to false if there is no error

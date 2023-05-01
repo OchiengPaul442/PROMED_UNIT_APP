@@ -9,25 +9,73 @@ import {
   TextInput,
 } from 'react-native';
 import React, {useContext} from 'react';
+// firebase imports
+import auth from '@react-native-firebase/auth';
+import firestore from '@react-native-firebase/firestore';
+
 // context
 import {AuthContext} from '../../navigations/Context/AuthContext';
 
 //General styles
 import Styles from '../../constants/Styles';
 
+// yup and formik imports
+import {object, string, ref} from 'yup';
+import {Formik} from 'formik';
+
 // constants
-import {COLORS, ProfileFemale, ProfileMale} from '../../constants';
+import {COLORS, ProfileMale} from '../../constants';
 import {
   FocusedStatusBar,
   BackBtn,
   RecButton,
   CenterHalf,
+  ViewIconeye,
+  CloseIconeye,
   EditIcon,
 } from '../../components';
 
+// min 8 characters, 1 upper case letter, 1 lower case letter, 1 numeric digit.
+const passwordRules = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$/;
+
+// phone number regex
+const phoneRegex = /^\(?([0-9]{3})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})$/;
+
+// form validation schema
+let EditValidationSchema = object({
+  username: string().required(),
+  email: string()
+    .email('Please enter a valid email!')
+    .required('Email is required!'),
+  phone: string()
+    .matches(phoneRegex, 'Phone number is not valid!')
+    .required('Phone number is required!'),
+});
+
+let PasswordValidationSchema = object({
+  currentPassword: string()
+    .min(6, ({min}) => `Password must be at least ${min} characters!`)
+    .matches(passwordRules, 'Password is not valid!')
+    .required('Current Password is required!'),
+  newPassword: string()
+    .min(6, ({min}) => `Password must be at least ${min} characters!`)
+    .matches(passwordRules, 'Password is not valid!')
+    .required('New Password is required!'),
+  confirmPassword: string()
+    .min(6, ({min}) => `Password must be at least ${min} characters!`)
+    .oneOf([ref('newPassword'), null], 'Passwords must match')
+    .required('Confirmation password is required!'),
+});
+
 const Profile = ({navigation}) => {
   // use the useContext hook to get the user data value
-  const {userData, anonymous} = useContext(AuthContext);
+  const {userData, anonymous, setUserToken, setLoading} =
+    useContext(AuthContext);
+
+  // show password
+  const [showPassword1, setShowPassword1] = React.useState(true);
+  const [showPassword2, setShowPassword2] = React.useState(true);
+  const [showPassword3, setShowPassword3] = React.useState(true);
 
   // MODAL
   const [isModalVisible, setModalVisible] = React.useState(false);
@@ -39,6 +87,119 @@ const Profile = ({navigation}) => {
 
   const toggleModal2 = () => {
     setModalVisible2(!isModalVisible2);
+  };
+
+  // Edit user profile function
+  const editProfile = async (values, resetForm) => {
+    // set loading to true while updating user profile
+    setLoading(true);
+
+    // get current logged in user id
+    const uid = auth().currentUser.uid;
+
+    // update user profile
+    await firestore()
+      .collection('Users')
+      .doc(uid)
+      .update({
+        userName: values.username,
+        email: values.email,
+        phoneNumber: values.phone,
+      })
+      .then(() => {
+        // set loading to false after updating user profile
+        setLoading(false);
+        // reset form
+        resetForm();
+        // close modal
+        toggleModal();
+        console.log('User updated!');
+      })
+      .catch(error => {
+        // set loading to false after updating user profile
+        setLoading(false);
+        console.log(error);
+      });
+  };
+
+  // Change user password function
+  const changePassword = async (values, resetForm) => {
+    // set loading to true while updating user password
+    setLoading(true);
+
+    // get current logged in user id
+    const uid = auth().currentUser.uid;
+
+    // re-authenticate user
+    const credential = auth.EmailAuthProvider.credential(
+      auth().currentUser.email,
+      values.currentPassword,
+    );
+
+    // re-authenticate user
+    await auth()
+      .currentUser.reauthenticateWithCredential(credential)
+      .then(() => {
+        // update user password
+        auth()
+          .currentUser.updatePassword(values.newPassword)
+          .then(() => {
+            // set loading to false after updating user password
+            setLoading(false);
+            // reset form
+            resetForm();
+            console.log('Password updated!');
+          })
+          .catch(error => {
+            // set loading to false after updating user password
+            setLoading(false);
+            console.log(error);
+          });
+      })
+      .catch(error => {
+        // set loading to false after updating user password
+        setLoading(false);
+        console.log(error);
+      });
+  };
+
+  // Delete user account function
+  const deleteAccount = async () => {
+    // set loading to true while deleting user account
+    setLoading(true);
+
+    // get current logged in user id
+    const uid = auth().currentUser.uid;
+
+    // delete user account
+    await firestore()
+      .collection('Users')
+      .doc(uid)
+      .delete()
+      .then(() => {
+        // delete user account
+        auth()
+          .currentUser.delete()
+          .then(() => {
+            // set loading to false after deleting user account
+            setLoading(false);
+            // close modal
+            toggleModal2();
+            // clear user token
+            setUserToken('');
+            console.log('User deleted!');
+          })
+          .catch(error => {
+            // set loading to false after deleting user account
+            setLoading(false);
+            console.log(error);
+          });
+      })
+      .catch(error => {
+        // set loading to false after deleting user account
+        setLoading(false);
+        console.log(error);
+      });
   };
 
   return (
@@ -68,14 +229,7 @@ const Profile = ({navigation}) => {
           {/* Profile Image */}
           <View style={styles.Profile_image}>
             <Image
-              source={{
-                uri:
-                  userData !== ''
-                    ? userData.avatar
-                    : userData.gender == 'Male'
-                    ? ProfileMale
-                    : ProfileFemale,
-              }}
+              source={userData ? {uri: userData.avatar} : ProfileMale}
               style={{width: 120, height: 120, borderRadius: 100}}
             />
           </View>
@@ -171,49 +325,151 @@ const Profile = ({navigation}) => {
                   </View>
 
                   {/* change password section */}
-                  <View style={{width: '100%', ...styles.card}}>
-                    <Text
-                      style={{
-                        textAlign: 'left',
-                        width: '100%',
-                        marginBottom: 10,
-                        ...Styles.title,
-                      }}>
-                      Change Password
-                    </Text>
-                    <View>
-                      <View style={{width: '100%', ...Styles.Qgroup}}>
-                        <Text style={Styles.Qlabel}>Old Password</Text>
-                        <TextInput
-                          style={Styles.Qinput}
-                          placeholderTextColor={COLORS.gray}
-                          placeholder="Old Password"
-                        />
+                  <Formik
+                    initialValues={{
+                      currentPassword: '',
+                      newPassword: '',
+                      confirmPassword: '',
+                    }}
+                    validateOnMount={true}
+                    validationSchema={PasswordValidationSchema}
+                    onSubmit={(values, {resetForm}) => {
+                      changePassword(values, resetForm);
+                    }}>
+                    {({
+                      handleChange,
+                      handleBlur,
+                      handleSubmit,
+                      values,
+                      errors,
+                      touched,
+                    }) => (
+                      <View style={{width: '100%', ...styles.card}}>
+                        <Text
+                          style={{
+                            textAlign: 'left',
+                            width: '100%',
+                            marginBottom: 10,
+                            ...Styles.title,
+                          }}>
+                          Change Password
+                        </Text>
+                        <View>
+                          {/* current password */}
+                          <View style={{width: '100%', ...Styles.Qgroup}}>
+                            <Text style={Styles.Qlabel}>Current Password</Text>
+                            <TextInput
+                              style={{marginBottom: 10, ...Styles.Qinput}}
+                              placeholder=""
+                              onBlur={handleBlur('currentPassword')}
+                              value={values.currentPassword}
+                              onChangeText={handleChange('currentPassword')}
+                              secureTextEntry={showPassword1}
+                            />
+                            <TouchableOpacity
+                              style={{marginTop: 5, ...Styles.icon}}
+                              onPress={() => setShowPassword1(!showPassword1)}>
+                              {!showPassword1 ? (
+                                <ViewIconeye
+                                  width={24}
+                                  height={24}
+                                  fill={COLORS.primary}
+                                />
+                              ) : (
+                                <CloseIconeye
+                                  width={24}
+                                  height={24}
+                                  fill={COLORS.primary}
+                                />
+                              )}
+                            </TouchableOpacity>
+                            {errors.currentPassword &&
+                              touched.currentPassword && (
+                                <Text style={Styles.error}>
+                                  {errors.currentPassword}
+                                </Text>
+                              )}
+                          </View>
+                          {/* new password */}
+                          <View style={{width: '100%', ...Styles.Qgroup}}>
+                            <Text style={Styles.Qlabel}>New Password</Text>
+                            <TextInput
+                              style={{marginBottom: 10, ...Styles.Qinput}}
+                              placeholder=""
+                              onBlur={handleBlur('newPassword')}
+                              value={values.newPassword}
+                              onChangeText={handleChange('newPassword')}
+                              secureTextEntry={showPassword2}
+                            />
+                            <TouchableOpacity
+                              style={{marginTop: 5, ...Styles.icon}}
+                              onPress={() => setShowPassword2(!showPassword2)}>
+                              {!showPassword2 ? (
+                                <ViewIconeye
+                                  width={24}
+                                  height={24}
+                                  fill={COLORS.primary}
+                                />
+                              ) : (
+                                <CloseIconeye
+                                  width={24}
+                                  height={24}
+                                  fill={COLORS.primary}
+                                />
+                              )}
+                            </TouchableOpacity>
+                            {errors.newPassword && touched.newPassword && (
+                              <Text style={Styles.error}>
+                                {errors.newPassword}
+                              </Text>
+                            )}
+                          </View>
+                          {/* confirm password */}
+                          <View style={{width: '100%', ...Styles.Qgroup}}>
+                            <Text style={Styles.Qlabel}>Confirm Password</Text>
+                            <TextInput
+                              style={{marginBottom: 10, ...Styles.Qinput}}
+                              placeholder=""
+                              onBlur={handleBlur('confirmPassword')}
+                              value={values.confirmPassword}
+                              onChangeText={handleChange('confirmPassword')}
+                              secureTextEntry={showPassword3}
+                            />
+                            <TouchableOpacity
+                              style={{marginTop: 5, ...Styles.icon}}
+                              onPress={() => setShowPassword3(!showPassword3)}>
+                              {!showPassword3 ? (
+                                <ViewIconeye
+                                  width={24}
+                                  height={24}
+                                  fill={COLORS.primary}
+                                />
+                              ) : (
+                                <CloseIconeye
+                                  width={24}
+                                  height={24}
+                                  fill={COLORS.primary}
+                                />
+                              )}
+                            </TouchableOpacity>
+                            {errors.confirmPassword &&
+                              touched.confirmPassword && (
+                                <Text style={Styles.error}>
+                                  {errors.confirmPassword}
+                                </Text>
+                              )}
+                          </View>
+                          {/* submit button */}
+                          <RecButton
+                            onPress={handleSubmit}
+                            text="Change Password"
+                            bgColor={COLORS.secondary}
+                            textColor={COLORS.black}
+                          />
+                        </View>
                       </View>
-                      <View style={{width: '100%', ...Styles.Qgroup}}>
-                        <Text style={Styles.Qlabel}>New Password</Text>
-                        <TextInput
-                          style={Styles.Qinput}
-                          placeholderTextColor={COLORS.gray}
-                          placeholder="New Password"
-                        />
-                      </View>
-                      <View style={{width: '100%', ...Styles.Qgroup}}>
-                        <Text style={Styles.Qlabel}>Confirm Password</Text>
-                        <TextInput
-                          style={Styles.Qinput}
-                          placeholderTextColor={COLORS.gray}
-                          placeholder="Confirm Password"
-                        />
-                      </View>
-                      {/* submit button */}
-                      <RecButton
-                        text="Change Password"
-                        bgColor={COLORS.secondary}
-                        textColor={COLORS.black}
-                      />
-                    </View>
-                  </View>
+                    )}
+                  </Formik>
 
                   {/* Delete account */}
                   <View style={{width: '100%', ...styles.card}}>
@@ -244,46 +500,97 @@ const Profile = ({navigation}) => {
 
       {/* MODAL1 */}
       <CenterHalf Visibility={isModalVisible} hide={toggleModal}>
-        <Text style={Styles.title}>Edit details</Text>
-        <View
-          style={{
-            width: '100%',
-            position: 'relative',
+        <Formik
+          initialValues={{
+            username: userData ? userData.userName : 'Loading...',
+            email: userData ? userData.email : 'Loading...',
+            phone: userData ? userData.phoneNumber : 'Loading...',
+          }}
+          validateOnMount={true}
+          validationSchema={EditValidationSchema}
+          onSubmit={(values, {resetForm}) => {
+            editProfile(values, resetForm);
           }}>
-          <View style={Styles.Qgroup}>
-            <Text style={Styles.Qlabel}>Username</Text>
-            <TextInput style={Styles.Qinput} />
-          </View>
-          <View style={Styles.Qgroup}>
-            <Text style={Styles.Qlabel}>Email address</Text>
-            <TextInput style={Styles.Qinput} />
-          </View>
-          <View style={Styles.Qgroup}>
-            <Text style={Styles.Qlabel}>Phone number</Text>
-            <TextInput style={Styles.Qinput} />
-          </View>
-          <View
-            style={{
-              width: '100%',
-              flexDirection: 'row',
-              justifyContent: 'flex-start',
-              alignItems: 'center',
-            }}>
-            <RecButton
-              w={100}
-              text="Edit data"
-              bgColor={COLORS.primary}
-              textColor={COLORS.white}
-            />
-            <RecButton
-              onPress={toggleModal}
-              w={100}
-              text="Close"
-              bgColor={COLORS.tertiary}
-              textColor={COLORS.white}
-            />
-          </View>
-        </View>
+          {({
+            handleChange,
+            handleBlur,
+            handleSubmit,
+            values,
+            errors,
+            touched,
+          }) => (
+            <View style={{width: '100%'}}>
+              <Text style={Styles.title}>Edit details</Text>
+              <View
+                style={{
+                  width: '100%',
+                  position: 'relative',
+                }}>
+                <View style={Styles.Qgroup}>
+                  <Text style={Styles.Qlabel}>Username</Text>
+                  <TextInput
+                    style={{marginBottom: 10, ...Styles.Qinput}}
+                    placeholder=""
+                    onBlur={handleBlur('username')}
+                    value={values.username}
+                    onChangeText={handleChange('username')}
+                  />
+                  {errors.username && touched.username && (
+                    <Text style={Styles.error}>{errors.username}</Text>
+                  )}
+                </View>
+                <View style={Styles.Qgroup}>
+                  <Text style={Styles.Qlabel}>Email Address</Text>
+                  <TextInput
+                    style={{marginBottom: 10, ...Styles.Qinput}}
+                    placeholder=""
+                    onBlur={handleBlur('email')}
+                    value={values.email}
+                    onChangeText={handleChange('email')}
+                  />
+                  {errors.email && touched.email && (
+                    <Text style={Styles.error}>{errors.email}</Text>
+                  )}
+                </View>
+                <View style={Styles.Qgroup}>
+                  <Text style={Styles.Qlabel}>Phone Number</Text>
+                  <TextInput
+                    style={{marginBottom: 10, ...Styles.Qinput}}
+                    placeholder=""
+                    onBlur={handleBlur('phone')}
+                    value={values.phone}
+                    onChangeText={handleChange('phone')}
+                  />
+                  {errors.phone && touched.phone && (
+                    <Text style={Styles.error}>{errors.phone}</Text>
+                  )}
+                </View>
+                <View
+                  style={{
+                    width: '100%',
+                    flexDirection: 'row',
+                    justifyContent: 'flex-start',
+                    alignItems: 'center',
+                  }}>
+                  <RecButton
+                    onPress={handleSubmit}
+                    w={100}
+                    text="Edit data"
+                    bgColor={COLORS.primary}
+                    textColor={COLORS.white}
+                  />
+                  <RecButton
+                    onPress={toggleModal}
+                    w={100}
+                    text="Close"
+                    bgColor={COLORS.tertiary}
+                    textColor={COLORS.white}
+                  />
+                </View>
+              </View>
+            </View>
+          )}
+        </Formik>
       </CenterHalf>
 
       {/* MODAL2 */}
@@ -298,6 +605,7 @@ const Profile = ({navigation}) => {
             justifyContent: 'space-around',
           }}>
           <RecButton
+            onPress={deleteAccount}
             text="Yes"
             w={100}
             bgColor={COLORS.red}

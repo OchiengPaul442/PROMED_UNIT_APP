@@ -34,9 +34,7 @@ const AccessScreen = ({navigation}) => {
         // set the user token to the anonymous user id
         setUserToken(auth().currentUser.uid);
         // set the user data to the anonymous user data
-        setUserData({
-          name: 'guest user',
-        });
+        setUserData('');
         // set anonymous to true
         setAnonymous(true);
       })

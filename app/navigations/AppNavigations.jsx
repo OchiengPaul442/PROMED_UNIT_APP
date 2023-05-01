@@ -2,6 +2,7 @@ import React from 'react';
 import {StyleSheet, Text} from 'react-native';
 // firebase imports
 import auth from '@react-native-firebase/auth';
+import firestore from '@react-native-firebase/firestore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // navigation
@@ -139,7 +140,6 @@ const BottomTabs = () => {
 
   return (
     <BottomTabStack.Navigator
-      initialRouteName="Home"
       screenOptions={{
         headerShown: false,
         tabBarShowLabel: false,
@@ -243,6 +243,26 @@ const AppNavigations = () => {
   const [userToken, setUserToken] = React.useState(''); // initialize userToken as null
   const [userData, setUserData] = React.useState(''); // initialize userData as an empty object
 
+  // if userToken is set, get user data for the current user from firestore
+  React.useEffect(() => {
+    if (userToken) {
+      // get current user UID
+      const uid = auth().currentUser.uid;
+
+      // get user data from firestore
+      firestore()
+        .collection('Users')
+        .doc(uid)
+        .get()
+        .then(documentSnapshot => {
+          if (documentSnapshot.exists) {
+            // set userData state
+            setUserData(documentSnapshot.data());
+          }
+        });
+    }
+  }, [userToken]);
+
   console.log('userDate', userData);
 
   return (
@@ -258,7 +278,7 @@ const AppNavigations = () => {
         setLoading,
       }}>
       {userToken ? <DrawerStackScreen /> : <AuthNavigation />}
-
+      {/* <DrawerStackScreen /> */}
       {/* Loader */}
       <Loader loading={loading} />
     </AuthContext.Provider>
