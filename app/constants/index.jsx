@@ -4,8 +4,10 @@ import Logo from '../assets/images/Logo.png';
 import RightPam from '../assets/images/right.png';
 import LeftPam from '../assets/images/left.png';
 import ProfileImage from '../assets/images/profilepic.jpg';
+import ProfileFemale from '../assets/images/profileFemale.png';
+import ProfileMale from '../assets/images/profileMale.png';
 
-export {Logo, RightPam, LeftPam, ProfileImage};
+export {Logo, RightPam, LeftPam, ProfileImage, ProfileFemale, ProfileMale};
 
 // COLORS
 export const COLORS = {

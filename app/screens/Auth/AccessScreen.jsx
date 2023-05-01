@@ -1,4 +1,9 @@
 import {View, Text, Image, SafeAreaView, StyleSheet} from 'react-native';
+import React, {useContext} from 'react';
+import {AuthContext} from '../../navigations/Context/AuthContext';
+// firebase imports
+import auth from '@react-native-firebase/auth';
+import firestore from '@react-native-firebase/firestore';
 
 // components
 import {
@@ -13,6 +18,37 @@ import {
 import {COLORS, Logo, FONTS} from '../../constants';
 
 const AccessScreen = ({navigation}) => {
+  // use the useContext hook to get the user data value
+  const {setLoading, setAnonymous, setUserToken, setUserData} =
+    useContext(AuthContext);
+
+  // handle anonymous login
+  const HandleAnonymousLogin = () => {
+    setLoading(true);
+    // sign in anonymously
+    auth()
+      .signInAnonymously()
+      .then(() => {
+        // set loading to false
+        setLoading(false);
+        // set the user token to the anonymous user id
+        setUserToken(auth().currentUser.uid);
+        // set the user data to the anonymous user data
+        setUserData({
+          name: 'guest user',
+        });
+        // set anonymous to true
+        setAnonymous(true);
+      })
+      .catch(error => {
+        // set loading to false
+        setLoading(false);
+        // set anonymous to false
+        setAnonymous(false);
+        console.log(error);
+      });
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       {/* StatusBar */}
@@ -35,7 +71,7 @@ const AccessScreen = ({navigation}) => {
         <View style={styles.buttons}>
           <RecButton
             text="Sign In"
-            onPress={() => navigation.push('Login')}
+            onPress={() => navigation.navigate('Login')}
             bgColor={COLORS.white}
             textColor={COLORS.primary}
             w={300}
@@ -43,7 +79,7 @@ const AccessScreen = ({navigation}) => {
           />
           <RecButton
             text="Register"
-            onPress={() => navigation.push('Register')}
+            onPress={() => navigation.navigate('Register')}
             bgColor={COLORS.white}
             textColor={COLORS.primary}
             w={300}
@@ -54,7 +90,7 @@ const AccessScreen = ({navigation}) => {
             bgColor={COLORS.white}
             textColor={COLORS.primary}
             w={300}
-            onPress={() => navigation.navigate('App')}
+            onPress={HandleAnonymousLogin}
             icon={<GuestIcon width={20} height={20} />}
           />
         </View>

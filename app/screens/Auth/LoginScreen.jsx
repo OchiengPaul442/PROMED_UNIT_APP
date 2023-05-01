@@ -10,6 +10,7 @@ import React, {useContext} from 'react';
 import {AuthContext} from '../../navigations/Context/AuthContext';
 
 // firebase imports
+import firestore from '@react-native-firebase/firestore';
 import firebase from '@react-native-firebase/app';
 
 // yup and formik imports
@@ -78,15 +79,29 @@ const LoginScreen = ({navigation}) => {
         .auth()
         .signInWithEmailAndPassword(email, password)
         .then(() => {
-          // Get the user token with getIdToken method
-          return firebase.auth().currentUser.getIdToken();
+          // get the user token
+          return firebase.auth().currentUser.getIdToken(true);
         })
         .then(token => {
           // Set the user token in the global state
           setUserToken(token);
+
+          // get current user UID
+          const uid = firebase.auth().currentUser.uid;
+
+          // get the user data from firestore using the user token and set it in the global state
+          firestore()
+            .collection('Users')
+            .doc(uid)
+            .get()
+            .then(documentSnapshot => {
+              if (documentSnapshot.exists) {
+                setUserData(documentSnapshot.data());
+              }
+            });
         })
         .then(() => {
-          // Navigate to the next screen or show a success message
+          // set loading to false if there is no error
           setLoading(false);
         })
         .catch(error => {
@@ -245,7 +260,7 @@ const LoginScreen = ({navigation}) => {
                   text="Sign Up"
                   bgColor={COLORS.primary}
                   textColor={COLORS.white}
-                  onPress={() => navigation.push('Register')}
+                  onPress={() => navigation.navigate('Register')}
                   w="100%"
                 />
               </View>

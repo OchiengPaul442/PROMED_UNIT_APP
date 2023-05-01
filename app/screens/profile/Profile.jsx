@@ -8,12 +8,15 @@ import {
   ScrollView,
   TextInput,
 } from 'react-native';
-import React from 'react';
+import React, {useContext} from 'react';
+// context
+import {AuthContext} from '../../navigations/Context/AuthContext';
 
 //General styles
 import Styles from '../../constants/Styles';
+
 // constants
-import {COLORS, ProfileImage} from '../../constants';
+import {COLORS, ProfileFemale, ProfileMale} from '../../constants';
 import {
   FocusedStatusBar,
   BackBtn,
@@ -23,6 +26,9 @@ import {
 } from '../../components';
 
 const Profile = ({navigation}) => {
+  // use the useContext hook to get the user data value
+  const {userData, anonymous} = useContext(AuthContext);
+
   // MODAL
   const [isModalVisible, setModalVisible] = React.useState(false);
   const [isModalVisible2, setModalVisible2] = React.useState(false);
@@ -62,7 +68,14 @@ const Profile = ({navigation}) => {
           {/* Profile Image */}
           <View style={styles.Profile_image}>
             <Image
-              source={ProfileImage}
+              source={{
+                uri:
+                  userData !== ''
+                    ? userData.avatar
+                    : userData.gender == 'Male'
+                    ? ProfileMale
+                    : ProfileFemale,
+              }}
               style={{width: 120, height: 120, borderRadius: 100}}
             />
           </View>
@@ -127,9 +140,10 @@ const Profile = ({navigation}) => {
                         style={{
                           flex: 1,
                           textAlign: 'right',
+                          textTransform: 'capitalize',
                           ...Styles.text,
                         }}>
-                        Kirabo Cynthia
+                        {userData ? userData.userName : 'Loading...'}
                       </Text>
                     </View>
                     <View style={styles.pesonal_details}>
@@ -140,7 +154,7 @@ const Profile = ({navigation}) => {
                           textAlign: 'right',
                           ...Styles.text,
                         }}>
-                        Kirabocynthia@gmail.com
+                        {userData ? userData.email : 'Loading...'}
                       </Text>
                     </View>
                     <View style={styles.pesonal_details}>
@@ -151,7 +165,7 @@ const Profile = ({navigation}) => {
                           textAlign: 'right',
                           ...Styles.text,
                         }}>
-                        +256-777-885-433
+                        {userData ? userData.phoneNumber : 'Loading...'}
                       </Text>
                     </View>
                   </View>

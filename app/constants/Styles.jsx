@@ -57,6 +57,11 @@ export default Style = StyleSheet.create({
     color: COLORS.primary,
   },
 
+  text3: {
+    fontSize: SIZES.small,
+    color: COLORS.white,
+  },
+
   // FORM ELEMENT STYLES  //
   Qlabel: {
     fontSize: SIZES.medium,

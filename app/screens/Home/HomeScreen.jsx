@@ -7,7 +7,12 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import React, {useContext} from 'react';
-import AuthContext from '../../navigations/Context/AuthContext';
+// context
+import {AuthContext} from '../../navigations/Context/AuthContext';
+
+// firebase imports
+import firestore from '@react-native-firebase/firestore';
+import firebase from '@react-native-firebase/app';
 
 //General styles
 import Styles from '../../constants/Styles';
@@ -24,7 +29,7 @@ import MoodTracker from '../../services/moodTracker/MoodTracker';
 
 const HomeScreen = ({navigation, route}) => {
   // use the useContext hook to get the user data value
-  // const {userToken} = useContext(AuthContext);
+  const {userData, anonymous} = useContext(AuthContext);
 
   // model
   const [open, setOpen] = React.useState(false);
@@ -36,18 +41,21 @@ const HomeScreen = ({navigation, route}) => {
 
   // Get users info
   const [user, setUser] = React.useState({
-    name: 'Kirabo',
-    mood: 'Happy',
     sessions: 2,
-    date: '11 Feb 2023',
   });
+
+  // get current date in the formate of dd/mm/yyy
+  const date = new Date();
+  const currentDate = `${date.getDate()}/${date.getMonth()}/${date.getFullYear()}`;
 
   // Get the greeting based on the time of the day
   const [greeting, setGreeting] = React.useState('');
 
   const getGreetings = () => {
+    // get the current time of the day
     const date = new Date();
     const hours = date.getHours();
+
     if (hours < 12) {
       setGreeting('Good Morning');
     } else if (hours >= 12 && hours <= 17) {
@@ -113,7 +121,15 @@ const HomeScreen = ({navigation, route}) => {
         {/* intro text */}
         <View style={styles.greeting_container}>
           <Text style={styles.greeting}>{greeting}</Text>
-          <Text style={styles.username}>Paul</Text>
+          <Text style={styles.username}>
+            {anonymous ? (
+              userData.name
+            ) : userData ? (
+              userData.userName
+            ) : (
+              <Text style={Styles.text3}>loading...</Text>
+            )}
+          </Text>
           <Text style={styles.sessions}>
             You have {user.sessions} sessions today
           </Text>
@@ -251,6 +267,7 @@ const styles = StyleSheet.create({
 
   // This is the user's name
   username: {
+    textTransform: 'capitalize',
     fontSize: SIZES.medium,
     color: COLORS.white,
   },

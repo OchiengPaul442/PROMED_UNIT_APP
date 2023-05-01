@@ -36,9 +36,9 @@ import Styles from '../../constants/Styles';
 //layout
 import AuthScreen from '../../layout/AuthScreen';
 
-// @@@@@@@@@@@@@@@@@@@ FORM VALIDATION SCHEMA @@@@@@@@@@@@@@@@@@@ //
 // min 8 characters, 1 upper case letter, 1 lower case letter, 1 numeric digit.
 const passwordRules = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$/;
+
 // phone number regex
 const phoneRegex = /^\(?([0-9]{3})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})$/;
 
@@ -96,9 +96,6 @@ const RegistrationScreen = ({navigation}) => {
     setAgree(!agree);
   };
 
-  // get reference to the users collection
-  const db = firestore().collection('Users');
-
   // create a new user using firebase authentication and add the user details to the database
   const createUser = async (email, password, username, phone, gender) => {
     if (agree) {
@@ -111,15 +108,26 @@ const RegistrationScreen = ({navigation}) => {
           .auth()
           .createUserWithEmailAndPassword(email, password)
           .then(userRecord => {
-            // Get the user uid
-            var uid = userRecord.uid;
-            // Save the other data in Firebase database using the uid as the document id
-            return firebase.firestore().collection('Users').doc(uid).set({
-              email: email,
-              username: username,
-              phone_number: phone,
-              gender: gender,
-            });
+            // Get the user UID after creating the user
+            const uid = userRecord.user.uid;
+
+            // Create a new user in the database
+            firestore()
+              .collection('Users')
+              .doc(uid)
+              .set({
+                userName: username,
+                email: email,
+                phoneNumber: phone,
+                gender: gender,
+                userType: 'patient',
+                createdAt: firestore.Timestamp.fromDate(new Date()),
+                updatedAt: firestore.Timestamp.fromDate(new Date()),
+                // Generate a random Avatar for each user that signs up using unsplash
+                avatar: `https://source.unsplash.com/random/200x200?sig=${Math.floor(
+                  Math.random() * 1000,
+                )}`,
+              });
           })
           .then(() => {
             // Get the user token with getIdToken method
@@ -147,6 +155,9 @@ const RegistrationScreen = ({navigation}) => {
               case 'auth/network-request-failed':
                 setErrorDisplay(true);
                 setErrorMessage('interrupted connection or unreachable host!');
+              case 'auth/operation-not-allowed':
+                setErrorDisplay(true);
+                setErrorMessage('Email/password accounts are not enabled!');
               default:
                 alert('Something went wrong! please try again' + error);
                 break;
@@ -335,7 +346,7 @@ const RegistrationScreen = ({navigation}) => {
                   text="Login"
                   bgColor={COLORS.secondary}
                   textColor={COLORS.primary}
-                  onPress={() => navigation.push('Login')}
+                  onPress={() => navigation.navigate('Login')}
                   w="100%"
                 />
               </View>

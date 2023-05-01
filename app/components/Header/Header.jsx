@@ -10,10 +10,11 @@ const Header = () => {
   // navigation
   const navigation = useNavigation();
 
-  // Get users info
-  const [user, setUser] = React.useState({
-    date: '11 Feb 2023',
-  });
+  // get current date in the formate of 11 April 2023
+  const date = new Date();
+  const currentDate = `${date.getDate()} ${date.toLocaleString('default', {
+    month: 'long',
+  })} ${date.getFullYear()}`;
 
   return (
     <View style={styles.Header}>
@@ -33,7 +34,7 @@ const Header = () => {
         </TouchableOpacity>
         {/* Date section */}
         <View style={styles.date}>
-          <Text style={styles.dateText}>{user.date}</Text>
+          <Text style={styles.dateText}>{currentDate}</Text>
         </View>
         <TouchableOpacity
           onPress={() => navigation.navigate('Notification')}

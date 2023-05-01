@@ -128,7 +128,7 @@ const PasswordRecovery = ({navigation}) => {
                   text="Sign Up"
                   bgColor={COLORS.primary}
                   textColor={COLORS.white}
-                  onPress={() => navigation.push('Register')}
+                  onPress={() => navigation.navigate('Register')}
                   w="100%"
                 />
               </View>

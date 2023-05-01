@@ -1,12 +1,10 @@
-import React, {createContext} from 'react';
-import {StyleSheet, Text, View} from 'react-native';
+import React from 'react';
+import {StyleSheet, Text} from 'react-native';
 // firebase imports
-import firestore from '@react-native-firebase/firestore';
-import firebase from '@react-native-firebase/app';
 import auth from '@react-native-firebase/auth';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // navigation
-import {NavigationContainer} from '@react-navigation/native';
 import {createStackNavigator} from '@react-navigation/stack';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import {createDrawerNavigator} from '@react-navigation/drawer';
@@ -14,6 +12,7 @@ import {createDrawerNavigator} from '@react-navigation/drawer';
 // constants
 import {COLORS} from '../constants';
 import Styles from '../constants/Styles';
+import {Loader} from '../components';
 
 // icons
 import {
@@ -60,29 +59,6 @@ const GroupStack = createStackNavigator();
 const DrawerStack = createDrawerNavigator();
 const ProfileStack = createStackNavigator();
 
-// Handle logout
-const HandleLogout = () => {
-  const {setUserToken, setUserData} = React.useContext(AuthContext);
-
-  React.useEffect(() => {
-    firebase
-      .auth()
-      .signOut()
-      .then(() => {
-        setUserToken(null);
-        setUserData(null);
-
-        // display access screen
-        return <AccessScreen />;
-      })
-      .catch(error => {
-        console.log(error);
-      });
-  }, []);
-
-  return null;
-};
-
 // Auth stack
 const AuthNavigation = () => {
   return (
@@ -102,9 +78,13 @@ const AuthNavigation = () => {
 
 // Drawer stack
 const DrawerStackScreen = () => {
+  // use the useContext hook to get the user data value
+  const {userData} = React.useContext(AuthContext);
+
   //Define an array of drawer items with their names, components and icons
   const drawers = [
     {name: 'HomeScreen', label: 'Home', component: BottomTabs, icon: Home},
+
     {
       name: 'Profile_root',
       label: 'Profile',
@@ -229,49 +209,41 @@ const ProfileStackScreen = () => {
   );
 };
 
+// Handle logout
+const HandleLogout = () => {
+  const {setUserToken, setUserData} = React.useContext(AuthContext);
+
+  React.useEffect(() => {
+    // signout the user
+    auth()
+      .signOut()
+      .then(() => {
+        // remove the user token from async storage
+        AsyncStorage.removeItem('userToken');
+        // set the user token to null
+        setUserToken('');
+        // set the user data to null
+        setUserData('');
+      })
+      .catch(error => {
+        console.log(error);
+      });
+  }, []);
+
+  return null;
+};
+
 // Root Navigation stack
 const AppNavigations = () => {
-  const [isLoading, setIsLoading] = React.useState(true);
+  // loading state
+  const [loading, setLoading] = React.useState(false);
+
+  const [isFirstLaunch, setIsFirstLaunch] = React.useState(null);
+  const [anonymous, setAnonymous] = React.useState(false);
   const [userToken, setUserToken] = React.useState(''); // initialize userToken as null
   const [userData, setUserData] = React.useState(''); // initialize userData as an empty object
 
-  // React.useEffect(() => {
-  //   // create a listener for authentication state changes
-  //   const unsubscribe = auth().onAuthStateChanged(user => {
-  //     // set userToken to the user object or null
-  //     setUserToken(user);
-  //     // set isLoading to false after getting the user token
-  //     setIsLoading(false);
-  //   });
-
-  //   // return a cleanup function to unsubscribe from the listener
-  //   return unsubscribe;
-  // }, []);
-
-  // if (isLoading) {
-  //   return <Splash />;
-  // }
-
-  // get user data from the database for the logged in user
-  // const getUserData = async () => {
-  //   try {
-  //     const user = await firestore()
-  //       .collection('users')
-  //       .doc(userToken.uid)
-  //       .get();
-  //     if (user.exists) {
-  //       // set the user object in the context to the user data from the database
-  //       setUser(user.data());
-  //     } else {
-  //       console.log('User does not exist!');
-  //     }
-  //   } catch (error) {
-  //     console.log('Something went wrong with getUserData: ', error);
-  //   }
-  // };
-
-  console.log('userToken ------>', userToken);
-  console.log('userData ------>', userData);
+  console.log('userDate', userData);
 
   return (
     <AuthContext.Provider
@@ -280,10 +252,15 @@ const AppNavigations = () => {
         setUserToken,
         userData,
         setUserData,
+        anonymous,
+        setAnonymous,
+        loading,
+        setLoading,
       }}>
-      <NavigationContainer>
-        {userToken ? <DrawerStackScreen /> : <AuthNavigation />}
-      </NavigationContainer>
+      {userToken ? <DrawerStackScreen /> : <AuthNavigation />}
+
+      {/* Loader */}
+      <Loader loading={loading} />
     </AuthContext.Provider>
   );
 };
