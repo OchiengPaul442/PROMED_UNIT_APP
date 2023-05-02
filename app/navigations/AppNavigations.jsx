@@ -59,6 +59,7 @@ const TherapyStack = createStackNavigator();
 const GroupStack = createStackNavigator();
 const DrawerStack = createDrawerNavigator();
 const ProfileStack = createStackNavigator();
+const Stack = createStackNavigator();
 
 // Auth stack
 const AuthNavigation = () => {
@@ -238,7 +239,6 @@ const HandleLogout = () => {
 
 // Root Navigation stack
 const AppNavigations = () => {
-  const [isFirstLaunch, setIsFirstLaunch] = React.useState(null);
   const [loading, setLoading] = React.useState(false);
   const [errorStatus, setErrorStatus] = React.useState('');
   const [error, setError] = React.useState('');

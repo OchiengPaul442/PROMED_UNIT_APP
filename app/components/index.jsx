@@ -28,6 +28,7 @@ export {
   ExcellentAnimation,
   UnHappyAnimation,
   WellAnimation,
+  RoundLoadingAnimation,
 } from './animations/animations';
 
 // icons

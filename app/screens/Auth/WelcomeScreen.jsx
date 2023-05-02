@@ -1,4 +1,9 @@
 import {StyleSheet, View, Text, SafeAreaView, Image} from 'react-native';
+import React, {useContext} from 'react';
+// context
+import {AuthContext} from '../../navigations/Context/AuthContext';
+
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // components
 import {FocusedStatusBar, CurvedButton} from '../../components';
@@ -46,7 +51,9 @@ const WelcomeScreen = ({navigation}) => {
               shadowRadius: 6.27,
               elevation: 5,
             }}
-            onPress={() => navigation.navigate('Access')}
+            onPress={() => {
+              navigation.navigate('Access');
+            }}
           />
         </View>
       </View>

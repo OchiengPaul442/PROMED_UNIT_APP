@@ -72,3 +72,15 @@ export const ExcellentAnimation = () => {
     />
   );
 };
+
+// Round Loading animation
+export const RoundLoadingAnimation = props => {
+  return (
+    <Lottie
+      style={{width: props.width, height: props.height}}
+      source={require('../../assets/animations/loadingRound.json')}
+      autoPlay
+      loop={true}
+    />
+  );
+};

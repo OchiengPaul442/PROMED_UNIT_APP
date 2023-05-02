@@ -44,10 +44,6 @@ const HomeScreen = ({navigation, route}) => {
     sessions: 2,
   });
 
-  // get current date in the formate of dd/mm/yyy
-  const date = new Date();
-  const currentDate = `${date.getDate()}/${date.getMonth()}/${date.getFullYear()}`;
-
   // Get the greeting based on the time of the day
   const [greeting, setGreeting] = React.useState('');
 

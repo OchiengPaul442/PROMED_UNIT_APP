@@ -317,7 +317,7 @@ const Profile = ({navigation}) => {
                     <View style={styles.card_container}>
                       <View style={{width: 100, ...styles.card}}>
                         <Text style={{textAlign: 'center', ...Styles.heading2}}>
-                          2
+                          {anonymous ? 'N/A' : '2'}
                         </Text>
                       </View>
                       <Text style={Styles.text2}>Appointments</Text>
@@ -325,7 +325,7 @@ const Profile = ({navigation}) => {
                     <View style={styles.card_container}>
                       <View style={{width: 100, ...styles.card}}>
                         <Text style={{textAlign: 'center', ...Styles.heading2}}>
-                          2
+                          {anonymous ? 'N/A' : '2'}
                         </Text>
                       </View>
                       <Text style={Styles.text2}>Communities Joined</Text>
@@ -333,7 +333,7 @@ const Profile = ({navigation}) => {
                     <View style={styles.card_container}>
                       <View style={{width: 100, ...styles.card}}>
                         <Text style={{textAlign: 'center', ...Styles.heading2}}>
-                          2
+                          {anonymous ? 'N/A' : '2'}
                         </Text>
                       </View>
                       <Text style={Styles.text2}>Recent Test score</Text>
@@ -538,8 +538,8 @@ const Profile = ({navigation}) => {
                           </View>
                           {/* submit button */}
                           <RecButton
-                            onPress={handleSubmit}
-                            text="Change Password"
+                            onPress={anonymous ? null : handleSubmit}
+                            text={anonymous ? 'N/A' : 'Change Password'}
                             bgColor={COLORS.secondary}
                             textColor={COLORS.black}
                           />
@@ -662,9 +662,9 @@ const Profile = ({navigation}) => {
                     alignItems: 'center',
                   }}>
                   <RecButton
-                    onPress={handleSubmit}
+                    onPress={anonymous ? null : handleSubmit}
                     w={100}
-                    text="Edit data"
+                    text={anonymous ? 'N/A' : 'Save'}
                     bgColor={COLORS.primary}
                     textColor={COLORS.white}
                   />
@@ -694,8 +694,8 @@ const Profile = ({navigation}) => {
             justifyContent: 'space-around',
           }}>
           <RecButton
-            onPress={deleteAccount}
-            text="Yes"
+            onPress={anonymous ? null : deleteAccount}
+            text={anonymous ? 'N/A' : 'Yes'}
             w={100}
             bgColor={COLORS.red}
             textColor={COLORS.white}
