@@ -1,9 +1,10 @@
 import {View, Text, Image, SafeAreaView, StyleSheet} from 'react-native';
 import React, {useContext} from 'react';
+// context
 import {AuthContext} from '../../navigations/Context/AuthContext';
+
 // firebase imports
 import auth from '@react-native-firebase/auth';
-import firestore from '@react-native-firebase/firestore';
 
 // components
 import {
@@ -43,7 +44,8 @@ const AccessScreen = ({navigation}) => {
         setLoading(false);
         // set anonymous to false
         setAnonymous(false);
-        console.log(error);
+        // set error
+        setError('Something went wrong, please try again!');
       });
   };
 

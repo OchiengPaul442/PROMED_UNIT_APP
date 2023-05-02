@@ -13,7 +13,7 @@ import {createDrawerNavigator} from '@react-navigation/drawer';
 // constants
 import {COLORS} from '../constants';
 import Styles from '../constants/Styles';
-import {Loader} from '../components';
+import {Loader, ErrorHandle} from '../components';
 
 // icons
 import {
@@ -211,7 +211,8 @@ const ProfileStackScreen = () => {
 
 // Handle logout
 const HandleLogout = () => {
-  const {setUserToken, setUserData} = React.useContext(AuthContext);
+  const {setUserToken, setUserData, setAnonymous} =
+    React.useContext(AuthContext);
 
   React.useEffect(() => {
     // signout the user
@@ -224,6 +225,8 @@ const HandleLogout = () => {
         setUserToken('');
         // set the user data to null
         setUserData('');
+        // set anonymous to false
+        setAnonymous(false);
       })
       .catch(error => {
         console.log(error);
@@ -235,10 +238,10 @@ const HandleLogout = () => {
 
 // Root Navigation stack
 const AppNavigations = () => {
-  // loading state
-  const [loading, setLoading] = React.useState(false);
-
   const [isFirstLaunch, setIsFirstLaunch] = React.useState(null);
+  const [loading, setLoading] = React.useState(false);
+  const [errorStatus, setErrorStatus] = React.useState('');
+  const [error, setError] = React.useState('');
   const [anonymous, setAnonymous] = React.useState(false);
   const [userToken, setUserToken] = React.useState(''); // initialize userToken as null
   const [userData, setUserData] = React.useState(''); // initialize userData as an empty object
@@ -263,8 +266,6 @@ const AppNavigations = () => {
     }
   }, [userToken]);
 
-  console.log('userDate', userData);
-
   return (
     <AuthContext.Provider
       value={{
@@ -276,11 +277,18 @@ const AppNavigations = () => {
         setAnonymous,
         loading,
         setLoading,
+        error,
+        setError,
+        errorStatus,
+        setErrorStatus,
       }}>
+      {/* Display */}
       {userToken ? <DrawerStackScreen /> : <AuthNavigation />}
-      {/* <DrawerStackScreen /> */}
+
       {/* Loader */}
       <Loader loading={loading} />
+      {/* Error handler */}
+      <ErrorHandle message={error} />
     </AuthContext.Provider>
   );
 };

@@ -62,17 +62,10 @@ let registrationValidationSchema = object({
 
 const RegistrationScreen = ({navigation}) => {
   // use the useContext hook to get the user data value
-  const {setUserToken, setUserData} = useContext(AuthContext);
-
-  // loading state
-  const [loading, setLoading] = React.useState(false);
+  const {setError, setLoading} = useContext(AuthContext);
 
   // show password
   const [showPassword, setShowPassword] = React.useState(true);
-
-  // catch errors
-  const [errorDisplay, setErrorDisplay] = React.useState(false);
-  const [errorMessage, setErrorMessage] = React.useState('');
 
   // form fields
   const [username, setUsername] = React.useState('');
@@ -127,7 +120,7 @@ const RegistrationScreen = ({navigation}) => {
                 avatar:
                   `https://source.unsplash.com/collection/139386/160x160/?sig=${Math.floor(
                     Math.random() * 1000,
-                  )}` || {ProfileMale},
+                  )}` || ProfileMale,
               });
           })
           .then(() => {
@@ -143,44 +136,25 @@ const RegistrationScreen = ({navigation}) => {
             // catch errors
             switch (error.code) {
               case 'auth/email-already-in-use':
-                setErrorDisplay(true);
-                setErrorMessage('Email address is already in use!');
+                setError('That email address is already in use!');
                 break;
               case 'auth/network-request-failed':
-                setErrorDisplay(true);
-                setErrorMessage('interrupted connection or unreachable host!');
+                setError('Connection error! please try again');
               case 'auth/operation-not-allowed':
-                setErrorDisplay(true);
-                setErrorMessage('Email/password accounts are not enabled!');
+                setError('That email/password is not allowed!');
               default:
-                alert('Something went wrong! please try again' + error);
+                setError(' -----Something went wrong! please try again');
                 break;
             }
           });
       } catch (error) {
         // set loading to false if there is an error
         setLoading(false);
-
-        switch (error.code) {
-          default:
-            alert('Something went wrong! please try again' + error);
-            break;
-        }
       }
     } else {
-      alert('Please accept the terms and conditions to continue!');
+      setError('Please accept the terms and conditions');
     }
   };
-
-  // timeout the message
-  React.useEffect(() => {
-    if (errorDisplay) {
-      setTimeout(() => {
-        setErrorDisplay(false);
-        setErrorMessage('');
-      }, 5000);
-    }
-  }, [errorDisplay]);
 
   return (
     <Formik
@@ -193,7 +167,7 @@ const RegistrationScreen = ({navigation}) => {
       }}
       validateOnMount={true}
       validationSchema={registrationValidationSchema}
-      onSubmit={values => {
+      onSubmit={(values, {resetForm}) => {
         createUser(
           values.email,
           values.password,
@@ -205,6 +179,9 @@ const RegistrationScreen = ({navigation}) => {
         setUsername(values.username);
         setPhone(values.phone);
         setPassword(values.password);
+
+        // reset the form after submission
+        resetForm({values: ''});
       }}>
       {({
         handleChange,
@@ -218,16 +195,6 @@ const RegistrationScreen = ({navigation}) => {
         <AuthScreen form_title="SIGN UP FORM">
           <KeyboardAvoidingView behavior="padding">
             <View style={Styles.form}>
-              {/* error display */}
-              <Text
-                style={{
-                  display: errorDisplay ? 'flex' : 'none',
-                  paddingLeft: 10,
-                  ...Styles.error,
-                }}>
-                {errorMessage}
-              </Text>
-
               <View style={Styles.group}>
                 <Text style={Styles.label}>Username</Text>
                 <TextInput
@@ -346,9 +313,6 @@ const RegistrationScreen = ({navigation}) => {
               </View>
             </View>
           </KeyboardAvoidingView>
-
-          {/* Loader */}
-          <Loader loading={loading} />
         </AuthScreen>
       )}
     </Formik>

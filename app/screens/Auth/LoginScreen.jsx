@@ -10,7 +10,6 @@ import React, {useContext} from 'react';
 import {AuthContext} from '../../navigations/Context/AuthContext';
 
 // firebase imports
-import firestore from '@react-native-firebase/firestore';
 import firebase from '@react-native-firebase/app';
 
 // yup and formik imports
@@ -18,13 +17,7 @@ import {object, string} from 'yup';
 import {Formik} from 'formik';
 
 // components
-import {
-  RecButton,
-  Checkbox,
-  ViewIconeye,
-  CloseIconeye,
-  Loader,
-} from '../../components';
+import {RecButton, Checkbox, ViewIconeye, CloseIconeye} from '../../components';
 
 // constants
 import {COLORS} from '../../constants';
@@ -45,7 +38,7 @@ let LoginValidationSchema = object({
 
 const LoginScreen = ({navigation}) => {
   // use the useContext hook to get the user data value
-  const {setUserToken, setUserData} = useContext(AuthContext);
+  const {setUserToken, setLoading, setError} = useContext(AuthContext);
 
   // inputs
   const [email, setEmail] = React.useState('');
@@ -55,13 +48,7 @@ const LoginScreen = ({navigation}) => {
   // show password
   const [showPassword, setShowPassword] = React.useState(true);
 
-  // catch errors
-  const [errorDisplay, setErrorDisplay] = React.useState(false);
-  const [errorMessage, setErrorMessage] = React.useState('');
-
-  // loading state
-  const [loading, setLoading] = React.useState(false);
-
+  // toggle checkbox
   const toggleCheckbox = () => {
     setAgree(!remember);
   };
@@ -93,27 +80,22 @@ const LoginScreen = ({navigation}) => {
           setLoading(false);
           switch (error.code) {
             case 'auth/invalid-email':
-              setErrorDisplay(true);
-              setErrorMessage('Invalid email address!');
+              setError('Invalid email!');
               break;
             case 'auth/user-disabled':
-              setErrorDisplay(true);
-              setErrorMessage('User account disabled!');
+              setError('User disabled!');
               break;
             case 'auth/user-not-found':
-              setErrorDisplay(true);
-              setErrorMessage('User not found!');
+              setError('User not found!');
               break;
             case 'auth/network-request-failed':
-              setErrorDisplay(true);
-              setErrorMessage('Network error!');
+              setError('Connection error!');
               break;
             case 'auth/wrong-password':
-              setErrorDisplay(true);
-              setErrorMessage('Invalid password!');
+              setError('Wrong password!');
               break;
             default:
-              alert('Something went wrong! please try again' + error);
+              setError('Something went wrong please try again!');
               break;
           }
         });
@@ -123,23 +105,11 @@ const LoginScreen = ({navigation}) => {
 
       switch (error.code) {
         default:
-          setErrorDisplay(true);
-          setErrorMessage('Something went wrong please try again!' + error);
-          console.log(error);
+          setError('Something went wrong please try again!');
           break;
       }
     }
   };
-
-  // timeout the message
-  React.useEffect(() => {
-    if (errorDisplay) {
-      setTimeout(() => {
-        setErrorDisplay(false);
-        setErrorMessage('');
-      }, 5000);
-    }
-  }, [errorDisplay]);
 
   return (
     <Formik
@@ -149,25 +119,17 @@ const LoginScreen = ({navigation}) => {
       }}
       validateOnMount={true}
       validationSchema={LoginValidationSchema}
-      onSubmit={values => {
+      onSubmit={(values, {resetForm}) => {
         handleLogin(values.email, values.password);
         setEmail(values.email);
         setPassword(values.password);
+        // reset the form after submission
+        resetForm({values: ''});
       }}>
       {({handleChange, handleBlur, handleSubmit, values, errors, touched}) => (
         <AuthScreen form_title="SIGN IN FORM">
           <KeyboardAvoidingView behavior="padding">
             <View style={Styles.form}>
-              {/* error display */}
-              <Text
-                style={{
-                  display: errorDisplay ? 'flex' : 'none',
-                  paddingLeft: 10,
-                  ...Styles.error,
-                }}>
-                {errorMessage}
-              </Text>
-
               <View style={Styles.group}>
                 <Text style={Styles.label}>Email Address</Text>
                 <TextInput
@@ -250,9 +212,6 @@ const LoginScreen = ({navigation}) => {
               </View>
             </View>
           </KeyboardAvoidingView>
-
-          {/* Loader */}
-          <Loader loading={loading} />
         </AuthScreen>
       )}
     </Formik>

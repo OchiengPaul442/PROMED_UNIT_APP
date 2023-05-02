@@ -17,6 +17,9 @@ export {Datepicker, Timepicker} from './date&timepicker/Date_time';
 // loader
 export {default as Loader} from './loader/Loader';
 
+// error handle
+export {default as ErrorHandle} from './errors/ErrorHandle';
+
 // animations
 export {
   ConfirmedAnimation,
@@ -50,6 +53,8 @@ export {
   LogoutIcon,
   ViewIconeye,
   CloseIconeye,
+  TickIcon,
+  CloseIcon,
 } from './icons/Icons';
 
 export {CenterHalf, BottomModal, FocusedStatusBar, Checkbox};

@@ -1,5 +1,8 @@
 import {View, Text, TextInput, KeyboardAvoidingView} from 'react-native';
-import React from 'react';
+import React, {useContext} from 'react';
+// context
+import {AuthContext} from '../../navigations/Context/AuthContext';
+
 // firebase imports
 import firebase from '@react-native-firebase/app';
 
@@ -25,13 +28,10 @@ let passwordRecoveryValidationSchema = object({
 });
 
 const PasswordRecovery = ({navigation}) => {
-  // loading state
-  const [loading, setLoading] = React.useState(false);
+  // use the useContext hook to get the user data value
+  const {setError, setLoading} = useContext(AuthContext);
 
-  // form values
-  const [email, setEmail] = React.useState('');
-
-  // handle recovery function
+  // password recovery function
   const handleRecovery = email => {
     // set loading to true
     setLoading(true);
@@ -45,7 +45,7 @@ const PasswordRecovery = ({navigation}) => {
         setLoading(false);
         // Navigate to the login screen after some time has passed
         setTimeout(() => {
-          navigation.push('Success');
+          navigation.navigate('Success');
         }, 500);
       })
       .catch(error => {
@@ -53,13 +53,13 @@ const PasswordRecovery = ({navigation}) => {
         // Show an error message
         switch (error.code) {
           case 'auth/invalid-email':
-            alert('Please enter a valid email address.');
+            setError('Please enter a valid email address.');
             break;
           case 'auth/network-request-failed':
-            alert('Please check your internet connection.');
+            setError('Connection error. Please try again.');
             break;
           case 'auth/user-not-found':
-            alert('User not found.');
+            setError('User not found.');
             break;
           default:
             alert(error.message);
@@ -74,17 +74,8 @@ const PasswordRecovery = ({navigation}) => {
       initialValues={{email: ''}}
       onSubmit={values => {
         handleRecovery(values.email);
-        setEmail(values.email);
       }}>
-      {({
-        handleChange,
-        handleBlur,
-        handleSubmit,
-        values,
-        errors,
-        isValid,
-        touched,
-      }) => (
+      {({handleChange, handleBlur, handleSubmit, values, errors, touched}) => (
         <AuthScreen form_title="PASSWORD RECOVERY">
           <KeyboardAvoidingView behavior="padding">
             <View style={Styles.form}>
@@ -134,9 +125,6 @@ const PasswordRecovery = ({navigation}) => {
               </View>
             </View>
           </KeyboardAvoidingView>
-
-          {/* loader */}
-          <Loader loading={loading} />
         </AuthScreen>
       )}
     </Formik>

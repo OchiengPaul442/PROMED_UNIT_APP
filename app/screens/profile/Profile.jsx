@@ -43,24 +43,31 @@ const phoneRegex = /^\(?([0-9]{3})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})$/;
 
 // form validation schema
 let EditValidationSchema = object({
+  // username
   username: string().required(),
+  // email
   email: string()
     .email('Please enter a valid email!')
     .required('Email is required!'),
+  // phone number
   phone: string()
     .matches(phoneRegex, 'Phone number is not valid!')
     .required('Phone number is required!'),
 });
 
+// form validation schema
 let PasswordValidationSchema = object({
+  // current password
   currentPassword: string()
     .min(6, ({min}) => `Password must be at least ${min} characters!`)
     .matches(passwordRules, 'Password is not valid!')
     .required('Current Password is required!'),
+  // new password
   newPassword: string()
     .min(6, ({min}) => `Password must be at least ${min} characters!`)
     .matches(passwordRules, 'Password is not valid!')
     .required('New Password is required!'),
+  // confirm new password
   confirmPassword: string()
     .min(6, ({min}) => `Password must be at least ${min} characters!`)
     .oneOf([ref('newPassword'), null], 'Passwords must match')
@@ -69,8 +76,14 @@ let PasswordValidationSchema = object({
 
 const Profile = ({navigation}) => {
   // use the useContext hook to get the user data value
-  const {userData, anonymous, setUserToken, setLoading} =
-    useContext(AuthContext);
+  const {
+    anonymous,
+    setError,
+    setErrorStatus,
+    userToken,
+    setUserToken,
+    setLoading,
+  } = useContext(AuthContext);
 
   // show password
   const [showPassword1, setShowPassword1] = React.useState(true);
@@ -80,6 +93,9 @@ const Profile = ({navigation}) => {
   // MODAL
   const [isModalVisible, setModalVisible] = React.useState(false);
   const [isModalVisible2, setModalVisible2] = React.useState(false);
+
+  // profile data
+  const [profileData, setProfileData] = React.useState('');
 
   const toggleModal = () => {
     setModalVisible(!isModalVisible);
@@ -113,12 +129,17 @@ const Profile = ({navigation}) => {
         resetForm();
         // close modal
         toggleModal();
-        console.log('User updated!');
+        // update error status
+        setErrorStatus('success');
+        // set error message
+        setError('Profile updated!');
       })
       .catch(error => {
         // set loading to false after updating user profile
         setLoading(false);
-        console.log(error);
+        // update error status
+        setErrorStatus('error');
+        setError('Something went wrong!');
       });
   };
 
@@ -148,18 +169,27 @@ const Profile = ({navigation}) => {
             setLoading(false);
             // reset form
             resetForm();
-            console.log('Password updated!');
+            // update error status
+            setErrorStatus('success');
+            // set error message
+            setError('Password updated!');
           })
           .catch(error => {
             // set loading to false after updating user password
             setLoading(false);
-            console.log(error);
+            // update error status
+            setErrorStatus('error');
+            // set error message
+            setError('Something went wrong!');
           });
       })
       .catch(error => {
         // set loading to false after updating user password
         setLoading(false);
-        console.log(error);
+        // update error status
+        setErrorStatus('error');
+        // set error message
+        setError('Current password is incorrect!');
       });
   };
 
@@ -187,20 +217,55 @@ const Profile = ({navigation}) => {
             toggleModal2();
             // clear user token
             setUserToken('');
-            console.log('User deleted!');
+            // update error status
+            setErrorStatus('success');
+            // set error message
+            setError('Account deleted!');
           })
           .catch(error => {
             // set loading to false after deleting user account
             setLoading(false);
-            console.log(error);
+            // update error status
+            setErrorStatus('error');
+            // set error message
+            setError('Something went wrong!');
           });
       })
       .catch(error => {
         // set loading to false after deleting user account
         setLoading(false);
-        console.log(error);
+        // update error status
+        setErrorStatus('error');
+        // set error message
+        setError('Something went wrong!');
       });
   };
+
+  // if userToken is set, get user data for the current user from firestore
+  React.useEffect(() => {
+    if (userToken) {
+      // get current user UID
+      const uid = auth().currentUser.uid;
+
+      // get user data from firestore
+      firestore()
+        .collection('Users')
+        .doc(uid)
+        .get()
+        .then(documentSnapshot => {
+          if (documentSnapshot.exists) {
+            // set profileData state
+            setProfileData(documentSnapshot.data());
+          }
+        })
+        .catch(error => {
+          // update error status
+          setErrorStatus('error');
+          // set error message
+          setError('Failed to get user data!');
+        });
+    }
+  }, [userToken, profileData]);
 
   return (
     <SafeAreaView>
@@ -229,7 +294,7 @@ const Profile = ({navigation}) => {
           {/* Profile Image */}
           <View style={styles.Profile_image}>
             <Image
-              source={userData ? {uri: userData.avatar} : ProfileMale}
+              source={profileData ? {uri: profileData.avatar} : ProfileMale}
               style={{width: 120, height: 120, borderRadius: 100}}
             />
           </View>
@@ -297,7 +362,11 @@ const Profile = ({navigation}) => {
                           textTransform: 'capitalize',
                           ...Styles.text,
                         }}>
-                        {userData ? userData.userName : 'Loading...'}
+                        {anonymous
+                          ? 'N/A'
+                          : profileData
+                          ? profileData.userName
+                          : 'Loading...'}
                       </Text>
                     </View>
                     <View style={styles.pesonal_details}>
@@ -308,7 +377,11 @@ const Profile = ({navigation}) => {
                           textAlign: 'right',
                           ...Styles.text,
                         }}>
-                        {userData ? userData.email : 'Loading...'}
+                        {anonymous
+                          ? 'N/A'
+                          : profileData
+                          ? profileData.email
+                          : 'Loading...'}
                       </Text>
                     </View>
                     <View style={styles.pesonal_details}>
@@ -319,7 +392,11 @@ const Profile = ({navigation}) => {
                           textAlign: 'right',
                           ...Styles.text,
                         }}>
-                        {userData ? userData.phoneNumber : 'Loading...'}
+                        {anonymous
+                          ? 'N/A'
+                          : profileData
+                          ? profileData.phoneNumber
+                          : 'Loading...'}
                       </Text>
                     </View>
                   </View>
@@ -502,9 +579,21 @@ const Profile = ({navigation}) => {
       <CenterHalf Visibility={isModalVisible} hide={toggleModal}>
         <Formik
           initialValues={{
-            username: userData ? userData.userName : 'Loading...',
-            email: userData ? userData.email : 'Loading...',
-            phone: userData ? userData.phoneNumber : 'Loading...',
+            username: anonymous
+              ? 'N/A'
+              : profileData
+              ? profileData.userName
+              : 'Loading...',
+            email: anonymous
+              ? 'N/A'
+              : profileData
+              ? profileData.email
+              : 'Loading...',
+            phone: anonymous
+              ? 'N/A'
+              : profileData
+              ? profileData.phoneNumber
+              : 'Loading...',
           }}
           validateOnMount={true}
           validationSchema={EditValidationSchema}
