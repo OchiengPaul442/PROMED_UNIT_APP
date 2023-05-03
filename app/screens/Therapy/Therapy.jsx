@@ -8,12 +8,17 @@ import {
   FlatList,
 } from 'react-native';
 import React from 'react';
+
+// firebase imports
+import auth from '@react-native-firebase/auth';
+import firestore from '@react-native-firebase/firestore';
+
 //General styles
 import Styles from '../../constants/Styles';
 
 // constants
 import {COLORS} from '../../constants';
-import {Menu, Card} from '../../components';
+import {Menu, Card, RoundLoadingAnimation} from '../../components';
 
 // layout
 import Screen from '../../layout/Screen';
@@ -25,39 +30,142 @@ import DiagnosisTools from '../../services/diagnosisTool/DiagnosisTools';
 import {BottomModal} from '../../components';
 
 const Therapy = ({navigation}) => {
-  // List of available therapist
-  const therapist = [
+  // set therapist list to state
+  const [therapist, setTherapist] = React.useState([]);
+
+  // set loading state
+  const [loading, setLoading] = React.useState(true);
+
+  const ListOfTherapist = [
     {
       name: 'Dr. John Doe',
       location: 'Lagos, Nigeria',
       title: 'Psychiatrist',
-      image: require('../../assets/images/profilepic.jpg'),
+      language: 'English',
+      workplace: 'Lagos State Hospital',
+      about:
+        'i am a very good doctor and i love my job so much and i am very good at it. And i am a very good doctor and i love my job so much and i am very good at it. This is a very good doctor and i love my job so much and i am very good at it. I am a very good doctor and i love my job so much and i am very good at it. This is a very good doctor and i love my job so much and i am very good at it. I am a very good doctor and i love my job so much and i am very good at it. This is a very good doctor and i love my job so much and i am very good at it.',
+      image: `https://source.unsplash.com/random/200x200?sig=${Math.floor(
+        Math.random() * 1000,
+      )}`,
+      createdAt: new Date(),
     },
     {
       name: 'Dr. Awio Cook',
       location: 'Kampala, Uganda',
       title: 'Psychiatrist',
-      image: require('../../assets/images/profilepic.jpg'),
+      language: 'English',
+      workplace: 'Lagos State Hospital',
+      about:
+        'i am a very good doctor and i love my job so much and i am very good at it. And i am a very good doctor and i love my job so much and i am very good at it. This is a very good doctor and i love my job so much and i am very good at it. I am a very good doctor and i love my job so much and i am very good at it. This is a very good doctor and i love my job so much and i am very good at it. I am a very good doctor and i love my job so much and i am very good at it. This is a very good doctor and i love my job so much and i am very good at it.',
+      image: `https://source.unsplash.com/random/200x200?sig=${Math.floor(
+        Math.random() * 1000,
+      )}`,
+      createdAt: new Date(),
     },
     {
       name: 'Dr. Sam Rich',
       location: 'Nairobi, Kenya',
       title: 'Psychiatrist',
-      image: require('../../assets/images/profilepic.jpg'),
+      language: 'English',
+      workplace: 'Lagos State Hospital',
+      about:
+        'i am a very good doctor and i love my job so much and i am very good at it. And i am a very good doctor and i love my job so much and i am very good at it. This is a very good doctor and i love my job so much and i am very good at it. I am a very good doctor and i love my job so much and i am very good at it. This is a very good doctor and i love my job so much and i am very good at it. I am a very good doctor and i love my job so much and i am very good at it. This is a very good doctor and i love my job so much and i am very good at it.',
+      image: `https://source.unsplash.com/random/200x200?sig=${Math.floor(
+        Math.random() * 1000,
+      )}`,
+      createdAt: new Date(),
     },
     {
       name: 'Dr. Richard Doe',
       location: 'Lagos, Nigeria',
       title: 'Psychiatrist',
-      image: require('../../assets/images/profilepic.jpg'),
+      language: 'English',
+      workplace: 'Lagos State Hospital',
+      about:
+        'i am a very good doctor and i love my job so much and i am very good at it. And i am a very good doctor and i love my job so much and i am very good at it. This is a very good doctor and i love my job so much and i am very good at it. I am a very good doctor and i love my job so much and i am very good at it. This is a very good doctor and i love my job so much and i am very good at it. I am a very good doctor and i love my job so much and i am very good at it. This is a very good doctor and i love my job so much and i am very good at it.',
+      image: `https://source.unsplash.com/random/200x200?sig=${Math.floor(
+        Math.random() * 1000,
+      )}`,
+      createdAt: new Date(),
     },
     {
-      name: 'Dr. Richard Doe',
-      location: 'Lagos, Nigeria',
+      name: 'Dr. Clara Femi',
+      location: 'Amsterdam, Netherlands',
       title: 'Psychiatrist',
-      image: require('../../assets/images/profilepic.jpg'),
+      language: 'English',
+      workplace: 'Lagos State Hospital',
+      about:
+        'i am a very good doctor and i love my job so much and i am very good at it. And i am a very good doctor and i love my job so much and i am very good at it. This is a very good doctor and i love my job so much and i am very good at it. I am a very good doctor and i love my job so much and i am very good at it. This is a very good doctor and i love my job so much and i am very good at it. I am a very good doctor and i love my job so much and i am very good at it. This is a very good doctor and i love my job so much and i am very good at it.',
+      image: `https://source.unsplash.com/random/200x200?sig=${Math.floor(
+        Math.random() * 1000,
+      )}`,
+      createdAt: new Date(),
     },
   ];
+
+  // function to add each therapist list item to firestore
+  const addTherapist = async () => {
+    ListOfTherapist.map(item => {
+      firestore()
+        .collection('Therapists')
+        .add({
+          name: item.name,
+          location: item.location,
+          title: item.title,
+          language: item.language,
+          workplace: item.workplace,
+          about: item.about,
+          image: item.image,
+        })
+        .then(() => {
+          console.log('Therapist added!');
+        });
+    });
+  };
+
+  // function to delete therapist list from firestore
+  const deleteTherapist = async () => {
+    firestore()
+      .collection('Therapists')
+      .get()
+      .then(querySnapshot => {
+        querySnapshot.forEach(documentSnapshot => {
+          documentSnapshot.ref.delete();
+        });
+      });
+  };
+
+  // function to get first 5 therapists from firestore
+  const getTherapist = async () => {
+    // set loading to true
+    setLoading(true);
+
+    firestore()
+      .collection('Therapists')
+      .limit(4)
+      .get()
+      .then(querySnapshot => {
+        const therapist = [];
+        querySnapshot.forEach(documentSnapshot => {
+          therapist.push({
+            ...documentSnapshot.data(),
+            key: documentSnapshot.id,
+          });
+        });
+        setTherapist(therapist);
+      });
+
+    // set loading to false
+    setLoading(false);
+  };
+
+  React.useEffect(() => {
+    // addTherapist();
+    // deleteTherapist();
+    // get therapist list
+    getTherapist();
+  }, []);
 
   // Modal
   const [isModalVisible, setModalVisible] = React.useState(false);
@@ -111,7 +219,7 @@ const Therapy = ({navigation}) => {
                             ...styles.image_container,
                           }}>
                           <Image
-                            source={item.image}
+                            source={{uri: item.image}}
                             style={styles.Therapist_img}
                           />
                         </View>
@@ -141,6 +249,34 @@ const Therapy = ({navigation}) => {
                     </View>
                   )}
                 />
+
+                {/* load more */}
+                {loading ? (
+                  <View
+                    style={{
+                      width: '100%',
+                      height: 'auto',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      // paddingVertical: 20,
+                    }}>
+                    <RoundLoadingAnimation width={100} height={100} />
+                  </View>
+                ) : (
+                  <TouchableOpacity
+                    onPress={() => {
+                      fetchMoreTherapist();
+                    }}>
+                    <Text
+                      style={{
+                        textAlign: 'center',
+                        paddingVertical: 10,
+                        color: COLORS.red,
+                      }}>
+                      Load More
+                    </Text>
+                  </TouchableOpacity>
+                )}
               </View>
             </View>
           </ScrollView>

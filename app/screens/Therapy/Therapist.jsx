@@ -65,7 +65,7 @@ const Therapy = ({navigation, route}) => {
                 <View style={styles.card}>
                   <View>
                     <Image
-                      source={image}
+                      source={{uri: image}}
                       style={{
                         width: 80,
                         height: 80,

@@ -77,10 +77,10 @@ let PasswordValidationSchema = object({
 const Profile = ({navigation}) => {
   // use the useContext hook to get the user data value
   const {
+    userData,
     anonymous,
     setError,
     setErrorStatus,
-    userToken,
     setUserToken,
     setLoading,
   } = useContext(AuthContext);
@@ -93,9 +93,6 @@ const Profile = ({navigation}) => {
   // MODAL
   const [isModalVisible, setModalVisible] = React.useState(false);
   const [isModalVisible2, setModalVisible2] = React.useState(false);
-
-  // profile data
-  const [profileData, setProfileData] = React.useState('');
 
   const toggleModal = () => {
     setModalVisible(!isModalVisible);
@@ -241,32 +238,6 @@ const Profile = ({navigation}) => {
       });
   };
 
-  // if userToken is set, get user data for the current user from firestore
-  React.useEffect(() => {
-    if (userToken) {
-      // get current user UID
-      const uid = auth().currentUser.uid;
-
-      // get user data from firestore
-      firestore()
-        .collection('Users')
-        .doc(uid)
-        .get()
-        .then(documentSnapshot => {
-          if (documentSnapshot.exists) {
-            // set profileData state
-            setProfileData(documentSnapshot.data());
-          }
-        })
-        .catch(error => {
-          // update error status
-          setErrorStatus('error');
-          // set error message
-          setError('Failed to get user data!');
-        });
-    }
-  }, [userToken, profileData]);
-
   return (
     <SafeAreaView>
       <FocusedStatusBar backgroundColor={COLORS.primary} />
@@ -294,7 +265,7 @@ const Profile = ({navigation}) => {
           {/* Profile Image */}
           <View style={styles.Profile_image}>
             <Image
-              source={profileData ? {uri: profileData.avatar} : ProfileMale}
+              source={userData ? {uri: userData.avatar} : ProfileMale}
               style={{width: 120, height: 120, borderRadius: 100}}
             />
           </View>
@@ -364,8 +335,8 @@ const Profile = ({navigation}) => {
                         }}>
                         {anonymous
                           ? 'N/A'
-                          : profileData
-                          ? profileData.userName
+                          : userData
+                          ? userData.userName
                           : 'Loading...'}
                       </Text>
                     </View>
@@ -379,8 +350,8 @@ const Profile = ({navigation}) => {
                         }}>
                         {anonymous
                           ? 'N/A'
-                          : profileData
-                          ? profileData.email
+                          : userData
+                          ? userData.email
                           : 'Loading...'}
                       </Text>
                     </View>
@@ -394,8 +365,8 @@ const Profile = ({navigation}) => {
                         }}>
                         {anonymous
                           ? 'N/A'
-                          : profileData
-                          ? profileData.phoneNumber
+                          : userData
+                          ? userData.phoneNumber
                           : 'Loading...'}
                       </Text>
                     </View>
@@ -581,18 +552,14 @@ const Profile = ({navigation}) => {
           initialValues={{
             username: anonymous
               ? 'N/A'
-              : profileData
-              ? profileData.userName
+              : userData
+              ? userData.userName
               : 'Loading...',
-            email: anonymous
-              ? 'N/A'
-              : profileData
-              ? profileData.email
-              : 'Loading...',
+            email: anonymous ? 'N/A' : userData ? userData.email : 'Loading...',
             phone: anonymous
               ? 'N/A'
-              : profileData
-              ? profileData.phoneNumber
+              : userData
+              ? userData.phoneNumber
               : 'Loading...',
           }}
           validateOnMount={true}

@@ -243,10 +243,10 @@ const AppNavigations = () => {
   const [errorStatus, setErrorStatus] = React.useState('');
   const [error, setError] = React.useState('');
   const [anonymous, setAnonymous] = React.useState(false);
-  const [userToken, setUserToken] = React.useState(''); // initialize userToken as null
-  const [userData, setUserData] = React.useState(''); // initialize userData as an empty object
+  const [userToken, setUserToken] = React.useState('');
+  const [userData, setUserData] = React.useState('');
 
-  // if userToken is set, get user data for the current user from firestore
+  // if usertoken is set, get stream of user data for the current user from firestore
   React.useEffect(() => {
     if (userToken) {
       // get current user UID
@@ -256,8 +256,7 @@ const AppNavigations = () => {
       firestore()
         .collection('Users')
         .doc(uid)
-        .get()
-        .then(documentSnapshot => {
+        .onSnapshot(documentSnapshot => {
           if (documentSnapshot.exists) {
             // set userData state
             setUserData(documentSnapshot.data());

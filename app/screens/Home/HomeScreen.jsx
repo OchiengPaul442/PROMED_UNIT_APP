@@ -19,7 +19,7 @@ import Styles from '../../constants/Styles';
 
 // constants
 import {COLORS, SIZES} from '../../constants';
-import {Card, CenterHalf} from '../../components';
+import {Card, CenterHalf, RoundLoadingAnimation} from '../../components';
 
 // screen layout
 import Screen from '../../layout/Screen';
@@ -31,9 +31,21 @@ const HomeScreen = ({navigation, route}) => {
   // use the useContext hook to get the user data value
   const {userData, anonymous} = useContext(AuthContext);
 
+  // loading
+  const [Healthlistloading, setHealthlistLoading] = React.useState(false);
+
+  // show load more button
+  const [showLoadMore, setShowLoadMore] = React.useState(false);
+
   // model
   const [open, setOpen] = React.useState(false);
-  const [selectedTip, setSelectedTip] = React.useState(null);
+  const [selectedTip, setSelectedTip] = React.useState('');
+
+  // Get the greeting based on the time of the day
+  const [greeting, setGreeting] = React.useState('');
+
+  // Health tips
+  const [healthTips, setHealthTips] = React.useState([]);
 
   const toggleModal = () => {
     setOpen(!open);
@@ -44,9 +56,7 @@ const HomeScreen = ({navigation, route}) => {
     sessions: 2,
   });
 
-  // Get the greeting based on the time of the day
-  const [greeting, setGreeting] = React.useState('');
-
+  // greetings function
   const getGreetings = () => {
     // get the current time of the day
     const date = new Date();
@@ -60,10 +70,6 @@ const HomeScreen = ({navigation, route}) => {
       setGreeting('Good Evening');
     }
   };
-
-  React.useEffect(() => {
-    getGreetings();
-  }, []);
 
   // generate random colors
   const randomColor = () => {
@@ -82,34 +88,93 @@ const HomeScreen = ({navigation, route}) => {
     return colors[random];
   };
 
-  // get daily tipcard list
-  const tipcard = [
-    {
-      id: 1,
-      title: 'Be Kind to your self1',
-      text: 'Lorem ipsum dolor sit amet, consectetur adipiscing eli Lorem ipsum dolor sit amet, consectetur adipiscing eli',
-    },
-    {
-      id: 2,
-      title: 'Be Kind to your sel2',
-      text: 'Lorem ipsum dolor sit amet, consectetur adipiscing eli Lorem ipsum dolor sit amet, consectetur adipiscing eli',
-    },
-    {
-      id: 3,
-      title: 'Be Kind to your sel3',
-      text: 'Lorem ipsum dolor sit amet, consectetur adipiscing eli Lorem ipsum dolor sit amet, consectetur adipiscing eli',
-    },
-    {
-      id: 4,
-      title: 'Be Kind to your sel4',
-      text: 'Lorem ipsum dolor sit amet, consectetur adipiscing eli Lorem ipsum dolor sit amet, consectetur adipiscing eli',
-    },
-    {
-      id: 5,
-      title: 'Be Kind to your sel5',
-      text: 'Lorem ipsum dolor sit amet, consectetur adipiscing eli Lorem ipsum dolor sit amet, consectetur adipiscing eli',
-    },
-  ];
+  // function to fetch the live stream of the health tips from firestore once the component mounts but 10 and then load more when the user scrolls
+  const fetchHealthTipsTen = async () => {
+    try {
+      // set loading to true
+      setHealthlistLoading(true);
+
+      const list = [];
+
+      await firestore()
+        .collection('HealthTips')
+        .orderBy('createdAt', 'desc')
+        .limit(10)
+        .get()
+        .then(querySnapshot => {
+          // console.log('Total Health Tips: ', querySnapshot.size);
+
+          querySnapshot.forEach(doc => {
+            const {title, description, mood, createdAt} = doc.data();
+            list.push({
+              id: doc.id,
+              title,
+              mood,
+              description,
+              createdAt: createdAt.toDate(),
+            });
+          });
+        });
+
+      setHealthTips(list);
+
+      // console.log('Health Tips: ', healthTips);
+    } catch (e) {
+      console.log(e);
+    }
+
+    // set loading to false
+    setHealthlistLoading(false);
+  };
+
+  // function to fetch more health tips when the user scrolls
+  const fetchMoreHealthTips = async () => {
+    try {
+      // set loading to true
+      setHealthlistLoading(true);
+
+      const list = [];
+
+      await firestore()
+        .collection('HealthTips')
+        .orderBy('createdAt', 'desc')
+        .startAfter(healthTips[healthTips.length - 1].createdAt)
+        .limit(10)
+        .get()
+        .then(querySnapshot => {
+          // console.log('Total Health Tips: ', querySnapshot.size);
+
+          querySnapshot.forEach(doc => {
+            const {title, description, mood, createdAt} = doc.data();
+            list.push({
+              id: doc.id,
+              title,
+              mood,
+              description,
+              createdAt: createdAt.toDate(),
+            });
+          });
+        });
+
+      setHealthTips([...healthTips, ...list]);
+
+      // console.log('Health Tips: ', healthTips);
+    } catch (e) {
+      console.log(e);
+    }
+
+    // set loading to false
+    setHealthlistLoading(false);
+  };
+
+  // fetch the health tips once the component mounts
+  React.useEffect(() => {
+    // get the greetings
+    getGreetings();
+
+    // fetch the health tips
+    fetchHealthTipsTen();
+  }, []);
 
   return (
     <Screen>
@@ -143,7 +208,7 @@ const HomeScreen = ({navigation, route}) => {
               <MoodTracker />
             </View>
 
-            {/* daily mental health Tips */}
+            {/* Health tips */}
             <View style={styles.Health_tips}>
               <Text style={{paddingHorizontal: 10, ...Styles.heading}}>
                 Daily Mental Health Tips
@@ -151,7 +216,7 @@ const HomeScreen = ({navigation, route}) => {
               <FlatList
                 style={{marginTop: 15}}
                 scrollEnabled={false}
-                data={tipcard}
+                data={healthTips}
                 keyExtractor={(item, index) => index.toString()}
                 renderItem={({item, index}) => (
                   <View key={item.id} style={{paddingHorizontal: 10}}>
@@ -171,20 +236,48 @@ const HomeScreen = ({navigation, route}) => {
                           justifyContent: 'center',
                           alignItems: 'center',
                         }}>
-                        <Text style={styles.Tip_Number}>{item.id}</Text>
+                        <Text style={styles.Tip_Number}>{index + 1}</Text>
                       </View>
                       <View style={styles.Tip_Container}>
                         <Text style={Styles.title}>
                           {item.title.substring(0, 30)}
                         </Text>
                         <Text style={Styles.text}>
-                          {item.text.substring(0, 85) + '...'}
+                          {item.description.substring(0, 85) + '...'}
                         </Text>
                       </View>
                     </Card>
                   </View>
                 )}
               />
+
+              {/* load more */}
+              {Healthlistloading ? (
+                <View
+                  style={{
+                    width: '100%',
+                    height: 'auto',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    // paddingVertical: 20,
+                  }}>
+                  <RoundLoadingAnimation width={100} height={100} />
+                </View>
+              ) : (
+                <TouchableOpacity
+                  onPress={() => {
+                    fetchMoreHealthTips();
+                  }}>
+                  <Text
+                    style={{
+                      textAlign: 'center',
+                      paddingVertical: 10,
+                      color: COLORS.red,
+                    }}>
+                    Load More
+                  </Text>
+                </TouchableOpacity>
+              )}
             </View>
           </ScrollView>
         </View>
@@ -195,7 +288,7 @@ const HomeScreen = ({navigation, route}) => {
         <CenterHalf Visibility={open} hide={toggleModal}>
           <Text style={Styles.title}>{selectedTip.title}</Text>
           <Text style={{paddingVertical: 10, ...Styles.text}}>
-            {selectedTip.text}
+            {selectedTip.description}
           </Text>
           <TouchableOpacity onPress={toggleModal}>
             <Text

@@ -18,6 +18,7 @@ import firebase from '@react-native-firebase/app';
 // context
 import {AuthContext} from '../../navigations/Context/AuthContext';
 
+// mood tracker function
 const MoodTracker = () => {
   // use the useContext hook to get the user data value
   const {setError, error, anonymous, setErrorStatus} = useContext(AuthContext);
@@ -50,6 +51,7 @@ const MoodTracker = () => {
     if (user) {
       // check if the user is anonymous
       if (anonymous) {
+        setLoading(false);
         setError('You need to login to track your mood');
         setErrorStatus('error');
       } else {
@@ -63,6 +65,7 @@ const MoodTracker = () => {
           .then(documentSnapshot => {
             // check if the user has tracked his/her mood today
             if (documentSnapshot.exists) {
+              setLoading(false);
               setError('You have already tracked your mood today');
               setErrorStatus('error');
             } else {
@@ -75,11 +78,13 @@ const MoodTracker = () => {
                   .collection('Mood')
                   .doc(`${day}-${month}-${year}`)
                   .set({
+                    user_id: user.uid,
                     mood: mood,
                     date: `${day}-${month}-${year}`,
                     time: 'Morning',
                   })
                   .then(() => {
+                    setLoading(false);
                     setError('Mood recorded successfully');
                     setErrorStatus('success');
                   });
@@ -91,6 +96,7 @@ const MoodTracker = () => {
                   .collection('Mood')
                   .doc(`${day}-${month}-${year}`)
                   .set({
+                    user_id: user.uid,
                     mood: mood,
                     date: `${day}-${month}-${year}`,
                     time: 'Afternoon',
@@ -98,6 +104,7 @@ const MoodTracker = () => {
                     updatedAt: firestore.FieldValue.serverTimestamp(),
                   })
                   .then(() => {
+                    setLoading(false);
                     setError('Mood recorded successfully');
                     setErrorStatus('success');
                   });
@@ -109,6 +116,7 @@ const MoodTracker = () => {
                   .collection('Mood')
                   .doc(`${day}-${month}-${year}`)
                   .set({
+                    user_id: user.uid,
                     mood: mood,
                     date: `${day}-${month}-${year}`,
                     time: 'Evening',
@@ -116,6 +124,7 @@ const MoodTracker = () => {
                     updatedAt: firestore.FieldValue.serverTimestamp(),
                   })
                   .then(() => {
+                    setLoading(false);
                     setError('Mood recorded successfully');
                     setErrorStatus('success');
                   });
@@ -124,17 +133,11 @@ const MoodTracker = () => {
           });
       }
     } else {
+      setLoading(false);
       setError('You need to login to track your mood');
       setErrorStatus('error');
     }
   };
-
-  React.useEffect(() => {
-    // set loading to false after 3 seconds
-    setTimeout(() => {
-      setLoading(false);
-    }, 2000);
-  }, [mood]);
 
   return (
     <View style={styles.feeling}>
