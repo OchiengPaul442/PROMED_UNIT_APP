@@ -10,7 +10,7 @@ import {
 import React from 'react';
 
 // firebase imports
-import auth from '@react-native-firebase/auth';
+import auth, {firebase} from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
 
 //General styles
@@ -34,137 +34,86 @@ const Therapy = ({navigation}) => {
   const [therapist, setTherapist] = React.useState([]);
 
   // set loading state
-  const [loading, setLoading] = React.useState(true);
+  const [Therapyloading, setTherapyLoading] = React.useState(true);
 
-  const ListOfTherapist = [
-    {
-      name: 'Dr. John Doe',
-      location: 'Lagos, Nigeria',
-      title: 'Psychiatrist',
-      language: 'English',
-      workplace: 'Lagos State Hospital',
-      about:
-        'i am a very good doctor and i love my job so much and i am very good at it. And i am a very good doctor and i love my job so much and i am very good at it. This is a very good doctor and i love my job so much and i am very good at it. I am a very good doctor and i love my job so much and i am very good at it. This is a very good doctor and i love my job so much and i am very good at it. I am a very good doctor and i love my job so much and i am very good at it. This is a very good doctor and i love my job so much and i am very good at it.',
-      image: `https://source.unsplash.com/random/200x200?sig=${Math.floor(
-        Math.random() * 1000,
-      )}`,
-      createdAt: new Date(),
-    },
-    {
-      name: 'Dr. Awio Cook',
-      location: 'Kampala, Uganda',
-      title: 'Psychiatrist',
-      language: 'English',
-      workplace: 'Lagos State Hospital',
-      about:
-        'i am a very good doctor and i love my job so much and i am very good at it. And i am a very good doctor and i love my job so much and i am very good at it. This is a very good doctor and i love my job so much and i am very good at it. I am a very good doctor and i love my job so much and i am very good at it. This is a very good doctor and i love my job so much and i am very good at it. I am a very good doctor and i love my job so much and i am very good at it. This is a very good doctor and i love my job so much and i am very good at it.',
-      image: `https://source.unsplash.com/random/200x200?sig=${Math.floor(
-        Math.random() * 1000,
-      )}`,
-      createdAt: new Date(),
-    },
-    {
-      name: 'Dr. Sam Rich',
-      location: 'Nairobi, Kenya',
-      title: 'Psychiatrist',
-      language: 'English',
-      workplace: 'Lagos State Hospital',
-      about:
-        'i am a very good doctor and i love my job so much and i am very good at it. And i am a very good doctor and i love my job so much and i am very good at it. This is a very good doctor and i love my job so much and i am very good at it. I am a very good doctor and i love my job so much and i am very good at it. This is a very good doctor and i love my job so much and i am very good at it. I am a very good doctor and i love my job so much and i am very good at it. This is a very good doctor and i love my job so much and i am very good at it.',
-      image: `https://source.unsplash.com/random/200x200?sig=${Math.floor(
-        Math.random() * 1000,
-      )}`,
-      createdAt: new Date(),
-    },
-    {
-      name: 'Dr. Richard Doe',
-      location: 'Lagos, Nigeria',
-      title: 'Psychiatrist',
-      language: 'English',
-      workplace: 'Lagos State Hospital',
-      about:
-        'i am a very good doctor and i love my job so much and i am very good at it. And i am a very good doctor and i love my job so much and i am very good at it. This is a very good doctor and i love my job so much and i am very good at it. I am a very good doctor and i love my job so much and i am very good at it. This is a very good doctor and i love my job so much and i am very good at it. I am a very good doctor and i love my job so much and i am very good at it. This is a very good doctor and i love my job so much and i am very good at it.',
-      image: `https://source.unsplash.com/random/200x200?sig=${Math.floor(
-        Math.random() * 1000,
-      )}`,
-      createdAt: new Date(),
-    },
-    {
-      name: 'Dr. Clara Femi',
-      location: 'Amsterdam, Netherlands',
-      title: 'Psychiatrist',
-      language: 'English',
-      workplace: 'Lagos State Hospital',
-      about:
-        'i am a very good doctor and i love my job so much and i am very good at it. And i am a very good doctor and i love my job so much and i am very good at it. This is a very good doctor and i love my job so much and i am very good at it. I am a very good doctor and i love my job so much and i am very good at it. This is a very good doctor and i love my job so much and i am very good at it. I am a very good doctor and i love my job so much and i am very good at it. This is a very good doctor and i love my job so much and i am very good at it.',
-      image: `https://source.unsplash.com/random/200x200?sig=${Math.floor(
-        Math.random() * 1000,
-      )}`,
-      createdAt: new Date(),
-    },
-  ];
-
-  // function to add each therapist list item to firestore
-  const addTherapist = async () => {
-    ListOfTherapist.map(item => {
-      firestore()
-        .collection('Therapists')
-        .add({
-          name: item.name,
-          location: item.location,
-          title: item.title,
-          language: item.language,
-          workplace: item.workplace,
-          about: item.about,
-          image: item.image,
-        })
-        .then(() => {
-          console.log('Therapist added!');
-        });
-    });
-  };
-
-  // function to delete therapist list from firestore
-  const deleteTherapist = async () => {
-    firestore()
-      .collection('Therapists')
-      .get()
-      .then(querySnapshot => {
-        querySnapshot.forEach(documentSnapshot => {
-          documentSnapshot.ref.delete();
-        });
-      });
-  };
-
-  // function to get first 5 therapists from firestore
+  // function to get therapist list from firestore
   const getTherapist = async () => {
-    // set loading to true
-    setLoading(true);
+    try {
+      // set loading to true
+      setTherapyLoading(true);
 
-    firestore()
-      .collection('Therapists')
-      .limit(4)
-      .get()
-      .then(querySnapshot => {
-        const therapist = [];
-        querySnapshot.forEach(documentSnapshot => {
-          therapist.push({
-            ...documentSnapshot.data(),
-            key: documentSnapshot.id,
-          });
-        });
-        setTherapist(therapist);
+      // get the first 4 therapist from firestore
+      const therapist = await firestore()
+        .collection('Therapists')
+        .orderBy('createdAt', 'desc')
+        .limit(4)
+        .get();
+
+      // convert therapist to array
+      const therapistList = therapist.docs.map(doc => {
+        const data = doc.data();
+        const id = doc.id;
+        return {id, ...data};
       });
+
+      // set therapist state
+      setTherapist(therapistList);
+    } catch (e) {
+      console.log(e);
+    }
 
     // set loading to false
-    setLoading(false);
+    setTherapyLoading(false);
+  };
+
+  // function to get 4 more therapist from firestore continuin from the last therapist
+  const getMoreTherapist = async () => {
+    try {
+      // set loading to true
+      setTherapyLoading(true);
+
+      const List = [];
+
+      await firestore()
+        .collection('Therapists')
+        .orderBy('createdAt', 'desc')
+        .startAfter(therapist[therapist.length - 1].createdAt)
+        .limit(4)
+        .get()
+        .then(querySnapshot => {
+          querySnapshot.forEach(documentSnapshot => {
+            List.push(documentSnapshot.data());
+          });
+        });
+
+      //set therapist state
+      setTherapist([...therapist, ...List]);
+    } catch (e) {
+      console.log(e);
+    }
+
+    // set loading to false
+    setTherapyLoading(false);
   };
 
   React.useEffect(() => {
-    // addTherapist();
-    // deleteTherapist();
-    // get therapist list
-    getTherapist();
+    // if the route is focused, get therapist
+    const unsubscribe = navigation.addListener('focus', () => {
+      // get therapist
+      getTherapist();
+
+      // set selected therapist to null
+      setSelectedTherapist(null);
+
+      // set therapist list to empty array
+      setTherapist([]);
+
+      // set loading to true
+      setTherapyLoading(true);
+    });
+
+    // unsubscribe from the event so it gets removed on unmount
+    return unsubscribe;
   }, []);
 
   // Modal
@@ -251,21 +200,20 @@ const Therapy = ({navigation}) => {
                 />
 
                 {/* load more */}
-                {loading ? (
+                {Therapyloading ? (
                   <View
                     style={{
                       width: '100%',
                       height: 'auto',
                       justifyContent: 'center',
                       alignItems: 'center',
-                      // paddingVertical: 20,
                     }}>
                     <RoundLoadingAnimation width={100} height={100} />
                   </View>
                 ) : (
                   <TouchableOpacity
                     onPress={() => {
-                      fetchMoreTherapist();
+                      getMoreTherapist();
                     }}>
                     <Text
                       style={{

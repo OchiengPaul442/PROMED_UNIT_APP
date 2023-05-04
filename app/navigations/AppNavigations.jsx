@@ -282,7 +282,8 @@ const AppNavigations = () => {
         setErrorStatus,
       }}>
       {/* Display */}
-      {userToken ? <DrawerStackScreen /> : <AuthNavigation />}
+      {/* {userToken ? <DrawerStackScreen /> : <AuthNavigation />} */}
+      <DrawerStackScreen />
 
       {/* Loader */}
       <Loader loading={loading} />

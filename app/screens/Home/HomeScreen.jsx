@@ -169,11 +169,28 @@ const HomeScreen = ({navigation, route}) => {
 
   // fetch the health tips once the component mounts
   React.useEffect(() => {
-    // get the greetings
-    getGreetings();
+    // fetch the data only is the route is focused
+    const unsubscribe = navigation.addListener('focus', () => {
+      // get the greetings
+      fetchHealthTipsTen();
 
-    // fetch the health tips
-    fetchHealthTipsTen();
+      // get the greetings
+      getGreetings();
+
+      // set selected tip to empty
+      setSelectedTip('');
+
+      // set health tips to empty
+      setHealthTips([]);
+
+      // set greeting to empty
+      setGreeting('');
+
+      // set loading to false
+      setHealthlistLoading(true);
+    });
+
+    return unsubscribe;
   }, []);
 
   return (
@@ -259,7 +276,6 @@ const HomeScreen = ({navigation, route}) => {
                     height: 'auto',
                     justifyContent: 'center',
                     alignItems: 'center',
-                    // paddingVertical: 20,
                   }}>
                   <RoundLoadingAnimation width={100} height={100} />
                 </View>
