@@ -183,9 +183,6 @@ const HomeScreen = ({navigation, route}) => {
       // set health tips to empty
       setHealthTips([]);
 
-      // set greeting to empty
-      setGreeting('');
-
       // set loading to false
       setHealthlistLoading(true);
     });

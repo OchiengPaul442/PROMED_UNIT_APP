@@ -44,7 +44,7 @@ const ConfirmationScreen = ({route, navigation}) => {
               </View>
               <View style={styles.Therapist_details}>
                 <Image
-                  source={image}
+                  source={{uri: image}}
                   style={{
                     width: 60,
                     height: 60,

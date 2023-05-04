@@ -5,6 +5,9 @@ import auth from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+// NetInfo
+import NetInfo from '@react-native-community/netinfo';
+
 // navigation
 import {createStackNavigator} from '@react-navigation/stack';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
@@ -257,12 +260,35 @@ const AppNavigations = () => {
         .collection('Users')
         .doc(uid)
         .onSnapshot(documentSnapshot => {
+          // if connection is established successfully set user data
           if (documentSnapshot.exists) {
             // set userData state
             setUserData(documentSnapshot.data());
+          } else {
+            // if connection is not established successfully
+            setUserData('');
+            // set error status to true
+            setErrorStatus(true);
+            // set error message
+            setError('Error connecting to server');
           }
         });
     }
+
+    // if app is not connected to internet
+    NetInfo.addEventListener(state => {
+      if (!state.isConnected) {
+        // set error status to true
+        setErrorStatus(true);
+        // set error message
+        setError('No internet connection');
+      } else {
+        // set error status to false
+        setErrorStatus(false);
+        // set error message
+        setError('');
+      }
+    });
   }, [userToken]);
 
   return (
@@ -282,8 +308,8 @@ const AppNavigations = () => {
         setErrorStatus,
       }}>
       {/* Display */}
-      {/* {userToken ? <DrawerStackScreen /> : <AuthNavigation />} */}
-      <DrawerStackScreen />
+      {userToken ? <DrawerStackScreen /> : <AuthNavigation />}
+      {/* <DrawerStackScreen /> */}
 
       {/* Loader */}
       <Loader loading={loading} />

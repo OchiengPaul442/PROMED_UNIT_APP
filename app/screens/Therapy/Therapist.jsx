@@ -5,9 +5,13 @@ import {
   StyleSheet,
   TouchableOpacity,
   Image,
+  TextInput,
+  KeyboardAvoidingView,
 } from 'react-native';
 import React from 'react';
 
+// table component
+import {Table, Row, Rows} from 'react-native-table-component';
 //General styles
 import Styles from '../../constants/Styles';
 
@@ -27,13 +31,39 @@ import {
 
 const Therapy = ({navigation, route}) => {
   // get params
-  const {name, title, location, image} = route.params;
+  const {name, title, location, language, about, image} = route.params;
   // Modal
   const [isVisible, setModalVisible] = React.useState(false);
 
   // time and date
   const [date, setDate] = React.useState('');
   const [time, setTime] = React.useState('');
+
+  const Schedule = [
+    {
+      id: 1,
+      date: '12/12/2021',
+      time: '9 - 11 Am',
+      status: 'Pending',
+    },
+    {
+      id: 2,
+      date: '12/12/2021',
+      time: '12 - 2 Pm',
+      status: 'Pending',
+    },
+    {
+      id: 3,
+      date: '12/12/2021',
+      time: '3 - 5 Pm',
+      status: 'Booked',
+    },
+  ];
+
+  const TABLECONTENT = {
+    tableHead: ['Date', 'Time', 'Status'],
+    tableData: Schedule.map(item => [item.date, item.time, item.status]),
+  };
 
   const toggleModalVisibility = () => {
     setModalVisible(!isVisible);
@@ -50,12 +80,15 @@ const Therapy = ({navigation, route}) => {
                 style={{
                   width: '100%',
                   display: 'flex',
-                  justifyContent: 'space-between',
-                  flexDirection: 'row-reverse',
+                  alignItems: 'center',
+                  justifyContent: 'center',
                   paddingTop: 20,
+                  paddingVertical: 20,
                   paddingHorizontal: 10,
                 }}>
                 <Text style={Styles.heading}>Therapist</Text>
+              </View>
+              <View style={{paddingHorizontal: 10}}>
                 <TouchableOpacity onPress={() => navigation.goBack()}>
                   <BackBtn width={30} height={30} fill={COLORS.primary} />
                 </TouchableOpacity>
@@ -82,7 +115,7 @@ const Therapy = ({navigation, route}) => {
                     <View style={{position: 'relative'}}>
                       <Text style={Styles.heading2}>{name}</Text>
                       <Text style={Styles.title2}>{title}</Text>
-                      <Text style={Styles.text}>Rating: Good</Text>
+                      <Text style={Styles.text}>Language: {language}</Text>
                     </View>
                   </View>
                   <View
@@ -122,12 +155,43 @@ const Therapy = ({navigation, route}) => {
                 <View style={styles.card}>
                   <View>
                     <Text style={Styles.heading2}>About</Text>
-                    <Text style={Styles.text}>
-                      Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-                      Sed vitae nisl vitae nisl luctus lacinia. Sed vitae nisl
-                      vitae nisl luctus lacinia. Sed vitae nisl vitae nisl
-                      luctus lacinia.
+                    <Text style={Styles.text}>{about}</Text>
+                  </View>
+                </View>
+
+                {/* Availability section */}
+                <View style={styles.card}>
+                  <View>
+                    <Text style={Styles.heading2}>Availability</Text>
+                    <Text style={{paddingVertical: 10, ...Styles.text}}>
+                      Monday - Friday: 9:00 AM - 5:00 PM
                     </Text>
+                  </View>
+                </View>
+
+                {/* Schedule section */}
+                <View style={styles.card}>
+                  <View style={{flex: 1}}>
+                    <Text style={Styles.heading2}>Schedule</Text>
+                    {/* table */}
+                    <View style={{width: '100%', paddingVertical: 10}}>
+                      <Table
+                        borderStyle={{
+                          borderWidth: 2,
+                          borderColor: COLORS.tertiary,
+                        }}>
+                        <Row
+                          data={TABLECONTENT.tableHead}
+                          style={styles.head}
+                          textStyle={{padding: 10, ...Styles.text}}
+                        />
+
+                        <Rows
+                          data={TABLECONTENT.tableData}
+                          textStyle={{padding: 10, ...Styles.text}}
+                        />
+                      </Table>
+                    </View>
                   </View>
                 </View>
 
@@ -138,14 +202,43 @@ const Therapy = ({navigation, route}) => {
                   </Text>
                 </View>
                 {/* Date picker */}
-                <Datepicker style={styles.card} />
+                <Datepicker style={styles.card} datachange={e => setDate(e)} />
                 {/* Time picker */}
-                <RecButton
-                  text="Select Time"
-                  bgColor={COLORS.tertiary}
-                  textColor={COLORS.white}
-                  onPress={toggleModalVisibility}
-                />
+                <View style={styles.card}>
+                  <KeyboardAvoidingView style={{width: '100%'}}>
+                    <View style={Styles.Qgroup}>
+                      <Text style={Styles.heading2}>
+                        Enter time for the appointment
+                      </Text>
+                      <Text style={{paddingBottom: 10, ...Styles.text}}>
+                        select based on Therapists availability!
+                      </Text>
+                      <TextInput
+                        style={Styles.Qinput}
+                        placeholder=""
+                        onChangeText={text => setTime(text)}
+                      />
+                    </View>
+                  </KeyboardAvoidingView>
+                </View>
+                {/* payment method */}
+                <Text style={Styles.heading2}>Select Payment Method</Text>
+                <View
+                  style={{
+                    width: '100%',
+                    height: 'auto',
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    paddingVertical: 10,
+                  }}>
+                  <Text
+                    style={{
+                      ...Styles.text,
+                    }}>
+                    N/A
+                  </Text>
+                </View>
               </View>
 
               {/* submit button */}
@@ -217,6 +310,10 @@ const styles = StyleSheet.create({
     shadowRadius: 3.84,
     elevation: 5,
   },
+
+  // table styles
+  container: {flex: 1, padding: 16, paddingTop: 30, backgroundColor: '#fff'},
+  head: {height: 40, backgroundColor: '#f1f8ff'},
 });
 
 export default Therapy;

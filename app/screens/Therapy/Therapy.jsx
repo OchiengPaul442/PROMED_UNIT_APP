@@ -155,6 +155,8 @@ const Therapy = ({navigation}) => {
                             name: item.name,
                             location: item.location,
                             title: item.title,
+                            about: item.about,
+                            language: item.language,
                             image: item.image,
                           })
                         }
@@ -243,6 +245,8 @@ const Therapy = ({navigation}) => {
                 name: selectedTherapist.name,
                 location: selectedTherapist.location,
                 title: selectedTherapist.title,
+                about: selectedTherapist.about,
+                language: selectedTherapist.language,
                 image: selectedTherapist.image,
               })
             }

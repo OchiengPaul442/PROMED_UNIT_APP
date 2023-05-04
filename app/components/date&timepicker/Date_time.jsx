@@ -1,5 +1,6 @@
 import {COLORS} from '../../constants';
 import DatePicker from 'react-native-modern-datepicker';
+import React from 'react';
 
 export const Datepicker = props => {
   return (
@@ -14,8 +15,7 @@ export const Datepicker = props => {
         borderColor: 'rgba(122, 146, 165, 0.1)',
       }}
       current="2020-07-13"
-      selected={props.datachange}
-      //   selected={getFormatedDate(new Date(), 'YYYY/MM/DD')}
+      onSelectedChange={props.datachange}
       mode="calendar"
       minuteInterval={30}
       style={{...props.style}}
