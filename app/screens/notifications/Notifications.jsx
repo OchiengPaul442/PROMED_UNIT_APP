@@ -11,10 +11,6 @@ import React, {useContext} from 'react';
 // context
 import {AuthContext} from '../../navigations/Context/AuthContext';
 
-// firebase imports
-import auth from '@react-native-firebase/auth';
-import firestore from '@react-native-firebase/firestore';
-
 // constants
 import {COLORS} from '../../constants';
 
@@ -30,9 +26,12 @@ import {
 //General styles
 import Styles from '../../constants/Styles';
 
+// fetch functions
+import {fetchNotifications} from '../../../fireStore';
+
 const Notifications = ({navigation}) => {
   // context
-  const {userData, setError, setErrorStatus} = useContext(AuthContext);
+  const {setError} = useContext(AuthContext);
 
   // modal
   const [open, setOpen] = React.useState(false);
@@ -65,49 +64,17 @@ const Notifications = ({navigation}) => {
     return colors[random];
   };
 
-  // function to get notifications
-  const getNotifications = async () => {
-    // set loading to true
-    setLoading(true);
-
-    // get current user
-    const user = auth().currentUser;
-
-    try {
-      // get notifications from firestore under the Users collection
-      firestore()
-        .collection('Users')
-        .doc(user.uid)
-        .collection('Notifications')
-        .orderBy('createdAt', 'desc')
-        .onSnapshot(querySnapshot => {
-          const notifications = [];
-          querySnapshot.forEach(documentSnapshot => {
-            notifications.push({
-              ...documentSnapshot.data(),
-              key: documentSnapshot.id,
-            });
-          });
-          // set notifications state
-          setNotifications(notifications);
-          // set loading to false
-          setLoading(false);
-        });
-    } catch (error) {
-      // set loading to false
-      setLoading(false);
-      // set error
-      setError(error.message);
-      // set error status
-      setErrorStatus('error');
-    }
-  };
-
   React.useEffect(() => {
     // if route is focused
     const unsubscribe = navigation.addListener('focus', () => {
       // get notifications
-      getNotifications();
+      fetchNotifications(setLoading)
+        .then(notifications => {
+          setNotifications(notifications);
+        })
+        .catch(error => {
+          setError(error.message);
+        });
     });
 
     // Return the function to unsubscribe from the event so it gets removed on unmount
@@ -156,15 +123,25 @@ const Notifications = ({navigation}) => {
         {/* Content section */}
         <View style={styles.notification_container}>
           <ScrollView showsVerticalScrollIndicator={false}>
-            {!loading ? (
+            {loading ? (
               <View
                 style={{
                   display: 'flex',
                   justifyContent: 'center',
                   alignItems: 'center',
-                  height: 400,
+                  height: 300,
                 }}>
                 <RoundLoadingAnimation width={80} height={80} />
+              </View>
+            ) : notifications.length === 0 ? (
+              <View
+                style={{
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  height: 300,
+                }}>
+                <Text style={Styles.title2}>No notifications</Text>
               </View>
             ) : (
               notifications.map((item, index) => (

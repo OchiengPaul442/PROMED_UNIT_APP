@@ -4,7 +4,7 @@ import React from 'react';
 // Modals
 import Modal from 'react-native-modal';
 
-export const BottomModal = ({Visibility, hide, children}) => {
+const BottomModal = ({Visibility, hide, children}) => {
   return (
     <Modal
       style={{
@@ -21,19 +21,7 @@ export const BottomModal = ({Visibility, hide, children}) => {
   );
 };
 
-export const CenterHalf = ({Visibility, hide, children}) => {
-  return (
-    <Modal
-      animationIn={'slideInUp'}
-      animationOut={'slideOutDown'}
-      avoidKeyboard={true}
-      backdropOpacity={0.4}
-      isVisible={Visibility}
-      onBackdropPress={hide}>
-      <View style={styles.modalCenter}>{children}</View>
-    </Modal>
-  );
-};
+export default BottomModal;
 
 const styles = StyleSheet.create({
   // Bottom Half modal
@@ -42,16 +30,6 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: 'white',
-    padding: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderRadius: 4,
-    borderColor: 'rgba(0, 0, 0, 0.1)',
-  },
-
-  // Center Half modal
-  modalCenter: {
     backgroundColor: 'white',
     padding: 20,
     justifyContent: 'center',

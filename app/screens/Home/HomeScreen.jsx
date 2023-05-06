@@ -6,36 +6,40 @@ import {
   FlatList,
   TouchableOpacity,
 } from 'react-native';
-import React, {useContext} from 'react';
+import React, {useContext, Suspense} from 'react';
 // context
 import {AuthContext} from '../../navigations/Context/AuthContext';
-
-// firebase imports
-import firestore from '@react-native-firebase/firestore';
-import firebase from '@react-native-firebase/app';
 
 //General styles
 import Styles from '../../constants/Styles';
 
 // constants
 import {COLORS, SIZES} from '../../constants';
-import {Card, CenterHalf, RoundLoadingAnimation} from '../../components';
+import {Card, RoundLoadingAnimation} from '../../components';
 
 // screen layout
 import Screen from '../../layout/Screen';
 
-// services
-import MoodTracker from '../../services/moodTracker/MoodTracker';
+// lazy loading
+const MoodTracker = React.lazy(() =>
+  import('../../services/moodTracker/MoodTracker'),
+);
+const CenterHalf = React.lazy(() => import('../../components'));
+
+// fetch functions
+import {
+  fetchUserAppointments,
+  fetchDailyMentalHealthTips,
+  fetchMoreDailyMentalHealthTips,
+} from '../../../fireStore';
 
 const HomeScreen = ({navigation, route}) => {
   // use the useContext hook to get the user data value
-  const {userData, anonymous} = useContext(AuthContext);
+  const {userData, anonymous, setError} = useContext(AuthContext);
 
   // loading
-  const [Healthlistloading, setHealthlistLoading] = React.useState(false);
-
-  // show load more button
-  const [showLoadMore, setShowLoadMore] = React.useState(false);
+  const [Loading, setLoading] = React.useState(false);
+  const [Loading2, setLoading2] = React.useState(false);
 
   // model
   const [open, setOpen] = React.useState(false);
@@ -47,14 +51,12 @@ const HomeScreen = ({navigation, route}) => {
   // Health tips
   const [healthTips, setHealthTips] = React.useState([]);
 
+  // Get the user appointments
+  const [userAppointments, setUserAppointments] = React.useState(0);
+
   const toggleModal = () => {
     setOpen(!open);
   };
-
-  // Get users info
-  const [user, setUser] = React.useState({
-    sessions: 2,
-  });
 
   // greetings function
   const getGreetings = () => {
@@ -88,103 +90,35 @@ const HomeScreen = ({navigation, route}) => {
     return colors[random];
   };
 
-  // function to fetch the live stream of the health tips from firestore once the component mounts but 10 and then load more when the user scrolls
-  const fetchHealthTipsTen = async () => {
-    try {
-      // set loading to true
-      setHealthlistLoading(true);
-
-      const list = [];
-
-      await firestore()
-        .collection('HealthTips')
-        .orderBy('createdAt', 'desc')
-        .limit(10)
-        .get()
-        .then(querySnapshot => {
-          // console.log('Total Health Tips: ', querySnapshot.size);
-
-          querySnapshot.forEach(doc => {
-            const {title, description, mood, createdAt} = doc.data();
-            list.push({
-              id: doc.id,
-              title,
-              mood,
-              description,
-              createdAt: createdAt.toDate(),
-            });
-          });
-        });
-
-      setHealthTips(list);
-
-      // console.log('Health Tips: ', healthTips);
-    } catch (e) {
-      console.log(e);
-    }
-
-    // set loading to false
-    setHealthlistLoading(false);
-  };
-
-  // function to fetch more health tips when the user scrolls
-  const fetchMoreHealthTips = async () => {
-    try {
-      // set loading to true
-      setHealthlistLoading(true);
-
-      const list = [];
-
-      await firestore()
-        .collection('HealthTips')
-        .orderBy('createdAt', 'desc')
-        .startAfter(healthTips[healthTips.length - 1].createdAt)
-        .limit(10)
-        .get()
-        .then(querySnapshot => {
-          // console.log('Total Health Tips: ', querySnapshot.size);
-
-          querySnapshot.forEach(doc => {
-            const {title, description, mood, createdAt} = doc.data();
-            list.push({
-              id: doc.id,
-              title,
-              mood,
-              description,
-              createdAt: createdAt.toDate(),
-            });
-          });
-        });
-
-      setHealthTips([...healthTips, ...list]);
-
-      // console.log('Health Tips: ', healthTips);
-    } catch (e) {
-      console.log(e);
-    }
-
-    // set loading to false
-    setHealthlistLoading(false);
-  };
-
   // fetch the health tips once the component mounts
   React.useEffect(() => {
     // fetch the data only is the route is focused
     const unsubscribe = navigation.addListener('focus', () => {
       // get the greetings
-      fetchHealthTipsTen();
-
-      // get the greetings
       getGreetings();
 
-      // set selected tip to empty
-      setSelectedTip('');
+      // fetch the health tips
+      fetchDailyMentalHealthTips(setLoading)
+        .then(tips => {
+          setHealthTips(tips);
+        })
+        .catch(e => {
+          // set the error
+          setError(e.message);
+        });
 
-      // set health tips to empty
-      setHealthTips([]);
+      // fetch the user appointments
+      fetchUserAppointments()
+        .then(count => {
+          setUserAppointments(count);
+        })
+        .catch(e => {
+          // set the user appointments to 0
+          setUserAppointments(0);
 
-      // set loading to false
-      setHealthlistLoading(true);
+          // set the error
+          setError(e.message);
+        });
     });
 
     return unsubscribe;
@@ -206,7 +140,9 @@ const HomeScreen = ({navigation, route}) => {
             )}
           </Text>
           <Text style={styles.sessions}>
-            You have {user.sessions} sessions today
+            You have
+            {userAppointments ? ' ' + userAppointments + ' ' : ' 0 '}
+            Appointments
           </Text>
         </View>
 
@@ -219,7 +155,10 @@ const HomeScreen = ({navigation, route}) => {
                 Track Your Mood to get customized daily health tips
               </Text>
               {/* mood tracker */}
-              <MoodTracker />
+              <Suspense
+                fallback={<RoundLoadingAnimation width={80} height={80} />}>
+                <MoodTracker />
+              </Suspense>
             </View>
 
             {/* Health tips */}
@@ -227,69 +166,98 @@ const HomeScreen = ({navigation, route}) => {
               <Text style={{paddingHorizontal: 10, ...Styles.heading}}>
                 Daily Mental Health Tips
               </Text>
-              <FlatList
-                style={{marginTop: 15}}
-                scrollEnabled={false}
-                data={healthTips}
-                keyExtractor={(item, index) => index.toString()}
-                renderItem={({item, index}) => (
-                  <View key={item.id} style={{paddingHorizontal: 10}}>
-                    <Card
-                      Press={() => {
-                        setSelectedTip(item);
-                        toggleModal();
-                      }}
-                      bgColor={COLORS.lightGray}
-                      height={90}>
-                      <View
-                        style={{
-                          backgroundColor: randomColor(),
-                          width: 50,
-                          height: 50,
-                          borderRadius: 50,
-                          justifyContent: 'center',
-                          alignItems: 'center',
-                        }}>
-                        <Text style={styles.Tip_Number}>{index + 1}</Text>
-                      </View>
-                      <View style={styles.Tip_Container}>
-                        <Text style={Styles.title}>
-                          {item.title.substring(0, 30)}
-                        </Text>
-                        <Text style={Styles.text}>
-                          {item.description.substring(0, 85) + '...'}
-                        </Text>
-                      </View>
-                    </Card>
-                  </View>
-                )}
-              />
-
-              {/* load more */}
-              {Healthlistloading ? (
+              {Loading ? (
                 <View
                   style={{
                     width: '100%',
-                    height: 'auto',
+                    height: 300,
                     justifyContent: 'center',
                     alignItems: 'center',
                   }}>
                   <RoundLoadingAnimation width={100} height={100} />
                 </View>
-              ) : (
-                <TouchableOpacity
-                  onPress={() => {
-                    fetchMoreHealthTips();
+              ) : healthTips.length === 0 ? (
+                <View
+                  style={{
+                    width: '100%',
+                    height: 300,
+                    justifyContent: 'center',
+                    alignItems: 'center',
                   }}>
-                  <Text
-                    style={{
-                      textAlign: 'center',
-                      paddingVertical: 10,
-                      color: COLORS.red,
-                    }}>
-                    Load More
+                  <Text style={Styles.title2}>
+                    No health tips available at the moment
                   </Text>
-                </TouchableOpacity>
+                </View>
+              ) : (
+                <View>
+                  <FlatList
+                    style={{marginTop: 15}}
+                    scrollEnabled={false}
+                    data={healthTips}
+                    keyExtractor={(item, index) => index.toString()}
+                    renderItem={({item, index}) => (
+                      <View key={item.id} style={{paddingHorizontal: 10}}>
+                        <Card
+                          Press={() => {
+                            setSelectedTip(item);
+                            toggleModal();
+                          }}
+                          bgColor={COLORS.lightGray}
+                          height={90}>
+                          <View
+                            style={{
+                              backgroundColor: randomColor(),
+                              width: 50,
+                              height: 50,
+                              borderRadius: 50,
+                              justifyContent: 'center',
+                              alignItems: 'center',
+                            }}>
+                            <Text style={styles.Tip_Number}>{index + 1}</Text>
+                          </View>
+                          <View style={styles.Tip_Container}>
+                            <Text style={Styles.title}>
+                              {item.title.substring(0, 30)}
+                            </Text>
+                            <Text style={Styles.text}>
+                              {item.description.substring(0, 85) + '...'}
+                            </Text>
+                          </View>
+                        </Card>
+                      </View>
+                    )}
+                  />
+                  {Loading2 ? (
+                    <View
+                      style={{
+                        width: '100%',
+                        height: 'auto',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                      }}>
+                      <RoundLoadingAnimation width={100} height={100} />
+                    </View>
+                  ) : (
+                    <TouchableOpacity
+                      onPress={() => {
+                        fetchMoreDailyMentalHealthTips(
+                          setLoading2,
+                          setHealthTips,
+                          healthTips,
+                          setError,
+                        );
+                      }}>
+                      <Text
+                        style={{
+                          textAlign: 'center',
+                          paddingVertical: 10,
+                          color: COLORS.red,
+                        }}>
+                        Load More
+                      </Text>
+                    </TouchableOpacity>
+                  )}
+                </View>
               )}
             </View>
           </ScrollView>
@@ -297,23 +265,25 @@ const HomeScreen = ({navigation, route}) => {
       </View>
 
       {/* model */}
-      {selectedTip ? (
-        <CenterHalf Visibility={open} hide={toggleModal}>
-          <Text style={Styles.title}>{selectedTip.title}</Text>
-          <Text style={{paddingVertical: 10, ...Styles.text}}>
-            {selectedTip.description}
-          </Text>
-          <TouchableOpacity onPress={toggleModal}>
-            <Text
-              style={{
-                paddingVertical: 10,
-                color: COLORS.red,
-              }}>
-              Close
+      <Suspense fallback={<RoundLoadingAnimation width={80} height={80} />}>
+        {selectedTip ? (
+          <CenterHalf Visibility={open} hide={toggleModal}>
+            <Text style={Styles.title}>{selectedTip.title}</Text>
+            <Text style={{paddingVertical: 10, ...Styles.text}}>
+              {selectedTip.description}
             </Text>
-          </TouchableOpacity>
-        </CenterHalf>
-      ) : null}
+            <TouchableOpacity onPress={toggleModal}>
+              <Text
+                style={{
+                  paddingVertical: 10,
+                  color: COLORS.red,
+                }}>
+                Close
+              </Text>
+            </TouchableOpacity>
+          </CenterHalf>
+        ) : null}
+      </Suspense>
     </Screen>
   );
 };

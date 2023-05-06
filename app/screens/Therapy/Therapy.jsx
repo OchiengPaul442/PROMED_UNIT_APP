@@ -7,11 +7,10 @@ import {
   Image,
   FlatList,
 } from 'react-native';
-import React from 'react';
+import React, {useContext, Suspense} from 'react';
 
-// firebase imports
-import auth, {firebase} from '@react-native-firebase/auth';
-import firestore from '@react-native-firebase/firestore';
+// context
+import {AuthContext} from '../../navigations/Context/AuthContext';
 
 //General styles
 import Styles from '../../constants/Styles';
@@ -23,103 +22,48 @@ import {Menu, Card, RoundLoadingAnimation} from '../../components';
 // layout
 import Screen from '../../layout/Screen';
 
-// diagnosis tool
-import DiagnosisTools from '../../services/diagnosisTool/DiagnosisTools';
+// Lazy load the DiagnosisTools and BottomModal components
+const DiagnosisTools = React.lazy(() =>
+  import('../../services/diagnosisTool/DiagnosisTools'),
+);
+const BottomModal = React.lazy(() =>
+  import('../../components/Modals/BottomModal'),
+);
 
-// modal
-import {BottomModal} from '../../components';
+// fetch functions
+import {fetchTherapist, fetchMoreTherapist} from '../../../fireStore';
 
 const Therapy = ({navigation}) => {
+  // context
+  const {setError} = useContext(AuthContext);
+
   // set therapist list to state
   const [therapist, setTherapist] = React.useState([]);
 
   // set loading state
-  const [Therapyloading, setTherapyLoading] = React.useState(true);
+  const [Loading, setLoading] = React.useState(true);
+  const [Loading2, setLoading2] = React.useState(false);
 
-  // function to get therapist list from firestore
-  const getTherapist = async () => {
-    try {
-      // set loading to true
-      setTherapyLoading(true);
-
-      // get the first 4 therapist from firestore
-      const therapist = await firestore()
-        .collection('Therapists')
-        .orderBy('createdAt', 'desc')
-        .limit(4)
-        .get();
-
-      // convert therapist to array
-      const therapistList = therapist.docs.map(doc => {
-        const data = doc.data();
-        const id = doc.id;
-        return {id, ...data};
-      });
-
-      // set therapist state
-      setTherapist(therapistList);
-    } catch (e) {
-      console.log(e);
-    }
-
-    // set loading to false
-    setTherapyLoading(false);
-  };
-
-  // function to get 4 more therapist from firestore continuin from the last therapist
-  const getMoreTherapist = async () => {
-    try {
-      // set loading to true
-      setTherapyLoading(true);
-
-      const List = [];
-
-      await firestore()
-        .collection('Therapists')
-        .orderBy('createdAt', 'desc')
-        .startAfter(therapist[therapist.length - 1].createdAt)
-        .limit(4)
-        .get()
-        .then(querySnapshot => {
-          querySnapshot.forEach(documentSnapshot => {
-            List.push(documentSnapshot.data());
-          });
-        });
-
-      //set therapist state
-      setTherapist([...therapist, ...List]);
-    } catch (e) {
-      console.log(e);
-    }
-
-    // set loading to false
-    setTherapyLoading(false);
-  };
+  // Modal
+  const [isModalVisible, setModalVisible] = React.useState(false);
+  const [selectedTherapist, setSelectedTherapist] = React.useState(null);
 
   React.useEffect(() => {
     // if the route is focused, get therapist
     const unsubscribe = navigation.addListener('focus', () => {
       // get therapist
-      getTherapist();
-
-      // set selected therapist to null
-      setSelectedTherapist(null);
-
-      // set therapist list to empty array
-      setTherapist([]);
-
-      // set loading to true
-      setTherapyLoading(true);
+      fetchTherapist(setLoading)
+        .then(therapist => {
+          setTherapist(therapist);
+        })
+        .catch(e => console.log(e));
     });
 
     // unsubscribe from the event so it gets removed on unmount
     return unsubscribe;
   }, []);
 
-  // Modal
-  const [isModalVisible, setModalVisible] = React.useState(false);
-  const [selectedTherapist, setSelectedTherapist] = React.useState(null);
-
+  // toggle modal
   const toggleModal = () => {
     setModalVisible(!isModalVisible);
   };
@@ -133,7 +77,10 @@ const Therapy = ({navigation}) => {
             {/* Diagnosis Tools */}
             <View style={styles.Heading_container}>
               <Text style={Styles.heading}>Self Diagnosis</Text>
-              <DiagnosisTools />
+              <Suspense
+                fallback={<RoundLoadingAnimation width={80} height={80} />}>
+                <DiagnosisTools />
+              </Suspense>
             </View>
 
             {/* Therapist list */}
@@ -142,85 +89,119 @@ const Therapy = ({navigation}) => {
                 Available Therapist
               </Text>
               <View style={styles.Therapist_list}>
-                <FlatList
-                  style={{marginTop: 15}}
-                  scrollEnabled={false}
-                  data={therapist}
-                  keyExtractor={(item, index) => index.toString()}
-                  renderItem={({item, index}) => (
-                    <View style={{paddingHorizontal: 10}}>
-                      <Card
-                        Press={() =>
-                          navigation.push('Therapist', {
-                            item,
-                          })
-                        }
-                        bgColor={COLORS.lightGray}
-                        height={90}
-                        key={index}>
-                        <View
-                          style={{
-                            width: '20%',
-                            height: '100%',
-                            ...styles.image_container,
-                          }}>
-                          <Image
-                            source={{uri: item.image}}
-                            style={styles.Therapist_img}
-                          />
-                        </View>
-                        <View style={styles.Therapist_information}>
-                          <View
-                            style={{
-                              position: 'relative',
-                              width: '100%',
-                              height: '80%',
-                              display: 'flex',
-                              justifyContent: 'space-between',
-                            }}>
-                            <Text style={Styles.title}>{item.name}</Text>
-                            <Text style={Styles.text}>{item.location}</Text>
-                            <Text style={Styles.text}>{item.title}</Text>
-                          </View>
-                        </View>
-                        <TouchableOpacity
-                          onPress={() => {
-                            setSelectedTherapist(item);
-                            toggleModal();
-                          }}
-                          style={styles.Therapist_btn}>
-                          <Menu width={30} height={30} fill={COLORS.black} />
-                        </TouchableOpacity>
-                      </Card>
-                    </View>
-                  )}
-                />
-
-                {/* load more */}
-                {Therapyloading ? (
+                {Loading ? (
                   <View
                     style={{
                       width: '100%',
-                      height: 'auto',
+                      height: 300,
                       justifyContent: 'center',
                       alignItems: 'center',
                     }}>
-                    <RoundLoadingAnimation width={100} height={100} />
+                    <RoundLoadingAnimation width={80} height={80} />
+                  </View>
+                ) : therapist.length === 0 ? (
+                  <View
+                    style={{
+                      width: '100%',
+                      height: 200,
+                      display: 'flex',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                    }}>
+                    <Text style={{...Styles.title2}}>
+                      No Therapist Available
+                    </Text>
                   </View>
                 ) : (
-                  <TouchableOpacity
-                    onPress={() => {
-                      getMoreTherapist();
-                    }}>
-                    <Text
-                      style={{
-                        textAlign: 'center',
-                        paddingVertical: 10,
-                        color: COLORS.red,
-                      }}>
-                      Load More
-                    </Text>
-                  </TouchableOpacity>
+                  <View>
+                    <FlatList
+                      style={{marginTop: 15}}
+                      scrollEnabled={false}
+                      data={therapist}
+                      keyExtractor={(item, index) => index.toString()}
+                      renderItem={({item, index}) => (
+                        <View style={{paddingHorizontal: 10}}>
+                          <Card
+                            Press={() =>
+                              navigation.navigate('Therapist', {
+                                item,
+                              })
+                            }
+                            bgColor={COLORS.lightGray}
+                            height={90}
+                            key={index}>
+                            <View
+                              style={{
+                                width: '20%',
+                                height: '100%',
+                                ...styles.image_container,
+                              }}>
+                              <Image
+                                source={{uri: item.image}}
+                                style={styles.Therapist_img}
+                              />
+                            </View>
+                            <View style={styles.Therapist_information}>
+                              <View
+                                style={{
+                                  position: 'relative',
+                                  width: '100%',
+                                  height: '80%',
+                                  display: 'flex',
+                                  justifyContent: 'space-between',
+                                }}>
+                                <Text style={Styles.title}>{item.name}</Text>
+                                <Text style={Styles.text}>{item.location}</Text>
+                                <Text style={Styles.text}>{item.title}</Text>
+                              </View>
+                            </View>
+                            <TouchableOpacity
+                              onPress={() => {
+                                setSelectedTherapist(item);
+                                toggleModal();
+                              }}
+                              style={styles.Therapist_btn}>
+                              <Menu
+                                width={30}
+                                height={30}
+                                fill={COLORS.black}
+                              />
+                            </TouchableOpacity>
+                          </Card>
+                        </View>
+                      )}
+                    />
+                    {Loading2 ? (
+                      <View
+                        style={{
+                          width: '100%',
+                          height: 'auto',
+                          justifyContent: 'center',
+                          alignItems: 'center',
+                        }}>
+                        <RoundLoadingAnimation width={80} height={80} />
+                      </View>
+                    ) : therapist.length < 4 ? null : (
+                      <TouchableOpacity
+                        onPress={() => {
+                          fetchMoreTherapist(
+                            setLoading2,
+                            therapist,
+                            setTherapist,
+                            setError,
+                          );
+                        }}>
+                        <Text
+                          style={{
+                            textAlign: 'center',
+                            paddingVertical: 10,
+                            color: COLORS.red,
+                          }}>
+                          Load More
+                        </Text>
+                      </TouchableOpacity>
+                    )}
+                  </View>
                 )}
               </View>
             </View>
@@ -229,26 +210,31 @@ const Therapy = ({navigation}) => {
       </View>
 
       {/* Modal */}
-      {selectedTherapist ? (
-        <BottomModal Visibility={isModalVisible} hide={toggleModal}>
-          <Text style={{textAlign: 'left', width: '100%', ...Styles.heading2}}>
-            {selectedTherapist.name}
-          </Text>
-          <TouchableOpacity
-            onPress={() =>
-              navigation.push('Therapist', {
-                item: selectedTherapist,
-              })
-            }
-            style={{paddingVertical: 10}}>
-            <Text style={Styles.title}>Schedule a Session</Text>
-          </TouchableOpacity>
-          <View style={styles.separator}></View>
-          <TouchableOpacity onPress={toggleModal} style={{paddingVertical: 10}}>
-            <Text style={{color: COLORS.red}}>Close</Text>
-          </TouchableOpacity>
-        </BottomModal>
-      ) : null}
+      <Suspense fallback={<RoundLoadingAnimation width={80} height={80} />}>
+        {selectedTherapist ? (
+          <BottomModal Visibility={isModalVisible} hide={toggleModal}>
+            <Text
+              style={{textAlign: 'left', width: '100%', ...Styles.heading2}}>
+              {selectedTherapist.name}
+            </Text>
+            <TouchableOpacity
+              onPress={() =>
+                navigation.push('Therapist', {
+                  item: selectedTherapist,
+                })
+              }
+              style={{paddingVertical: 10}}>
+              <Text style={Styles.title}>Schedule a Session</Text>
+            </TouchableOpacity>
+            <View style={styles.separator}></View>
+            <TouchableOpacity
+              onPress={toggleModal}
+              style={{paddingVertical: 10}}>
+              <Text style={{color: COLORS.red}}>Close</Text>
+            </TouchableOpacity>
+          </BottomModal>
+        ) : null}
+      </Suspense>
     </Screen>
   );
 };

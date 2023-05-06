@@ -8,7 +8,10 @@ import {
   TouchableOpacity,
   FlatList,
 } from 'react-native';
-import React from 'react';
+import React, {useContext, Suspense} from 'react';
+
+//context
+import {AuthContext} from '../../navigations/Context/AuthContext';
 
 //General styles
 import Styles from '../../constants/Styles';
@@ -19,53 +22,43 @@ import {
   Menu,
   Plus,
   Card,
-  BottomModal,
-  CenterHalf,
   RecButton,
+  RoundLoadingAnimation,
 } from '../../components';
+
+// lazy loading
+const BottomModal = React.lazy(() =>
+  import('../../components/Modals/BottomModal'),
+);
+const CenterHalf = React.lazy(() =>
+  import('../../components/Modals/CenterHalf'),
+);
 
 // screen layout
 import Screen from '../../layout/Screen';
 
+// fetch functions
+import {
+  fetchDiscussionBoard,
+  fetchMoreDiscussionBoard,
+  searchDiscussionBoard,
+} from '../../../fireStore';
+
 const Groups = ({navigation}) => {
-  // List of available Groups
-  const groups = [
-    {
-      name: 'Group 1',
-      Number_Of_Members: 15,
-      image: require('../../assets/images/profilepic.jpg'),
-    },
-    {
-      name: 'Group 2',
-      Number_Of_Members: 5,
-      image: require('../../assets/images/profilepic.jpg'),
-    },
-    {
-      name: 'Group 3',
-      Number_Of_Members: 5,
-      image: require('../../assets/images/profilepic.jpg'),
-    },
-    {
-      name: 'Group 4',
-      Number_Of_Members: 25,
-      image: require('../../assets/images/profilepic.jpg'),
-    },
-    {
-      name: 'Group 5',
-      Number_Of_Members: 15,
-      image: require('../../assets/images/profilepic.jpg'),
-    },
-    {
-      name: 'Group 6',
-      Number_Of_Members: 50,
-      image: require('../../assets/images/profilepic.jpg'),
-    },
-  ];
+  // context
+  const {setError} = useContext(AuthContext);
 
   // Modal
   const [isModalVisible, setModalVisible] = React.useState(false);
   const [isModalVisible2, setModalVisible2] = React.useState(false);
   const [selectedGroup, setSelectedGroup] = React.useState('');
+
+  // list of available Groups
+  const [Groupdata, setGroup] = React.useState([]);
+
+  // set loading state
+  const [loading, setLoading] = React.useState(true);
+  const [loading2, setLoading2] = React.useState(true);
 
   const toggleModal = () => {
     setModalVisible(!isModalVisible);
@@ -74,6 +67,22 @@ const Groups = ({navigation}) => {
   const toggleModal2 = () => {
     setModalVisible2(!isModalVisible2);
   };
+
+  React.useEffect(() => {
+    // if the route if focused
+    const unsubscribe = navigation.addListener('focus', () => {
+      // fetchDiscussionBoard
+      fetchDiscussionBoard(setLoading)
+        .then(res => {
+          setGroup(res);
+        })
+        .catch(err => {
+          setError(err.message);
+        });
+    });
+
+    return unsubscribe;
+  }, []);
 
   return (
     <Screen>
@@ -97,6 +106,14 @@ const Groups = ({navigation}) => {
                   style={styles.Search_input}
                   placeholderTextColor={COLORS.black}
                   placeholder="Search ..."
+                  onChangeText={searchText =>
+                    searchDiscussionBoard(
+                      setLoading,
+                      setGroup,
+                      setError,
+                      searchText,
+                    )
+                  }
                 />
               </View>
             </View>
@@ -106,108 +123,171 @@ const Groups = ({navigation}) => {
               List of communities to join:
             </Text>
             <View style={styles.Group_list}>
-              <FlatList
-                scrollEnabled={false}
-                data={groups}
-                keyExtractor={(item, index) => index.toString()}
-                renderItem={({item, index}) => (
-                  <View style={{paddingHorizontal: 10}}>
-                    <Card
-                      Press={() =>
-                        navigation.push('Groupchat', {
-                          groupname: item.name,
-                        })
-                      }
-                      bgColor={COLORS.lightGray}
-                      height={90}
-                      key={index}>
-                      <View
+              {loading ? (
+                <View
+                  style={{
+                    flex: 1,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    height: 300,
+                  }}>
+                  <RoundLoadingAnimation width={80} height={80} />
+                </View>
+              ) : Groupdata.length === 0 ? (
+                <View
+                  style={{
+                    flex: 1,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                  }}>
+                  <Text style={Styles.title2}>No groups available to join</Text>
+                </View>
+              ) : (
+                <View>
+                  <FlatList
+                    scrollEnabled={false}
+                    data={Groupdata}
+                    keyExtractor={(item, index) => index.toString()}
+                    renderItem={({item, index}) => (
+                      <View style={{paddingHorizontal: 10}}>
+                        <Card
+                          Press={() =>
+                            navigation.push('Groupchat', {
+                              groupname: item.name,
+                            })
+                          }
+                          bgColor={COLORS.lightGray}
+                          height={90}
+                          key={index}>
+                          <View
+                            style={{
+                              width: '20%',
+                              height: '100%',
+                              ...styles.group_image_container,
+                            }}>
+                            <Image
+                              source={{uri: item.image}}
+                              style={styles.group_image}
+                            />
+                          </View>
+                          <View style={styles.group_information}>
+                            <View
+                              style={{
+                                position: 'relative',
+                                width: '100%',
+                                height: '50%',
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                              }}>
+                              <Text style={Styles.heading}>{item.name}</Text>
+                              <Text style={Styles.text}>
+                                Members: {item.Number_Of_Members}
+                              </Text>
+                            </View>
+                            <TouchableOpacity
+                              onPress={() => {
+                                setSelectedGroup(item);
+                                toggleModal();
+                              }}
+                              style={styles.group_btn}>
+                              <Menu
+                                width={30}
+                                height={30}
+                                fill={COLORS.black}
+                              />
+                            </TouchableOpacity>
+                          </View>
+                        </Card>
+                      </View>
+                    )}
+                  />
+                  {!loading2 ? (
+                    <View
+                      style={{
+                        flex: 1,
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                      }}>
+                      <RoundLoadingAnimation width={80} height={80} />
+                    </View>
+                  ) : (
+                    <TouchableOpacity
+                      onPress={() => {
+                        fetchMoreDiscussionBoard(
+                          setLoading2,
+                          setGroup,
+                          Groupdata,
+                          setError,
+                        );
+                      }}>
+                      <Text
                         style={{
-                          width: '20%',
-                          height: '100%',
-                          ...styles.group_image_container,
+                          textAlign: 'center',
+                          paddingVertical: 10,
+                          color: COLORS.red,
                         }}>
-                        <Image source={item.image} style={styles.group_image} />
-                      </View>
-                      <View style={styles.group_information}>
-                        <View
-                          style={{
-                            position: 'relative',
-                            width: '100%',
-                            height: '50%',
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                          }}>
-                          <Text style={Styles.heading}>{item.name}</Text>
-                          <Text style={Styles.text}>
-                            Members: {item.Number_Of_Members}
-                          </Text>
-                        </View>
-                        <TouchableOpacity
-                          onPress={() => {
-                            setSelectedGroup(item);
-                            toggleModal();
-                          }}
-                          style={styles.group_btn}>
-                          <Menu width={30} height={30} fill={COLORS.black} />
-                        </TouchableOpacity>
-                      </View>
-                    </Card>
-                  </View>
-                )}
-              />
+                        Load More
+                      </Text>
+                    </TouchableOpacity>
+                  )}
+                </View>
+              )}
             </View>
           </ScrollView>
         </View>
       </View>
 
       {/* Modal1 */}
-      {selectedGroup ? (
-        <BottomModal Visibility={isModalVisible} hide={toggleModal}>
-          <Text style={{textAlign: 'left', width: '100%', ...Styles.heading2}}>
-            {selectedGroup.name}
+      <Suspense fallback={<RoundLoadingAnimation width={80} height={80} />}>
+        {selectedGroup ? (
+          <BottomModal Visibility={isModalVisible} hide={toggleModal}>
+            <Text
+              style={{textAlign: 'left', width: '100%', ...Styles.heading2}}>
+              {selectedGroup.name}
+            </Text>
+            <TouchableOpacity style={{paddingVertical: 10}}>
+              <Text style={Styles.title}>Leave Group</Text>
+            </TouchableOpacity>
+            <View style={styles.separator}></View>
+            <TouchableOpacity
+              onPress={() =>
+                navigation.push('Groupchat', {
+                  groupname: selectedGroup.name,
+                })
+              }
+              style={{paddingVertical: 10}}>
+              <Text style={Styles.title}>Join Group</Text>
+            </TouchableOpacity>
+            <View style={styles.separator}></View>
+            <TouchableOpacity
+              onPress={toggleModal}
+              style={{paddingVertical: 10}}>
+              <Text style={{color: COLORS.red}}>Close</Text>
+            </TouchableOpacity>
+          </BottomModal>
+        ) : null}
+        {/* modal2 */}
+        <CenterHalf Visibility={isModalVisible2} hide={toggleModal2}>
+          <Text
+            style={{
+              fontSize: 20,
+              color: COLORS.primary,
+            }}>
+            Enter Group Name:
           </Text>
-          <TouchableOpacity style={{paddingVertical: 10}}>
-            <Text style={Styles.title}>Leave Group</Text>
-          </TouchableOpacity>
-          <View style={styles.separator}></View>
-          <TouchableOpacity
-            onPress={() =>
-              navigation.push('Groupchat', {
-                groupname: selectedGroup.name,
-              })
-            }
-            style={{paddingVertical: 10}}>
-            <Text style={Styles.title}>Join Group</Text>
-          </TouchableOpacity>
-          <View style={styles.separator}></View>
-          <TouchableOpacity onPress={toggleModal} style={{paddingVertical: 10}}>
-            <Text style={{color: COLORS.red}}>Close</Text>
-          </TouchableOpacity>
-        </BottomModal>
-      ) : null}
-
-      {/* modal2 */}
-      <CenterHalf Visibility={isModalVisible2} hide={toggleModal2}>
-        <Text
-          style={{
-            fontSize: 20,
-            color: COLORS.primary,
-          }}>
-          Enter Group Name:
-        </Text>
-        {/* input field */}
-        <TextInput
-          style={{marginVertical: 10, ...Styles.Qinput}}
-          placeholder="Group name"
-          placeholderTextColor={COLORS.gray}
-        />
-        <RecButton
-          text="Create Group"
-          bgColor={COLORS.secondary}
-          textColor={COLORS.black}
-        />
-      </CenterHalf>
+          {/* input field */}
+          <TextInput
+            style={{marginVertical: 10, ...Styles.Qinput}}
+            placeholder="Group name"
+            placeholderTextColor={COLORS.gray}
+          />
+          <RecButton
+            text="Create Group"
+            bgColor={COLORS.secondary}
+            textColor={COLORS.black}
+          />
+        </CenterHalf>
+      </Suspense>
     </Screen>
   );
 };

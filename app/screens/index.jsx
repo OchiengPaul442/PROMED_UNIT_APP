@@ -12,7 +12,6 @@ export {default as Groups} from './discussion/Groups';
 export {default as Bot} from './Bot/Bot';
 export {default as Profile} from './profile/Profile';
 export {default as Notifications} from './notifications/Notifications';
-export {default as Settings} from './settings/Settings';
 export {default as Terms} from './Therapy/Terms';
 export {default as Test} from './Therapy/Test';
 export {default as TestResult} from './Therapy/TestResult';

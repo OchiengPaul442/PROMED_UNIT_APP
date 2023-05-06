@@ -16,9 +16,6 @@ import {AuthContext} from '../../navigations/Context/AuthContext';
 // radio button
 import RadioGroup from 'react-native-radio-buttons-group';
 
-// firebase imports
-import firestore from '@react-native-firebase/firestore';
-
 //General styles
 import Styles from '../../constants/Styles';
 
@@ -27,58 +24,36 @@ import Screen from '../../layout/Screen';
 
 // constants
 import {COLORS} from '../../constants';
-import {
-  BackBtn,
-  MessageIcon,
-  CallIcon,
-  CurvedButton,
-  Table,
-  Datepicker,
-} from '../../components';
+import {BackBtn, MessageIcon, CallIcon, CurvedButton} from '../../components';
+
+// Lazy load the Table and Datepicker components
+const Table = React.lazy(() => import('../../components/table/Table'));
+const Datepicker = React.lazy(() =>
+  import('../../components/date&timepicker/Datepicker'),
+);
+
+// fetch functions
+import {fetchTherapistSchedule} from '../../../fireStore';
 
 const Therapy = ({navigation, route}) => {
   // context
-  const {anonymous, setError, setErrorStatus} = useContext(AuthContext);
+  const {anonymous, setError} = useContext(AuthContext);
 
   // get params
   const {item} = route.params;
 
-  // Modal
-  const [isVisible, setModalVisible] = React.useState(false);
+  // set loading state
+  const [Loading, setLoading] = React.useState(true);
 
   // time and date
   const [date, setDate] = React.useState('');
   const [time, setTime] = React.useState('');
+
+  // set schedule
   const [schedule, setSchedule] = React.useState([]);
 
-  // function to fetch the live stream of the therapists schedule list from firestore
-  const fetchSchedule = () => {
-    try {
-      firestore()
-        .collection('Therapists')
-        .doc(item.id)
-        .collection('Schedule')
-        .onSnapshot(querySnapshot => {
-          const list = [];
-          querySnapshot.forEach(doc => {
-            const {date, time, status} = doc.data();
-            list.push({
-              id: doc.id,
-              date,
-              time,
-              status,
-            });
-          });
-          setSchedule(list);
-        });
-    } catch (error) {
-      // set error message
-      setError(error.message);
-    }
-  };
-
-  // function to book a session
-  const bookSession = () => {
+  // function to BookAppointment
+  const bookAppointment = () => {
     try {
       // check if date and time is selected
       if (date === '' || time === '') {
@@ -100,7 +75,7 @@ const Therapy = ({navigation, route}) => {
           // navigate to confirmation screen
           navigation.push('Confirmation', {
             name: item.name,
-            therapistId: item.id,
+            therapistId: item.key,
             title: item.title,
             image: item.image,
             date: date,
@@ -118,13 +93,14 @@ const Therapy = ({navigation, route}) => {
   React.useEffect(() => {
     // fetch data if screen is focused
     const unsubscribe = navigation.addListener('focus', () => {
-      fetchSchedule();
-
-      // set error message to null
-      setError(null);
-
-      // set schedule to empty array
-      setSchedule([]);
+      // fetchSchedule
+      fetchTherapistSchedule(setLoading, item)
+        .then(res => {
+          setSchedule(res);
+        })
+        .catch(err => {
+          setError(err.message);
+        });
     });
     return unsubscribe;
   }, []);
@@ -170,10 +146,6 @@ const Therapy = ({navigation, route}) => {
       item.time,
       item.status,
     ]),
-  };
-
-  const toggleModalVisibility = () => {
-    setModalVisible(!isVisible);
   };
 
   return (
@@ -324,7 +296,7 @@ const Therapy = ({navigation, route}) => {
                         <Text style={{...Styles.text, textAlign: 'center'}}>
                           No schedule available
                         </Text>
-                      ) : (
+                      ) : !Loading ? (
                         <Table
                           tableHead={TABLECONTENT.tableHead}
                           tableData={TABLECONTENT.tableData}
@@ -334,6 +306,10 @@ const Therapy = ({navigation, route}) => {
                           HeaderTextColor={COLORS.white}
                           HeaderBackgroundColor={COLORS.primary}
                         />
+                      ) : (
+                        <Text style={{...Styles.text, textAlign: 'center'}}>
+                          Loading schedule...
+                        </Text>
                       )}
                     </View>
                   </View>
@@ -399,14 +375,14 @@ const Therapy = ({navigation, route}) => {
               {/* submit button */}
               <View style={{paddingHorizontal: 10}}>
                 <CurvedButton
-                  text="Book Session"
+                  text="Book Appointment"
                   textColor={COLORS.black}
                   style={{
                     backgroundColor: COLORS.secondary,
                     width: '100%',
                     height: 50,
                   }}
-                  onPress={anonymous ? null : bookSession}
+                  onPress={anonymous ? null : bookAppointment}
                 />
               </View>
             </View>

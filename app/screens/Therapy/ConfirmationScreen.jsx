@@ -42,58 +42,55 @@ const ConfirmationScreen = ({route, navigation}) => {
     // get current user
     const user = auth().currentUser;
 
-    // save booking to firestore
-    await firestore()
-      .collection('Appointments')
-      .add({
-        userId: user.uid,
-        therapistId: therapistId,
-        date: date,
-        time: time,
-        token: userData.phoneNumber + token,
-        createdAt: firestore.FieldValue.serverTimestamp(),
-      })
-      .then(() => {
-        // set loading to false
-        setLoading(false);
+    try {
+      // save booking to firestore
+      await firestore()
+        .collection('Appointments')
+        .add({
+          userId: user.uid,
+          therapistId: therapistId,
+          date: date,
+          time: time,
+          token: `${userData.phoneNumber}${token}`,
+          createdAt: firestore.FieldValue.serverTimestamp(),
+        });
+
+      // set error status
+      setErrorStatus('success');
+      // set error message
+      setError('Appointment booked successfully');
+
+      // send notification to user
+      sendNotification();
+
+      // Update therapist schedule in firestore
+      await firestore()
+        .collection('Therapists')
+        .doc(therapistId)
+        .collection('Schedule')
+        .add({
+          client: user.uid,
+          date: date,
+          time: time,
+          status: 'Booked',
+          createdAt: firestore.FieldValue.serverTimestamp(),
+        });
+
+      // set timeout
+      setTimeout(() => {
         // set error status
-        setErrorStatus('success');
+        setErrorStatus('');
         // set error message
-        setError('Appointment booked successfully');
+        setError('');
+        // navigate to home screen
+        navigation.navigate('Therapy');
+      }, 1000);
+    } catch (error) {
+      // set error message
+      setError(error.message);
+    }
 
-        // send notification to user
-        sendNotification();
-
-        // Update therapist schedule in firestore
-        firestore()
-          .collection('Therapists')
-          .doc(therapistId)
-          .collection('Schedule')
-          .add({
-            client: user.uid,
-            date: date,
-            time: time,
-            status: 'Booked',
-            createdAt: firestore.FieldValue.serverTimestamp(),
-          });
-
-        // set timeout
-        setTimeout(() => {
-          // set error status
-          setErrorStatus('');
-          // set error message
-          setError('');
-          // navigate to home screen
-          navigation.navigate('Therapy');
-        }, 1000);
-      })
-      .catch(error => {
-        // set loading to false
-        setLoading(false);
-        // set error message
-        setError(error.message);
-      });
-
+    // set loading to false
     setLoading(false);
   };
 

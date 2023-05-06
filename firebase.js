@@ -157,6 +157,75 @@ export default function firebase() {
     // insertSchedule();
     // deleteSchedule();
   }, []);
+
+  // @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+  const groupRef = [
+    {
+      name: 'Family Unit',
+      Number_Of_Members: 0,
+      image: `https://source.unsplash.com/collection/139386/160x160/?sig=${Math.floor(
+        Math.random() * 1000,
+      )}`,
+    },
+    {
+      name: 'Friends',
+      Number_Of_Members: 16,
+      image: `https://source.unsplash.com/collection/139386/160x160/?sig=${Math.floor(
+        Math.random() * 1000,
+      )}`,
+    },
+    {
+      name: 'Work',
+      Number_Of_Members: 10,
+      image: `https://source.unsplash.com/collection/139386/160x160/?sig=${Math.floor(
+        Math.random() * 1000,
+      )}`,
+    },
+    {
+      name: 'School',
+      Number_Of_Members: 20,
+      image: `https://source.unsplash.com/collection/139386/160x160/?sig=${Math.floor(
+        Math.random() * 1000,
+      )}`,
+    },
+    {
+      name: 'Sports',
+      Number_Of_Members: 40,
+      image: `https://source.unsplash.com/collection/139386/160x160/?sig=${Math.floor(
+        Math.random() * 1000,
+      )}`,
+    },
+  ];
+
+  // function to add group to firebase
+  const addGroup = () => {
+    groupRef.forEach(item => {
+      firestore()
+        .collection('Groups')
+        .add({
+          name: item.name,
+          Number_Of_Members: item.Number_Of_Members,
+          image: item.image,
+          createdAt: firestore.Timestamp.fromDate(new Date()),
+        })
+        .then(() => {
+          console.log('Group added!');
+        });
+    });
+  };
+
+  // function to delete all groups
+  const deleteAllGroups = () => {
+    firestore()
+      .collection('Groups')
+      .get()
+      .then(querySnapshot => {
+        querySnapshot.forEach(documentSnapshot => {
+          documentSnapshot.ref.delete();
+        });
+      });
+  };
   return (
     <View>
       <Text>firebase</Text>
