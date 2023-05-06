@@ -156,15 +156,15 @@ const Notifications = ({navigation}) => {
         {/* Content section */}
         <View style={styles.notification_container}>
           <ScrollView showsVerticalScrollIndicator={false}>
-            {loading ? (
+            {!loading ? (
               <View
                 style={{
                   display: 'flex',
                   justifyContent: 'center',
                   alignItems: 'center',
-                  height: 300,
+                  height: 400,
                 }}>
-                <RoundLoadingAnimation width={50} height={50} />
+                <RoundLoadingAnimation width={80} height={80} />
               </View>
             ) : (
               notifications.map((item, index) => (
