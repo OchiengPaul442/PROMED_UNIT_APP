@@ -7,16 +7,42 @@ import {
   SafeAreaView,
   FlatList,
 } from 'react-native';
-import React from 'react';
+import React, {useContext} from 'react';
+// context
+import {AuthContext} from '../../navigations/Context/AuthContext';
+
+// firebase imports
+import auth from '@react-native-firebase/auth';
+import firestore from '@react-native-firebase/firestore';
+
+// constants
 import {COLORS} from '../../constants';
-import {BackBtn, FocusedStatusBar, CenterHalf, Card} from '../../components';
+
+// components
+import {
+  BackBtn,
+  FocusedStatusBar,
+  CenterHalf,
+  Card,
+  RoundLoadingAnimation,
+} from '../../components';
+
 //General styles
 import Styles from '../../constants/Styles';
 
 const Notifications = ({navigation}) => {
+  // context
+  const {userData, setError, setErrorStatus} = useContext(AuthContext);
+
   // modal
   const [open, setOpen] = React.useState(false);
   const [selectedNotification, setSelectedNotification] = React.useState(null);
+
+  // set loading state
+  const [loading, setLoading] = React.useState(false);
+
+  // set notifications state
+  const [notifications, setNotifications] = React.useState([]);
 
   const toggleModal = () => {
     setOpen(!open);
@@ -39,44 +65,54 @@ const Notifications = ({navigation}) => {
     return colors[random];
   };
 
-  // Notification list
-  const notificationList = [
-    {
-      id: 1,
-      title: 'New session1',
-      description: 'You have a new session with your therapist',
-    },
-    {
-      id: 2,
-      title: 'New session2',
-      description: 'You have a new session with your therapist',
-    },
-    {
-      id: 3,
-      title: 'New session3',
-      description: 'You have a new session with your therapist',
-    },
-    {
-      id: 4,
-      title: 'New session4',
-      description: 'You have a new session with your therapist',
-    },
-    {
-      id: 5,
-      title: 'New session5',
-      description: 'You have a new session with your therapist',
-    },
-    {
-      id: 6,
-      title: 'New session6',
-      description: 'You have a new session with your therapist',
-    },
-    {
-      id: 6,
-      title: 'New session6',
-      description: 'You have a new session with your therapist',
-    },
-  ];
+  // function to get notifications
+  const getNotifications = async () => {
+    // set loading to true
+    setLoading(true);
+
+    // get current user
+    const user = auth().currentUser;
+
+    try {
+      // get notifications from firestore under the Users collection
+      firestore()
+        .collection('Users')
+        .doc(user.uid)
+        .collection('Notifications')
+        .orderBy('createdAt', 'desc')
+        .onSnapshot(querySnapshot => {
+          const notifications = [];
+          querySnapshot.forEach(documentSnapshot => {
+            notifications.push({
+              ...documentSnapshot.data(),
+              key: documentSnapshot.id,
+            });
+          });
+          // set notifications state
+          setNotifications(notifications);
+          // set loading to false
+          setLoading(false);
+        });
+    } catch (error) {
+      // set loading to false
+      setLoading(false);
+      // set error
+      setError(error.message);
+      // set error status
+      setErrorStatus('error');
+    }
+  };
+
+  React.useEffect(() => {
+    // if route is focused
+    const unsubscribe = navigation.addListener('focus', () => {
+      // get notifications
+      getNotifications();
+    });
+
+    // Return the function to unsubscribe from the event so it gets removed on unmount
+    return unsubscribe;
+  }, []);
 
   return (
     <SafeAreaView>
@@ -120,12 +156,19 @@ const Notifications = ({navigation}) => {
         {/* Content section */}
         <View style={styles.notification_container}>
           <ScrollView showsVerticalScrollIndicator={false}>
-            <FlatList
-              scrollEnabled={false}
-              data={notificationList}
-              keyExtractor={(item, index) => index.toString()}
-              renderItem={({item, index}) => (
-                <View style={{paddingHorizontal: 10}}>
+            {loading ? (
+              <View
+                style={{
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  height: 300,
+                }}>
+                <RoundLoadingAnimation width={50} height={50} />
+              </View>
+            ) : (
+              notifications.map((item, index) => (
+                <View style={{paddingHorizontal: 10}} key={index}>
                   <Card
                     Press={() => {
                       setSelectedNotification(item);
@@ -138,20 +181,20 @@ const Notifications = ({navigation}) => {
                         backgroundColor: randomColor(),
                         ...styles.notification_number,
                       }}>
-                      <Text>{item.id}</Text>
+                      <Text>{index + 1}</Text>
                     </View>
                     <View style={{width: '100%', paddingHorizontal: 10}}>
                       <Text style={styles.notification_title}>
                         {item.title}
                       </Text>
                       <Text style={styles.notification_description}>
-                        {item.description}
+                        {item.body}
                       </Text>
                     </View>
                   </Card>
                 </View>
-              )}
-            />
+              ))
+            )}
           </ScrollView>
         </View>
       </View>
@@ -161,7 +204,10 @@ const Notifications = ({navigation}) => {
         <CenterHalf Visibility={open} hide={toggleModal}>
           <Text style={Styles.title}>{selectedNotification.title}</Text>
           <Text style={{paddingVertical: 10, ...Styles.text}}>
-            {selectedNotification.description}
+            {selectedNotification.body}
+          </Text>
+          <Text style={{paddingVertical: 10, ...Styles.text}}>
+            {selectedNotification.createdAt.toDate().toDateString()}
           </Text>
           <TouchableOpacity onPress={toggleModal}>
             <Text

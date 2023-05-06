@@ -20,6 +20,9 @@ export {default as Loader} from './loader/Loader';
 // error handle
 export {default as ErrorHandle} from './errors/ErrorHandle';
 
+// table
+export {default as Table} from './table/Table';
+
 // animations
 export {
   ConfirmedAnimation,

@@ -174,6 +174,7 @@ const BottomTabs = () => {
 const TherapyStackScreen = () => {
   return (
     <TherapyStack.Navigator
+      initialRouteName="Therapy"
       screenOptions={{
         headerShown: false,
       }}>

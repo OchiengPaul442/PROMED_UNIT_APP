@@ -152,12 +152,7 @@ const Therapy = ({navigation}) => {
                       <Card
                         Press={() =>
                           navigation.push('Therapist', {
-                            name: item.name,
-                            location: item.location,
-                            title: item.title,
-                            about: item.about,
-                            language: item.language,
-                            image: item.image,
+                            item,
                           })
                         }
                         bgColor={COLORS.lightGray}
@@ -242,12 +237,7 @@ const Therapy = ({navigation}) => {
           <TouchableOpacity
             onPress={() =>
               navigation.push('Therapist', {
-                name: selectedTherapist.name,
-                location: selectedTherapist.location,
-                title: selectedTherapist.title,
-                about: selectedTherapist.about,
-                language: selectedTherapist.language,
-                image: selectedTherapist.image,
+                item: selectedTherapist,
               })
             }
             style={{paddingVertical: 10}}>

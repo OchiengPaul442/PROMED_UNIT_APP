@@ -62,7 +62,7 @@ const ErrorHandle = props => {
             <CloseIcon width={30} height={30} fill={COLORS.red} />
           )}
         </View>
-        <Text style={[Styles.bodyText, {marginLeft: 10}]}>{props.message}</Text>
+        <Text style={{marginLeft: 10, ...Styles.text}}>{props.message}</Text>
       </View>
     </Animated.View>
   );

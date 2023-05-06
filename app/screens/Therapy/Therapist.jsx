@@ -5,13 +5,20 @@ import {
   StyleSheet,
   TouchableOpacity,
   Image,
-  TextInput,
-  KeyboardAvoidingView,
 } from 'react-native';
-import React from 'react';
+import React, {useContext} from 'react';
+// moment
+import moment from 'moment';
 
-// table component
-import {Table, Row, Rows} from 'react-native-table-component';
+// context
+import {AuthContext} from '../../navigations/Context/AuthContext';
+
+// radio button
+import RadioGroup from 'react-native-radio-buttons-group';
+
+// firebase imports
+import firestore from '@react-native-firebase/firestore';
+
 //General styles
 import Styles from '../../constants/Styles';
 
@@ -25,44 +32,144 @@ import {
   MessageIcon,
   CallIcon,
   CurvedButton,
-  RecButton,
+  Table,
   Datepicker,
 } from '../../components';
 
 const Therapy = ({navigation, route}) => {
+  // context
+  const {anonymous, setError, setErrorStatus} = useContext(AuthContext);
+
   // get params
-  const {name, title, location, language, about, image} = route.params;
+  const {item} = route.params;
+
   // Modal
   const [isVisible, setModalVisible] = React.useState(false);
 
   // time and date
   const [date, setDate] = React.useState('');
   const [time, setTime] = React.useState('');
+  const [schedule, setSchedule] = React.useState([]);
 
-  const Schedule = [
-    {
-      id: 1,
-      date: '12/12/2021',
-      time: '9 - 11 Am',
-      status: 'Pending',
-    },
-    {
-      id: 2,
-      date: '12/12/2021',
-      time: '12 - 2 Pm',
-      status: 'Pending',
-    },
-    {
-      id: 3,
-      date: '12/12/2021',
-      time: '3 - 5 Pm',
-      status: 'Booked',
-    },
-  ];
+  // function to fetch the live stream of the therapists schedule list from firestore
+  const fetchSchedule = () => {
+    try {
+      firestore()
+        .collection('Therapists')
+        .doc(item.id)
+        .collection('Schedule')
+        .onSnapshot(querySnapshot => {
+          const list = [];
+          querySnapshot.forEach(doc => {
+            const {date, time, status} = doc.data();
+            list.push({
+              id: doc.id,
+              date,
+              time,
+              status,
+            });
+          });
+          setSchedule(list);
+        });
+    } catch (error) {
+      // set error message
+      setError(error.message);
+    }
+  };
 
+  // function to book a session
+  const bookSession = () => {
+    try {
+      // check if date and time is selected
+      if (date === '' || time === '') {
+        // set error message
+        setError('Please select a date and time');
+        return;
+      } else {
+        // before booking check if that day and time is available
+        const check = schedule.filter(
+          items => items.date === date && items.time === time,
+        );
+
+        // if check is not empty
+        if (check.length !== 0) {
+          // set error message
+          setError('This time slot is not available');
+          return;
+        } else {
+          // navigate to confirmation screen
+          navigation.push('Confirmation', {
+            name: item.name,
+            therapistId: item.id,
+            title: item.title,
+            image: item.image,
+            date: date,
+            time: time,
+            token: Math.random().toString(36).substring(2),
+          });
+        }
+      }
+    } catch (error) {
+      // set error message
+      setError(error.message);
+    }
+  };
+
+  React.useEffect(() => {
+    // fetch data if screen is focused
+    const unsubscribe = navigation.addListener('focus', () => {
+      fetchSchedule();
+
+      // set error message to null
+      setError(null);
+
+      // set schedule to empty array
+      setSchedule([]);
+    });
+    return unsubscribe;
+  }, []);
+
+  // radio buttons Options for time using iteration for item.sessionTime array
+  const radioButtons = React.useMemo(() => {
+    const options = [];
+    if (item.sessionTime) {
+      item.sessionTime.forEach((time, index) => {
+        options.push({
+          id: time + ' Session',
+          label: time + ' Session',
+          value: time,
+          color: COLORS.primary,
+          labelStyle: {
+            fontSize: 14,
+            color: COLORS.black,
+          },
+        });
+      });
+    } else {
+      options.push({
+        disabled: true,
+        id: 'No Session Available',
+        label: 'No Session Available',
+        value: 'No Session Available',
+        color: COLORS.primary,
+        labelStyle: {
+          fontSize: 14,
+          color: COLORS.black,
+        },
+      });
+    }
+
+    return options;
+  }, [item.sessionTime]);
+
+  // table content
   const TABLECONTENT = {
-    tableHead: ['Date', 'Time', 'Status'],
-    tableData: Schedule.map(item => [item.date, item.time, item.status]),
+    tableHead: ['Day', 'Time', 'Status'],
+    tableData: schedule.map(item => [
+      moment(item.date, 'YYYY/MM/DD').format('dddd'),
+      item.time,
+      item.status,
+    ]),
   };
 
   const toggleModalVisibility = () => {
@@ -98,7 +205,7 @@ const Therapy = ({navigation, route}) => {
                 <View style={styles.card}>
                   <View>
                     <Image
-                      source={{uri: image}}
+                      source={{uri: item.image}}
                       style={{
                         width: 80,
                         height: 80,
@@ -113,9 +220,9 @@ const Therapy = ({navigation, route}) => {
                       alignItems: 'flex-end',
                     }}>
                     <View style={{position: 'relative'}}>
-                      <Text style={Styles.heading2}>{name}</Text>
-                      <Text style={Styles.title2}>{title}</Text>
-                      <Text style={Styles.text}>Language: {language}</Text>
+                      <Text style={Styles.heading2}>{item.name}</Text>
+                      <Text style={Styles.title2}>{item.title}</Text>
+                      <Text style={Styles.text}>Language: {item.language}</Text>
                     </View>
                   </View>
                   <View
@@ -155,17 +262,55 @@ const Therapy = ({navigation, route}) => {
                 <View style={styles.card}>
                   <View>
                     <Text style={Styles.heading2}>About</Text>
-                    <Text style={Styles.text}>{about}</Text>
+                    <Text style={Styles.text}>
+                      {item.about ? item.about : 'N/A'}
+                    </Text>
                   </View>
                 </View>
 
                 {/* Availability section */}
                 <View style={styles.card}>
-                  <View>
+                  <View style={{flex: 1}}>
                     <Text style={Styles.heading2}>Availability</Text>
-                    <Text style={{paddingVertical: 10, ...Styles.text}}>
-                      Monday - Friday: 9:00 AM - 5:00 PM
-                    </Text>
+                    <View
+                      style={{
+                        width: 'auto',
+                        display: 'flex',
+                        flexDirection: 'row',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                      }}>
+                      <Text style={{paddingVertical: 10, ...Styles.text}}>
+                        {item.daysAvailable
+                          ? item.daysAvailable.map((day, index) => {
+                              return (
+                                <Text key={index}>
+                                  {day}
+                                  {index === item.daysAvailable.length - 1
+                                    ? ''
+                                    : ', '}
+                                </Text>
+                              );
+                            })
+                          : 'N/A'}
+                      </Text>
+                      <Text
+                        style={{
+                          width: 50,
+                          padding: 5,
+                          backgroundColor:
+                            item.availabilityStatus === 'active'
+                              ? COLORS.primary
+                              : item.availabilityStatus
+                              ? COLORS.red
+                              : null,
+                          borderRadius: 8,
+                          textAlign: 'center',
+                          ...Styles.text3,
+                        }}>
+                        {item.availabilityStatus}
+                      </Text>
+                    </View>
                   </View>
                 </View>
 
@@ -175,89 +320,93 @@ const Therapy = ({navigation, route}) => {
                     <Text style={Styles.heading2}>Schedule</Text>
                     {/* table */}
                     <View style={{width: '100%', paddingVertical: 10}}>
-                      <Table
-                        borderStyle={{
-                          borderWidth: 2,
-                          borderColor: COLORS.tertiary,
-                        }}>
-                        <Row
-                          data={TABLECONTENT.tableHead}
-                          style={styles.head}
-                          textStyle={{padding: 10, ...Styles.text}}
+                      {schedule.length === 0 ? (
+                        <Text style={{...Styles.text, textAlign: 'center'}}>
+                          No schedule available
+                        </Text>
+                      ) : (
+                        <Table
+                          tableHead={TABLECONTENT.tableHead}
+                          tableData={TABLECONTENT.tableData}
+                          BorderColor={COLORS.primary}
+                          BorderWidth={1}
+                          tableDataColor={COLORS.black}
+                          HeaderTextColor={COLORS.white}
+                          HeaderBackgroundColor={COLORS.primary}
                         />
-
-                        <Rows
-                          data={TABLECONTENT.tableData}
-                          textStyle={{padding: 10, ...Styles.text}}
-                        />
-                      </Table>
+                      )}
                     </View>
                   </View>
                 </View>
 
-                {/* Schedule section */}
                 <View style={styles.card}>
-                  <Text style={Styles.heading2}>
-                    Select Appointment Date & Time
-                  </Text>
+                  <Text style={Styles.heading2}>Select Appointment Date</Text>
                 </View>
+
                 {/* Date picker */}
                 <Datepicker style={styles.card} datachange={e => setDate(e)} />
+
                 {/* Time picker */}
                 <View style={styles.card}>
-                  <KeyboardAvoidingView style={{width: '100%'}}>
-                    <View style={Styles.Qgroup}>
-                      <Text style={Styles.heading2}>
-                        Enter time for the appointment
-                      </Text>
-                      <Text style={{paddingBottom: 10, ...Styles.text}}>
-                        select based on Therapists availability!
-                      </Text>
-                      <TextInput
-                        style={Styles.Qinput}
-                        placeholder=""
-                        onChangeText={text => setTime(text)}
+                  <View>
+                    <Text style={Styles.heading2}>Select Appointment Time</Text>
+                    <Text style={{paddingBottom: 10, ...Styles.text}}>
+                      select based on Therapists availability!
+                    </Text>
+                    <View
+                      style={{
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'flex-start',
+                      }}>
+                      <RadioGroup
+                        radioButtons={radioButtons}
+                        onPress={time => {
+                          setTime(time);
+                        }}
+                        value={time}
+                        selectedId={time}
+                        layout="column"
                       />
                     </View>
-                  </KeyboardAvoidingView>
+                  </View>
                 </View>
+
                 {/* payment method */}
-                <Text style={Styles.heading2}>Select Payment Method</Text>
-                <View
-                  style={{
-                    width: '100%',
-                    height: 'auto',
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    paddingVertical: 10,
-                  }}>
-                  <Text
-                    style={{
-                      ...Styles.text,
-                    }}>
-                    N/A
-                  </Text>
+                <View style={styles.card}>
+                  <View>
+                    <Text style={Styles.heading2}>Select Payment Method</Text>
+                    <View
+                      style={{
+                        width: '100%',
+                        height: 'auto',
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        paddingVertical: 10,
+                      }}>
+                      <Text
+                        style={{
+                          ...Styles.text,
+                        }}>
+                        N/A
+                      </Text>
+                    </View>
+                  </View>
                 </View>
               </View>
 
               {/* submit button */}
               <View style={{paddingHorizontal: 10}}>
                 <CurvedButton
-                  text="Schedule Appointment"
-                  textColor={COLORS.white}
+                  text="Book Session"
+                  textColor={COLORS.black}
                   style={{
-                    backgroundColor: COLORS.tertiary,
+                    backgroundColor: COLORS.secondary,
                     width: '100%',
                     height: 50,
                   }}
-                  onPress={() =>
-                    navigation.push('Confirmation', {
-                      name: name,
-                      title: title,
-                      image: image,
-                    })
-                  }
+                  onPress={anonymous ? null : bookSession}
                 />
               </View>
             </View>

@@ -1,5 +1,15 @@
 import {StyleSheet, Text, View, TouchableOpacity, Image} from 'react-native';
-import React from 'react';
+import React, {useContext} from 'react';
+//  moment
+import moment from 'moment';
+
+// context
+import {AuthContext} from '../../navigations/Context/AuthContext';
+
+// firebase imports
+import auth from '@react-native-firebase/auth';
+import firestore from '@react-native-firebase/firestore';
+
 // screens
 import Screen from '../../layout/Screen';
 
@@ -8,11 +18,125 @@ import Styles from '../../constants/Styles';
 
 // constants
 import {COLORS} from '../../constants';
-import {ConfirmIcon, EditIcon, CurvedButton} from '../../components';
+import {
+  ConfirmIcon,
+  EditIcon,
+  CurvedButton,
+  RoundLoadingAnimation,
+} from '../../components';
 
 const ConfirmationScreen = ({route, navigation}) => {
+  // context
+  const {userData, setError, setErrorStatus} = useContext(AuthContext);
+
   // get params from route
-  const {name, title, image} = route.params;
+  const {name, title, image, date, time, therapistId, token} = route.params;
+
+  // set loading state
+  const [loading, setLoading] = React.useState(false);
+
+  // function to save booking to firestore
+  const saveBooking = async () => {
+    // set loading to true
+    setLoading(true);
+    // get current user
+    const user = auth().currentUser;
+
+    // save booking to firestore
+    await firestore()
+      .collection('Appointments')
+      .add({
+        userId: user.uid,
+        therapistId: therapistId,
+        date: date,
+        time: time,
+        token: userData.phoneNumber + token,
+        createdAt: firestore.FieldValue.serverTimestamp(),
+      })
+      .then(() => {
+        // set loading to false
+        setLoading(false);
+        // set error status
+        setErrorStatus('success');
+        // set error message
+        setError('Appointment booked successfully');
+
+        // send notification to user
+        sendNotification();
+
+        // Update therapist schedule in firestore
+        firestore()
+          .collection('Therapists')
+          .doc(therapistId)
+          .collection('Schedule')
+          .add({
+            client: user.uid,
+            date: date,
+            time: time,
+            status: 'Booked',
+            createdAt: firestore.FieldValue.serverTimestamp(),
+          });
+
+        // set timeout
+        setTimeout(() => {
+          // set error status
+          setErrorStatus('');
+          // set error message
+          setError('');
+          // navigate to home screen
+          navigation.navigate('Therapy');
+        }, 1000);
+      })
+      .catch(error => {
+        // set loading to false
+        setLoading(false);
+        // set error message
+        setError(error.message);
+      });
+
+    setLoading(false);
+  };
+
+  // function to cancel booking
+  const cancelAppointment = () => {
+    //  set error status
+    setErrorStatus('');
+    // set error message
+    setError('');
+
+    navigation.navigate('Therapy');
+  };
+
+  // function to send a notification to user after booking
+  const sendNotification = async () => {
+    // get current user
+    const user = auth().currentUser;
+
+    // get user data from firestore
+    await firestore()
+      .collection('Users')
+      .doc(user.uid)
+      .get()
+      .then(documentSnapshot => {
+        // check if document exists
+        if (documentSnapshot.exists) {
+          // get user data
+          const userData = documentSnapshot.data();
+
+          // send notification to user (create collection of notification under Users collection)
+          firestore()
+            .collection('Users')
+            .doc(user.uid)
+            .collection('Notifications')
+            .add({
+              userId: user.uid,
+              title: 'Appointment Booked',
+              body: `Your appointment with ${name} has been booked for ${date} at ${time}`,
+              createdAt: firestore.FieldValue.serverTimestamp(),
+            });
+        }
+      });
+  };
 
   return (
     <Screen>
@@ -37,7 +161,12 @@ const ConfirmationScreen = ({route, navigation}) => {
                   justifyContent: 'space-between',
                   alignItems: 'center',
                 }}>
-                <Text style={Styles.text}>ID: 2203942034802</Text>
+                <Text style={Styles.text}>
+                  TokenID:{' '}
+                  <Text style={Styles.text4}>
+                    {userData.phoneNumber + token}
+                  </Text>
+                </Text>
                 <TouchableOpacity onPress={() => navigation.goBack()}>
                   <EditIcon width={20} height={20} fill={COLORS.black} />
                 </TouchableOpacity>
@@ -64,15 +193,15 @@ const ConfirmationScreen = ({route, navigation}) => {
               <View>
                 <View style={styles.schedule_details}>
                   <Text style={Styles.title2}>Name:</Text>
-                  <Text style={Styles.text}>Kirabo</Text>
+                  <Text style={Styles.text}>{userData.userName}</Text>
                 </View>
                 <View style={styles.schedule_details}>
                   <Text style={Styles.title2}>Date:</Text>
-                  <Text style={Styles.text}>12/12/2020</Text>
+                  <Text style={Styles.text}>{date}</Text>
                 </View>
                 <View style={styles.schedule_details}>
                   <Text style={Styles.title2}>Time:</Text>
-                  <Text style={Styles.text}>12:00pm - 12:30pm (30mins)</Text>
+                  <Text style={Styles.text}>{time}</Text>
                 </View>
               </View>
             </View>
@@ -85,14 +214,20 @@ const ConfirmationScreen = ({route, navigation}) => {
               paddingHorizontal: 10,
             }}>
             <CurvedButton
-              text="Confirm Booking"
+              text={
+                loading ? (
+                  <RoundLoadingAnimation width={50} height={50} />
+                ) : (
+                  'Confirm Booking'
+                )
+              }
               textColor={COLORS.black}
               style={{
                 backgroundColor: COLORS.secondary,
                 width: '100%',
                 height: 50,
               }}
-              onPress={() => navigation.navigate('Home')}
+              onPress={saveBooking}
             />
             <CurvedButton
               text="Cancel Booking"
@@ -102,13 +237,7 @@ const ConfirmationScreen = ({route, navigation}) => {
                 width: '100%',
                 height: 50,
               }}
-              onPress={() =>
-                navigation.push('Therapy', {
-                  name: name,
-                  title: title,
-                  image: image,
-                })
-              }
+              onPress={cancelAppointment}
             />
           </View>
         </View>
