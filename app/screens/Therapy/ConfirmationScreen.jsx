@@ -25,6 +25,9 @@ import {
   RoundLoadingAnimation,
 } from '../../components';
 
+// fetch function
+import {confirmUserBooking} from '../../../fireStore';
+
 const ConfirmationScreen = ({route, navigation}) => {
   // context
   const {userData, setError, setErrorStatus} = useContext(AuthContext);
@@ -35,63 +38,20 @@ const ConfirmationScreen = ({route, navigation}) => {
   // set loading state
   const [loading, setLoading] = React.useState(false);
 
-  // function to save booking to firestore
-  const saveBooking = async () => {
-    // set loading to true
-    setLoading(true);
-    // get current user
-    const user = auth().currentUser;
-
-    try {
-      // save booking to firestore
-      await firestore()
-        .collection('Appointments')
-        .add({
-          userId: user.uid,
-          therapistId: therapistId,
-          date: date,
-          time: time,
-          token: `${userData.phoneNumber}${token}`,
-          createdAt: firestore.FieldValue.serverTimestamp(),
-        });
-
-      // set error status
-      setErrorStatus('success');
-      // set error message
-      setError('Appointment booked successfully');
-
-      // send notification to user
-      sendNotification();
-
-      // Update therapist schedule in firestore
-      await firestore()
-        .collection('Therapists')
-        .doc(therapistId)
-        .collection('Schedule')
-        .add({
-          client: user.uid,
-          date: date,
-          time: time,
-          status: 'Booked',
-          createdAt: firestore.FieldValue.serverTimestamp(),
-        });
-
-      // set timeout
-      setTimeout(() => {
-        // set error status
-        setErrorStatus('');
-        // set error message
-        setError('');
-        // navigate to home screen
-        navigation.navigate('Therapy');
-      }, 1000);
-    } catch (error) {
-      // set error message
-      setError(error.message);
-    }
-
-    // set loading to false
-    setLoading(false);
+  // Handle Booking Confirmation
+  const handleBooking = async () => {
+    confirmUserBooking(
+      therapistId,
+      date,
+      time,
+      setLoading,
+      setErrorStatus,
+      setError,
+      userData,
+      token,
+      navigation,
+      name,
+    );
   };
 
   // function to cancel booking
@@ -102,37 +62,6 @@ const ConfirmationScreen = ({route, navigation}) => {
     setError('');
 
     navigation.navigate('Therapy');
-  };
-
-  // function to send a notification to user after booking
-  const sendNotification = async () => {
-    // get current user
-    const user = auth().currentUser;
-
-    // get user data from firestore
-    await firestore()
-      .collection('Users')
-      .doc(user.uid)
-      .get()
-      .then(documentSnapshot => {
-        // check if document exists
-        if (documentSnapshot.exists) {
-          // get user data
-          const userData = documentSnapshot.data();
-
-          // send notification to user (create collection of notification under Users collection)
-          firestore()
-            .collection('Users')
-            .doc(user.uid)
-            .collection('Notifications')
-            .add({
-              userId: user.uid,
-              title: 'Appointment Booked',
-              body: `Your appointment with ${name} has been booked for ${date} at ${time}`,
-              createdAt: firestore.FieldValue.serverTimestamp(),
-            });
-        }
-      });
   };
 
   return (
@@ -224,7 +153,7 @@ const ConfirmationScreen = ({route, navigation}) => {
                 width: '100%',
                 height: 50,
               }}
-              onPress={saveBooking}
+              onPress={handleBooking}
             />
             <CurvedButton
               text="Cancel Booking"

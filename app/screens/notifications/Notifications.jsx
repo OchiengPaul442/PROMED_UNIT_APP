@@ -5,7 +5,6 @@ import {
   ScrollView,
   TouchableOpacity,
   SafeAreaView,
-  FlatList,
 } from 'react-native';
 import React, {useContext} from 'react';
 // context
@@ -18,10 +17,12 @@ import {COLORS} from '../../constants';
 import {
   BackBtn,
   FocusedStatusBar,
-  CenterHalf,
   Card,
   RoundLoadingAnimation,
 } from '../../components';
+
+// lazy loading for center half modal
+import CenterHalf from '../../components/Modals/CenterHalf';
 
 //General styles
 import Styles from '../../constants/Styles';
@@ -35,7 +36,9 @@ const Notifications = ({navigation}) => {
 
   // modal
   const [open, setOpen] = React.useState(false);
-  const [selectedNotification, setSelectedNotification] = React.useState(null);
+
+  // selected notification
+  const [selectedNotification, setSelectedNotification] = React.useState('');
 
   // set loading state
   const [loading, setLoading] = React.useState(false);

@@ -116,7 +116,6 @@ const RegistrationScreen = ({navigation}) => {
                 userType: 'patient',
                 createdAt: firestore.Timestamp.fromDate(new Date()),
                 updatedAt: firestore.Timestamp.fromDate(new Date()),
-                // generate random profile pictures fromunsplash of black people else use the default profile picture
                 avatar:
                   `https://source.unsplash.com/collection/139386/160x160/?sig=${Math.floor(
                     Math.random() * 1000,

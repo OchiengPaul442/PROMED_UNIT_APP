@@ -40,17 +40,25 @@ import Screen from '../../layout/Screen';
 // fetch functions
 import {
   fetchDiscussionBoard,
-  fetchMoreDiscussionBoard,
+  createDiscussionBoard,
   searchDiscussionBoard,
+  checkIfMember,
+  leaveDiscussionBoard,
+  joinDiscussionBoard,
 } from '../../../fireStore';
+
+// firestore
+import firestore from '@react-native-firebase/firestore';
 
 const Groups = ({navigation}) => {
   // context
-  const {setError} = useContext(AuthContext);
+  const {setError, setErrorStatus} = useContext(AuthContext);
 
   // Modal
   const [isModalVisible, setModalVisible] = React.useState(false);
   const [isModalVisible2, setModalVisible2] = React.useState(false);
+
+  // selected group
   const [selectedGroup, setSelectedGroup] = React.useState('');
 
   // list of available Groups
@@ -58,7 +66,13 @@ const Groups = ({navigation}) => {
 
   // set loading state
   const [loading, setLoading] = React.useState(true);
-  const [loading2, setLoading2] = React.useState(true);
+  const [loading2, setLoading2] = React.useState(false);
+
+  // set create group state
+  const [createGroup, setCreateGroup] = React.useState(false);
+
+  // member status
+  const [memberStatus, setMemberStatus] = React.useState(false);
 
   const toggleModal = () => {
     setModalVisible(!isModalVisible);
@@ -68,13 +82,54 @@ const Groups = ({navigation}) => {
     setModalVisible2(!isModalVisible2);
   };
 
+  // handle create group
+  const handleCreateGroup = () => {
+    createDiscussionBoard(
+      setLoading,
+      setLoading2,
+      setErrorStatus,
+      setError,
+      toggleModal2,
+      setGroup,
+      createGroup,
+    );
+  };
+
+  // join group
+  const handleJoinGroup = () => {
+    joinDiscussionBoard(
+      setLoading,
+      setLoading2,
+      setErrorStatus,
+      setError,
+      toggleModal,
+      setGroup,
+      selectedGroup,
+      setMemberStatus,
+    );
+  };
+
+  // leave group
+  const handleLeaveGroup = () => {
+    leaveDiscussionBoard(
+      setLoading,
+      setLoading2,
+      setErrorStatus,
+      setError,
+      toggleModal,
+      setGroup,
+      selectedGroup,
+      setMemberStatus,
+    );
+  };
+
   React.useEffect(() => {
     // if the route if focused
     const unsubscribe = navigation.addListener('focus', () => {
       // fetchDiscussionBoard
       fetchDiscussionBoard(setLoading)
-        .then(res => {
-          setGroup(res);
+        .then(response => {
+          setGroup(response);
         })
         .catch(err => {
           setError(err.message);
@@ -151,11 +206,14 @@ const Groups = ({navigation}) => {
                     renderItem={({item, index}) => (
                       <View style={{paddingHorizontal: 10}}>
                         <Card
-                          Press={() =>
-                            navigation.push('Groupchat', {
-                              groupname: item.name,
-                            })
-                          }
+                          Press={() => {
+                            memberStatus
+                              ? navigation.push('Groupchat', {
+                                  groupname: item.name,
+                                })
+                              : setError('Please join to view the group');
+                            setErrorStatus('error');
+                          }}
                           bgColor={COLORS.lightGray}
                           height={90}
                           key={index}>
@@ -181,12 +239,13 @@ const Groups = ({navigation}) => {
                               }}>
                               <Text style={Styles.heading}>{item.name}</Text>
                               <Text style={Styles.text}>
-                                Members: {item.Number_Of_Members}
+                                Members: {item.Number_of_Members.length}
                               </Text>
                             </View>
                             <TouchableOpacity
                               onPress={() => {
                                 setSelectedGroup(item);
+                                checkIfMember(item, setMemberStatus);
                                 toggleModal();
                               }}
                               style={styles.group_btn}>
@@ -201,35 +260,6 @@ const Groups = ({navigation}) => {
                       </View>
                     )}
                   />
-                  {!loading2 ? (
-                    <View
-                      style={{
-                        flex: 1,
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                      }}>
-                      <RoundLoadingAnimation width={80} height={80} />
-                    </View>
-                  ) : (
-                    <TouchableOpacity
-                      onPress={() => {
-                        fetchMoreDiscussionBoard(
-                          setLoading2,
-                          setGroup,
-                          Groupdata,
-                          setError,
-                        );
-                      }}>
-                      <Text
-                        style={{
-                          textAlign: 'center',
-                          paddingVertical: 10,
-                          color: COLORS.red,
-                        }}>
-                        Load More
-                      </Text>
-                    </TouchableOpacity>
-                  )}
                 </View>
               )}
             </View>
@@ -239,24 +269,18 @@ const Groups = ({navigation}) => {
 
       {/* Modal1 */}
       <Suspense fallback={<RoundLoadingAnimation width={80} height={80} />}>
-        {selectedGroup ? (
+        {selectedGroup && (
           <BottomModal Visibility={isModalVisible} hide={toggleModal}>
             <Text
               style={{textAlign: 'left', width: '100%', ...Styles.heading2}}>
               {selectedGroup.name}
             </Text>
-            <TouchableOpacity style={{paddingVertical: 10}}>
-              <Text style={Styles.title}>Leave Group</Text>
-            </TouchableOpacity>
-            <View style={styles.separator}></View>
             <TouchableOpacity
-              onPress={() =>
-                navigation.push('Groupchat', {
-                  groupname: selectedGroup.name,
-                })
-              }
+              onPress={memberStatus ? handleLeaveGroup : handleJoinGroup}
               style={{paddingVertical: 10}}>
-              <Text style={Styles.title}>Join Group</Text>
+              <Text style={Styles.title}>
+                {memberStatus ? 'Leave Group' : 'Join Group'}
+              </Text>
             </TouchableOpacity>
             <View style={styles.separator}></View>
             <TouchableOpacity
@@ -265,7 +289,7 @@ const Groups = ({navigation}) => {
               <Text style={{color: COLORS.red}}>Close</Text>
             </TouchableOpacity>
           </BottomModal>
-        ) : null}
+        )}
         {/* modal2 */}
         <CenterHalf Visibility={isModalVisible2} hide={toggleModal2}>
           <Text
@@ -280,9 +304,17 @@ const Groups = ({navigation}) => {
             style={{marginVertical: 10, ...Styles.Qinput}}
             placeholder="Group name"
             placeholderTextColor={COLORS.gray}
+            onChangeText={text => setCreateGroup(text)}
           />
           <RecButton
-            text="Create Group"
+            onPress={handleCreateGroup}
+            text={
+              loading2 ? (
+                <RoundLoadingAnimation width={50} height={50} />
+              ) : (
+                'Create Group'
+              )
+            }
             bgColor={COLORS.secondary}
             textColor={COLORS.black}
           />
