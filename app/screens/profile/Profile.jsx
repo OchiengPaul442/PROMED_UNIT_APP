@@ -7,11 +7,9 @@ import {
   Image,
   ScrollView,
   TextInput,
+  FlatList,
 } from 'react-native';
-import React, {useContext} from 'react';
-// firebase imports
-import auth from '@react-native-firebase/auth';
-import firestore from '@react-native-firebase/firestore';
+import React, {useContext, Suspense} from 'react';
 
 // context
 import {AuthContext} from '../../navigations/Context/AuthContext';
@@ -29,11 +27,24 @@ import {
   FocusedStatusBar,
   BackBtn,
   RecButton,
-  CenterHalf,
   ViewIconeye,
   CloseIconeye,
   EditIcon,
+  DeleteIcon,
+  RoundLoadingAnimation,
 } from '../../components';
+
+// lazy load centerhalf modal
+const CenterHalf = React.lazy(() =>
+  import('../../components/Modals/CenterHalf'),
+);
+
+// fetch functions
+import {
+  editUserProfile,
+  changeUserPassword,
+  deleteUserAccount,
+} from '../../../fireStore';
 
 // min 8 characters, 1 upper case letter, 1 lower case letter, 1 numeric digit.
 const passwordRules = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$/;
@@ -94,6 +105,9 @@ const Profile = ({navigation}) => {
   const [isModalVisible, setModalVisible] = React.useState(false);
   const [isModalVisible2, setModalVisible2] = React.useState(false);
 
+  // groups
+  const [groups, setGroups] = React.useState([]);
+
   const toggleModal = () => {
     setModalVisible(!isModalVisible);
   };
@@ -104,138 +118,30 @@ const Profile = ({navigation}) => {
 
   // Edit user profile function
   const editProfile = async (values, resetForm) => {
-    // set loading to true while updating user profile
-    setLoading(true);
-
-    // get current logged in user id
-    const uid = auth().currentUser.uid;
-
-    // update user profile
-    await firestore()
-      .collection('Users')
-      .doc(uid)
-      .update({
-        userName: values.username,
-        email: values.email,
-        phoneNumber: values.phone,
-      })
-      .then(() => {
-        // set loading to false after updating user profile
-        setLoading(false);
-        // reset form
-        resetForm();
-        // close modal
-        toggleModal();
-        // update error status
-        setErrorStatus('success');
-        // set error message
-        setError('Profile updated!');
-      })
-      .catch(error => {
-        // set loading to false after updating user profile
-        setLoading(false);
-        // update error status
-        setErrorStatus('error');
-        setError('Something went wrong!');
-      });
+    editUserProfile(
+      setLoading,
+      setErrorStatus,
+      setError,
+      toggleModal,
+      values,
+      resetForm,
+    );
   };
 
   // Change user password function
   const changePassword = async (values, resetForm) => {
-    // set loading to true while updating user password
-    setLoading(true);
-
-    // get current logged in user id
-    const uid = auth().currentUser.uid;
-
-    // re-authenticate user
-    const credential = auth.EmailAuthProvider.credential(
-      auth().currentUser.email,
-      values.currentPassword,
-    );
-
-    // re-authenticate user
-    await auth()
-      .currentUser.reauthenticateWithCredential(credential)
-      .then(() => {
-        // update user password
-        auth()
-          .currentUser.updatePassword(values.newPassword)
-          .then(() => {
-            // set loading to false after updating user password
-            setLoading(false);
-            // reset form
-            resetForm();
-            // update error status
-            setErrorStatus('success');
-            // set error message
-            setError('Password updated!');
-          })
-          .catch(error => {
-            // set loading to false after updating user password
-            setLoading(false);
-            // update error status
-            setErrorStatus('error');
-            // set error message
-            setError('Something went wrong!');
-          });
-      })
-      .catch(error => {
-        // set loading to false after updating user password
-        setLoading(false);
-        // update error status
-        setErrorStatus('error');
-        // set error message
-        setError('Current password is incorrect!');
-      });
+    changeUserPassword(setLoading, setErrorStatus, setError, values, resetForm);
   };
 
   // Delete user account function
   const deleteAccount = async () => {
-    // set loading to true while deleting user account
-    setLoading(true);
-
-    // get current logged in user id
-    const uid = auth().currentUser.uid;
-
-    // delete user account
-    await firestore()
-      .collection('Users')
-      .doc(uid)
-      .delete()
-      .then(() => {
-        // delete user account
-        auth()
-          .currentUser.delete()
-          .then(() => {
-            // set loading to false after deleting user account
-            setLoading(false);
-            // close modal
-            toggleModal2();
-            // clear user token
-            setUserToken('');
-            // update error status
-            setErrorStatus('success');
-            // set error message
-            setError('Account deleted!');
-          })
-          .catch(error => {
-            // set loading to false after deleting user account
-            setLoading(false);
-            // update error status
-            setErrorStatus('error');
-            // set error message
-            setError('Something went wrong!');
-          });
-      })
-      .catch(error => {
-        // set loading to false after deleting user account
-        setLoading(false);
-        // update error status
-        setErrorStatus('error');
-        // set error message
-        setError('Something went wrong!');
-      });
+    deleteUserAccount(
+      setLoading,
+      setErrorStatus,
+      setError,
+      toggleModal2,
+      setUserToken,
+    );
   };
 
   return (
@@ -546,136 +452,141 @@ const Profile = ({navigation}) => {
         </View>
       </View>
 
-      {/* MODAL1 */}
-      <CenterHalf Visibility={isModalVisible} hide={toggleModal}>
-        <Formik
-          initialValues={{
-            username: anonymous
-              ? 'N/A'
-              : userData
-              ? userData.userName
-              : 'Loading...',
-            email: anonymous ? 'N/A' : userData ? userData.email : 'Loading...',
-            phone: anonymous
-              ? 'N/A'
-              : userData
-              ? userData.phoneNumber
-              : 'Loading...',
-          }}
-          validateOnMount={true}
-          validationSchema={EditValidationSchema}
-          onSubmit={(values, {resetForm}) => {
-            editProfile(values, resetForm);
-          }}>
-          {({
-            handleChange,
-            handleBlur,
-            handleSubmit,
-            values,
-            errors,
-            touched,
-          }) => (
-            <View style={{width: '100%'}}>
-              <Text style={Styles.title}>Edit details</Text>
-              <View
-                style={{
-                  width: '100%',
-                  position: 'relative',
-                }}>
-                <View style={Styles.Qgroup}>
-                  <Text style={Styles.Qlabel}>Username</Text>
-                  <TextInput
-                    style={{marginBottom: 10, ...Styles.Qinput}}
-                    placeholder=""
-                    onBlur={handleBlur('username')}
-                    value={values.username}
-                    onChangeText={handleChange('username')}
-                  />
-                  {errors.username && touched.username && (
-                    <Text style={Styles.error}>{errors.username}</Text>
-                  )}
-                </View>
-                <View style={Styles.Qgroup}>
-                  <Text style={Styles.Qlabel}>Email Address</Text>
-                  <TextInput
-                    style={{marginBottom: 10, ...Styles.Qinput}}
-                    placeholder=""
-                    onBlur={handleBlur('email')}
-                    value={values.email}
-                    onChangeText={handleChange('email')}
-                  />
-                  {errors.email && touched.email && (
-                    <Text style={Styles.error}>{errors.email}</Text>
-                  )}
-                </View>
-                <View style={Styles.Qgroup}>
-                  <Text style={Styles.Qlabel}>Phone Number</Text>
-                  <TextInput
-                    style={{marginBottom: 10, ...Styles.Qinput}}
-                    placeholder=""
-                    onBlur={handleBlur('phone')}
-                    value={values.phone}
-                    onChangeText={handleChange('phone')}
-                  />
-                  {errors.phone && touched.phone && (
-                    <Text style={Styles.error}>{errors.phone}</Text>
-                  )}
-                </View>
+      <Suspense fallback={<RoundLoadingAnimation width={80} height={80} />}>
+        {/* MODAL1 */}
+        <CenterHalf Visibility={isModalVisible} hide={toggleModal}>
+          <Formik
+            initialValues={{
+              username: anonymous
+                ? 'N/A'
+                : userData
+                ? userData.userName
+                : 'Loading...',
+              email: anonymous
+                ? 'N/A'
+                : userData
+                ? userData.email
+                : 'Loading...',
+              phone: anonymous
+                ? 'N/A'
+                : userData
+                ? userData.phoneNumber
+                : 'Loading...',
+            }}
+            validateOnMount={true}
+            validationSchema={EditValidationSchema}
+            onSubmit={(values, {resetForm}) => {
+              editProfile(values, resetForm);
+            }}>
+            {({
+              handleChange,
+              handleBlur,
+              handleSubmit,
+              values,
+              errors,
+              touched,
+            }) => (
+              <View style={{width: '100%'}}>
+                <Text style={Styles.title}>Edit details</Text>
                 <View
                   style={{
                     width: '100%',
-                    flexDirection: 'row',
-                    justifyContent: 'flex-start',
-                    alignItems: 'center',
+                    position: 'relative',
                   }}>
-                  <RecButton
-                    onPress={anonymous ? null : handleSubmit}
-                    w={100}
-                    text={anonymous ? 'N/A' : 'Save'}
-                    bgColor={COLORS.primary}
-                    textColor={COLORS.white}
-                  />
-                  <RecButton
-                    onPress={toggleModal}
-                    w={100}
-                    text="Close"
-                    bgColor={COLORS.tertiary}
-                    textColor={COLORS.white}
-                  />
+                  <View style={Styles.Qgroup}>
+                    <Text style={Styles.Qlabel}>Username</Text>
+                    <TextInput
+                      style={{marginBottom: 10, ...Styles.Qinput}}
+                      placeholder=""
+                      onBlur={handleBlur('username')}
+                      value={values.username}
+                      onChangeText={handleChange('username')}
+                    />
+                    {errors.username && touched.username && (
+                      <Text style={Styles.error}>{errors.username}</Text>
+                    )}
+                  </View>
+                  <View style={Styles.Qgroup}>
+                    <Text style={Styles.Qlabel}>Email Address</Text>
+                    <TextInput
+                      style={{marginBottom: 10, ...Styles.Qinput}}
+                      placeholder=""
+                      onBlur={handleBlur('email')}
+                      value={values.email}
+                      onChangeText={handleChange('email')}
+                    />
+                    {errors.email && touched.email && (
+                      <Text style={Styles.error}>{errors.email}</Text>
+                    )}
+                  </View>
+                  <View style={Styles.Qgroup}>
+                    <Text style={Styles.Qlabel}>Phone Number</Text>
+                    <TextInput
+                      style={{marginBottom: 10, ...Styles.Qinput}}
+                      placeholder=""
+                      onBlur={handleBlur('phone')}
+                      value={values.phone}
+                      onChangeText={handleChange('phone')}
+                    />
+                    {errors.phone && touched.phone && (
+                      <Text style={Styles.error}>{errors.phone}</Text>
+                    )}
+                  </View>
+                  <View
+                    style={{
+                      width: '100%',
+                      flexDirection: 'row',
+                      justifyContent: 'flex-start',
+                      alignItems: 'center',
+                    }}>
+                    <RecButton
+                      onPress={anonymous ? null : handleSubmit}
+                      w={100}
+                      text={anonymous ? 'N/A' : 'Save'}
+                      bgColor={COLORS.primary}
+                      textColor={COLORS.white}
+                    />
+                    <RecButton
+                      onPress={toggleModal}
+                      w={100}
+                      text="Close"
+                      bgColor={COLORS.tertiary}
+                      textColor={COLORS.white}
+                    />
+                  </View>
                 </View>
               </View>
-            </View>
-          )}
-        </Formik>
-      </CenterHalf>
-
-      {/* MODAL2 */}
-      <CenterHalf Visibility={isModalVisible2} hide={toggleModal2}>
-        <Text style={Styles.title}>Are You sure about this?</Text>
-        <View
-          style={{
-            width: 'auto',
-            position: 'relative',
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'space-around',
-          }}>
-          <RecButton
-            onPress={anonymous ? null : deleteAccount}
-            text={anonymous ? 'N/A' : 'Yes'}
-            w={100}
-            bgColor={COLORS.red}
-            textColor={COLORS.white}
-          />
-          <RecButton
-            onPress={toggleModal2}
-            text="No"
-            w={100}
-            bgColor={COLORS.primary}
-            textColor={COLORS.white}
-          />
-        </View>
-      </CenterHalf>
+            )}
+          </Formik>
+        </CenterHalf>
+        {/* MODAL2 */}
+        <CenterHalf Visibility={isModalVisible2} hide={toggleModal2}>
+          <Text style={Styles.title}>Are You sure about this?</Text>
+          <View
+            style={{
+              width: 'auto',
+              position: 'relative',
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'space-around',
+            }}>
+            <RecButton
+              onPress={anonymous ? null : deleteAccount}
+              text={anonymous ? 'N/A' : 'Yes'}
+              w={100}
+              bgColor={COLORS.red}
+              textColor={COLORS.white}
+            />
+            <RecButton
+              onPress={toggleModal2}
+              text="No"
+              w={100}
+              bgColor={COLORS.primary}
+              textColor={COLORS.white}
+            />
+          </View>
+        </CenterHalf>
+      </Suspense>
     </SafeAreaView>
   );
 };

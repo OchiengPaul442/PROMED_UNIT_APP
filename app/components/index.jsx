@@ -52,6 +52,7 @@ export {
   CloseIconeye,
   TickIcon,
   CloseIcon,
+  DeleteIcon,
 } from './icons/Icons';
 
 export {FocusedStatusBar, Checkbox};

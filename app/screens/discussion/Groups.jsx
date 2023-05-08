@@ -8,7 +8,7 @@ import {
   TouchableOpacity,
   FlatList,
 } from 'react-native';
-import React, {useContext, Suspense} from 'react';
+import React, {useContext, Suspense, useReducer} from 'react';
 
 //context
 import {AuthContext} from '../../navigations/Context/AuthContext';
@@ -42,17 +42,19 @@ import {
   fetchDiscussionBoard,
   createDiscussionBoard,
   searchDiscussionBoard,
-  checkIfMember,
   leaveDiscussionBoard,
   joinDiscussionBoard,
 } from '../../../fireStore';
 
-// firestore
-import firestore from '@react-native-firebase/firestore';
+// firebase
+import auth from '@react-native-firebase/auth';
 
 const Groups = ({navigation}) => {
   // context
   const {setError, setErrorStatus} = useContext(AuthContext);
+
+  // current user
+  const currentUser = auth().currentUser;
 
   // Modal
   const [isModalVisible, setModalVisible] = React.useState(false);
@@ -207,12 +209,18 @@ const Groups = ({navigation}) => {
                       <View style={{paddingHorizontal: 10}}>
                         <Card
                           Press={() => {
-                            memberStatus
-                              ? navigation.push('Groupchat', {
-                                  groupname: item.name,
-                                })
-                              : setError('Please join to view the group');
-                            setErrorStatus('error');
+                            if (
+                              item.Number_of_Members.map(
+                                item => item.userId,
+                              ).includes(currentUser.uid)
+                            ) {
+                              navigation.push('Groupchat', {
+                                groupdata: item,
+                              });
+                            } else {
+                              setError('Please join to view the group');
+                              setErrorStatus('error');
+                            }
                           }}
                           bgColor={COLORS.lightGray}
                           height={90}
@@ -244,8 +252,12 @@ const Groups = ({navigation}) => {
                             </View>
                             <TouchableOpacity
                               onPress={() => {
+                                item.Number_of_Members.map(
+                                  item => item.userId,
+                                ).includes(currentUser.uid)
+                                  ? setMemberStatus(true)
+                                  : setMemberStatus(false);
                                 setSelectedGroup(item);
-                                checkIfMember(item, setMemberStatus);
                                 toggleModal();
                               }}
                               style={styles.group_btn}>

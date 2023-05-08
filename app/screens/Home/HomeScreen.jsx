@@ -24,7 +24,9 @@ import Screen from '../../layout/Screen';
 const MoodTracker = React.lazy(() =>
   import('../../services/moodTracker/MoodTracker'),
 );
-const CenterHalf = React.lazy(() => import('../../components'));
+const CenterHalf = React.lazy(() =>
+  import('../../components/Modals/CenterHalf'),
+);
 
 // fetch functions
 import {

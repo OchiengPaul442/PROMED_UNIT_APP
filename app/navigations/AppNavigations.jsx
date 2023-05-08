@@ -49,6 +49,7 @@ import {
   Notifications,
   Groupchat,
   Profile,
+  Groupdetails,
   Splash,
 } from '../screens';
 
@@ -198,6 +199,7 @@ const GroupStackScreen = () => {
       }}>
       <GroupStack.Screen name="Groups" component={Groups} />
       <GroupStack.Screen name="Groupchat" component={Groupchat} />
+      <GroupStack.Screen name="Groupdetails" component={Groupdetails} />
     </GroupStack.Navigator>
   );
 };

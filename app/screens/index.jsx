@@ -19,3 +19,4 @@ export {default as TherapistScreen} from './Therapy/Therapist';
 export {default as ConfirmationScreen} from './Therapy/ConfirmationScreen';
 export {default as Groupchat} from './discussion/Groupchat';
 export {default as Splash} from '../components/splash/Splash';
+export {default as Groupdetails} from './discussion/Groupdetails';

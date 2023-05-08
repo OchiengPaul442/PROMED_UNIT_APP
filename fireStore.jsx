@@ -353,9 +353,157 @@ export async function sendNotification(name, date, time) {
 }
 
 //-------------------------------------------------------------------------//
+// PROFILE SCREEN FUNCTIONS
+//-------------------------------------------------------------------------//
+// Edit user profile
+export async function editUserProfile(
+  setLoading,
+  setErrorStatus,
+  setError,
+  toggleModal,
+  values,
+  resetForm,
+) {
+  // set loading to true while updating user profile
+  setLoading(true);
+
+  // get current logged in user id
+  const uid = auth().currentUser.uid;
+
+  // update user profile
+  await firestore()
+    .collection('Users')
+    .doc(uid)
+    .update({
+      userName: values.username,
+      email: values.email,
+      phoneNumber: values.phone,
+    })
+    .then(() => {
+      // set loading to false after updating user profile
+      setLoading(false);
+      // reset form
+      resetForm();
+      // close modal
+      toggleModal();
+      // update error status
+      setErrorStatus('success');
+      // set error message
+      setError('Profile updated!');
+    })
+    .catch(error => {
+      // set loading to false after updating user profile
+      setLoading(false);
+      // update error status
+      setErrorStatus('error');
+      setError('Something went wrong!');
+    });
+}
+
+// Change user password
+export async function changeUserPassword(
+  setLoading,
+  setErrorStatus,
+  setError,
+  values,
+  resetForm,
+) {
+  // set loading to true while updating user password
+  setLoading(true);
+
+  // get current logged in user id
+  const uid = auth().currentUser.uid;
+
+  // re-authenticate user
+  const credential = auth.EmailAuthProvider.credential(
+    auth().currentUser.email,
+    values.currentPassword,
+  );
+
+  // re-authenticate user
+  await auth()
+    .currentUser.reauthenticateWithCredential(credential)
+    .then(() => {
+      // update user password
+      auth()
+        .currentUser.updatePassword(values.newPassword)
+        .then(() => {
+          // set loading to false after updating user password
+          setLoading(false);
+          // reset form
+          resetForm();
+          // update error status
+          setErrorStatus('success');
+          // set error message
+          setError('Password updated!');
+        })
+        .catch(error => {
+          // set loading to false after updating user password
+          setLoading(false);
+          // update error status
+          setErrorStatus('error');
+          // set error message
+          setError('Something went wrong!');
+        });
+    })
+    .catch(error => {
+      // set loading to false after updating user password
+      setLoading(false);
+      // update error status
+      setErrorStatus('error');
+      // set error message
+      setError('Current password is incorrect!');
+    });
+}
+
+// Delete user account
+export async function deleteUserAccount(
+  setLoading,
+  setErrorStatus,
+  setError,
+  toggleModal2,
+  setUserToken,
+) {
+  // set loading to true while deleting user account
+  setLoading(true);
+
+  // get current logged in user id
+  const uid = auth().currentUser.uid;
+
+  // get reference to user document in firestore collection
+  const userDocRef = firestore().collection('Users').doc(uid);
+
+  try {
+    // delete user document from firestore collection
+    await userDocRef.delete();
+
+    // delete user account from authentication
+    await auth().currentUser.delete();
+
+    // set loading to false after deleting user account
+    setLoading(false);
+    // close modal
+    toggleModal2();
+    // clear user token
+    setUserToken('');
+    // update error status
+    setErrorStatus('success');
+    // set error message
+    setError('Account deleted!');
+  } catch (error) {
+    // set loading to false after deleting user account
+    setLoading(false);
+    // update error status
+    setErrorStatus('error');
+    // set error message using error code and message from firebase
+    setError(`Something went wrong! (${error.code}: ${error.message})`);
+  }
+}
+
+//-------------------------------------------------------------------------//
 // DISCUSSION BOARD FUNCTIONS
 //-------------------------------------------------------------------------//
-// fetch discussion board
+// fetch discussion board and check if current user is a member of that group
 export async function fetchDiscussionBoard(setLoading) {
   // set loading to true
   setLoading(true);
@@ -543,33 +691,6 @@ export async function createDiscussionBoard(
 
     // set error
     setError(error.message);
-  }
-}
-
-// function to check if current user is a member of a discussion board
-export async function checkIfMember(item, setMemberStatus) {
-  // get current user
-  const currentUser = auth().currentUser;
-
-  // check if current user is a member of the Groups collection()
-  const memberRef = firestore().collection('Groups').doc(item.key);
-
-  // Get the array of members
-  const members = await memberRef
-    .get()
-    .then(snapshot => snapshot.data().Number_of_Members);
-
-  // caputure the userId element of the array
-  const userId = members.map(item => item.userId);
-
-  // Check if the current user is a member of the array
-  const isMember = userId.includes(currentUser.uid);
-
-  // If the current user is a member of the array, then they are a member of the group
-  if (isMember) {
-    setMemberStatus(true);
-  } else {
-    setMemberStatus(false);
   }
 }
 
@@ -776,5 +897,251 @@ export async function leaveDiscussionBoard(
 
     // set error
     setError('Yes its this' + error.message);
+  }
+}
+
+// function to delete a discussion board
+export async function deleteDiscussionBoard(
+  setLoading,
+  setLoading2,
+  setErrorStatus,
+  setError,
+  toggleModal,
+  setGroup,
+  selectedGroup,
+  setMemberStatus,
+) {
+  try {
+    // set loading to true
+    setLoading2(true);
+
+    // get current user data
+    const currentUser = auth().currentUser;
+
+    // check if current user is a member of the Groups collection()
+    const memberRef = firestore().collection('Groups').doc(selectedGroup.key);
+
+    // Get the array of members
+    const members = await memberRef
+      .get()
+      .then(snapshot => snapshot.data().Number_of_Members);
+
+    // caputure the userId element of the array
+    const userId = members.map(item => item.userId);
+
+    // Check if the current user is a member of the array
+    const isMember = userId.includes(currentUser.uid);
+
+    // If the current user is a member of the array, then they are a member of the group
+    if (isMember) {
+      // check if current user is the creator of the discussion board
+      if (currentUser.uid === selectedGroup.createdBy) {
+        // remove current user from the array of members
+        await memberRef.update({
+          Number_of_Members: firestore.FieldValue.arrayRemove({
+            userId: currentUser.uid,
+          }),
+        });
+
+        // delete discussion board
+        await memberRef.delete();
+
+        // get discussion board
+        const discussionBoard = await fetchDiscussionBoard(setLoading);
+
+        // set discussion board
+        setGroup(discussionBoard);
+
+        //set error
+        setErrorStatus('success');
+        setError('You have deleted this group successfully');
+
+        // set loading to false
+        setLoading2(false);
+
+        // set modal visible to false
+        toggleModal();
+
+        // set member status to false
+        setMemberStatus(false);
+
+        // send notification to user that created the discussion board
+        await firestore()
+          .collection('Users')
+          .doc(currentUser.uid)
+          .collection('Notifications')
+          .add({
+            userId: currentUser.uid,
+            title: 'Deleted Discussion Board',
+            body: `You deleted the discussion board called  ${
+              selectedGroup.name
+            }. Deleted on ${
+              new Date().getDate() +
+              '/' +
+              new Date().getMonth() +
+              '/' +
+              new Date().getFullYear()
+            } at ${
+              new Date().getHours() > 12 && new Date().getHours() < 24
+                ? new Date().getHours() -
+                  12 +
+                  ':' +
+                  new Date().getMinutes() +
+                  ' PM'
+                : new Date().getHours() + ':' + new Date().getMinutes() + ' AM'
+            }`,
+            createdAt: firestore.FieldValue.serverTimestamp(),
+          });
+      } else {
+        // set loading to false
+        setLoading2(false);
+        setErrorStatus('error');
+        // set error
+        setError('You are not the creator / admin of this group');
+      }
+    } else {
+      // set loading to false
+      setLoading2(false);
+
+      // set error status
+      setErrorStatus('error');
+
+      // set error
+      setError('You are not a member of this group');
+    }
+  } catch (error) {
+    // set loading to false
+    setLoading2(false);
+
+    setErrorStatus('error');
+    // set error
+    setError('Yes its this' + error.message);
+  }
+}
+
+// function to send live chat message with in the group
+export async function sendLiveChatMessage(
+  setErrorStatus,
+  setError,
+  groupkey,
+  message,
+  setMessage,
+) {
+  try {
+    // get current user data
+    const currentUser = auth().currentUser;
+
+    // check if current user is a member of the Groups collection()
+    const memberRef = firestore().collection('Groups').doc(groupkey);
+
+    // Get the array of members
+    const members = await memberRef
+      .get()
+      .then(snapshot => snapshot.data().Number_of_Members);
+
+    // caputure the userId element of the array
+    const userId = members.map(item => item.userId);
+
+    // Check if the current user is a member of the array
+    const isMember = userId.includes(currentUser.uid);
+
+    // If the current user is a member of the array, then they are a member of the group
+    if (isMember) {
+      // check if message is empty
+      if (message === '') {
+        // set error status
+        setErrorStatus('error');
+        // set error
+        setError('Message cannot be empty');
+      } else {
+        // send message
+        await memberRef.collection('Messages').add({
+          userId: currentUser.uid,
+          message: message,
+          createdAt: new Date().getTime(),
+          date: new Date().getDate(),
+        });
+
+        // set message to empty
+        setMessage('');
+      }
+    } else {
+      // set error status
+      setErrorStatus('error');
+
+      // set error
+      setError('You are not a member of this group');
+    }
+  } catch (error) {
+    // set error status
+    setErrorStatus('error');
+
+    // set error
+    setError('Yes its this' + error.message);
+  }
+}
+
+// function to fetch live chat messages
+export async function fetchLiveChatMessages(
+  setLoading,
+  setPastMessages,
+  groupdata,
+) {
+  try {
+    // Set loading to true
+    setLoading(true);
+
+    // Get current user data
+    const currentUser = auth().currentUser;
+
+    // Get the group document reference
+    const groupRef = firestore().collection('Groups').doc(groupdata.key);
+
+    // Get the group data
+    const groupData = await groupRef.get();
+
+    // Get the array of members
+    const {Number_of_Members: members} = groupData.data();
+
+    // Get the user ids of the members
+    const userIds = members.map(member => member.userId);
+
+    // Check if the current user is a member of the group
+    const isMember = userIds.includes(currentUser.uid);
+
+    // If the current user is a member of the group, then fetch messages
+    if (isMember) {
+      // Get the messages collection reference
+      const messagesRef = groupRef.collection('Messages');
+
+      // Subscribe to the messages snapshot
+      messagesRef.orderBy('createdAt', 'desc').onSnapshot(snapshot => {
+        // Create an empty array for messages
+        const messages = [];
+
+        // Loop through the snapshot documents and push them to the array
+        snapshot.forEach(doc => {
+          messages.push({
+            key: doc.id,
+            ...doc.data(),
+          });
+        });
+
+        // Set messages state
+        setPastMessages(messages);
+
+        // Set loading to false
+        setLoading(false);
+      });
+    } else {
+      // Set loading to false
+      setLoading(false);
+    }
+  } catch (error) {
+    // Handle error
+    console.error(error);
+
+    // Set loading to false
+    setLoading(false);
   }
 }
