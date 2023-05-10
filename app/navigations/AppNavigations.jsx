@@ -193,7 +193,6 @@ const TherapyStackScreen = () => {
 const GroupStackScreen = () => {
   return (
     <GroupStack.Navigator
-      initialRouteName="Groups"
       screenOptions={{
         headerShown: false,
       }}>
@@ -256,17 +255,24 @@ const AppNavigations = () => {
   React.useEffect(() => {
     if (userToken) {
       // get current user UID
-      const uid = auth().currentUser.uid;
+      const user = auth().currentUser;
+
+      // get display name and photo url from auth
+      const {displayName, photoURL} = user;
 
       // get user data from firestore
       firestore()
         .collection('Users')
-        .doc(uid)
+        .doc(user.uid)
         .onSnapshot(documentSnapshot => {
           // if connection is established successfully set user data
           if (documentSnapshot.exists) {
             // set userData state
-            setUserData(documentSnapshot.data());
+            setUserData({
+              ...documentSnapshot.data(),
+              displayName,
+              photoURL,
+            });
           } else {
             // if connection is not established successfully
             setUserData('');
@@ -326,6 +332,7 @@ export default AppNavigations;
 
 const styles = StyleSheet.create({
   menuBar: {
+    height: 50,
     position: 'absolute',
     bottom: 3,
     marginHorizontal: 3,

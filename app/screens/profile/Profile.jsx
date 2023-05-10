@@ -171,7 +171,7 @@ const Profile = ({navigation}) => {
           {/* Profile Image */}
           <View style={styles.Profile_image}>
             <Image
-              source={userData ? {uri: userData.avatar} : ProfileMale}
+              source={userData ? {uri: userData.photoURL} : ProfileMale}
               style={{width: 120, height: 120, borderRadius: 100}}
             />
           </View>
@@ -242,7 +242,7 @@ const Profile = ({navigation}) => {
                         {anonymous
                           ? 'N/A'
                           : userData
-                          ? userData.userName
+                          ? userData.displayName
                           : 'Loading...'}
                       </Text>
                     </View>
@@ -460,7 +460,7 @@ const Profile = ({navigation}) => {
               username: anonymous
                 ? 'N/A'
                 : userData
-                ? userData.userName
+                ? userData.displayName
                 : 'Loading...',
               email: anonymous
                 ? 'N/A'

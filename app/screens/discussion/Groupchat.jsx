@@ -35,6 +35,7 @@ import {sendLiveChatMessage, fetchLiveChatMessages} from '../../../fireStore';
 // firebase
 import auth from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
+import Groupdetails from './Groupdetails';
 
 const Groupchat = ({route, navigation}) => {
   // get params

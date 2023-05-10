@@ -136,7 +136,7 @@ const HomeScreen = ({navigation, route}) => {
             {anonymous ? (
               'guest user'
             ) : userData ? (
-              userData.userName
+              userData.displayName
             ) : (
               <Text style={Styles.text3}>loading...</Text>
             )}

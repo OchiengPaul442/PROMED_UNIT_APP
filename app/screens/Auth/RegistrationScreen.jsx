@@ -101,50 +101,56 @@ const RegistrationScreen = ({navigation}) => {
           .auth()
           .createUserWithEmailAndPassword(email, password)
           .then(userRecord => {
-            // Get the user UID after creating the user
-            const uid = userRecord.user.uid;
-
-            // Create a new user in the database
-            firestore()
-              .collection('Users')
-              .doc(uid)
-              .set({
-                userName: username,
-                email: email,
-                phoneNumber: phone,
-                gender: gender,
-                userType: 'patient',
-                createdAt: firestore.Timestamp.fromDate(new Date()),
-                updatedAt: firestore.Timestamp.fromDate(new Date()),
-                avatar:
+            // update user profile
+            userRecord.user
+              .updateProfile({
+                displayName: username,
+                photoURL:
                   `https://source.unsplash.com/collection/139386/160x160/?sig=${Math.floor(
                     Math.random() * 1000,
                   )}` || ProfileMale,
-              });
-          })
-          .then(() => {
-            // Set the isLoading state to false to hide the loading screen
-            setLoading(false);
-            // Navigate to the next screen or show a success message
-            navigation.navigate('Login');
-          })
-          .catch(error => {
-            // set loading to false if there is an error
-            setLoading(false);
+              })
+              .then(() => {
+                // Get the user UID after creating the user
+                const uid = userRecord.user.uid;
 
-            // catch errors
-            switch (error.code) {
-              case 'auth/email-already-in-use':
-                setError('That email address is already in use!');
-                break;
-              case 'auth/network-request-failed':
-                setError('Connection error! please try again');
-              case 'auth/operation-not-allowed':
-                setError('That email/password is not allowed!');
-              default:
-                setError(' -----Something went wrong! please try again');
-                break;
-            }
+                // Create a new user in the database
+                firestore()
+                  .collection('Users')
+                  .doc(uid)
+                  .set({
+                    email: email,
+                    phoneNumber: phone,
+                    gender: gender,
+                    userType: 'Client',
+                    createdAt: firestore.Timestamp.fromDate(new Date()),
+                    updatedAt: firestore.Timestamp.fromDate(new Date()),
+                  });
+              })
+              .then(() => {
+                // Set the isLoading state to false to hide the loading screen
+                setLoading(false);
+                // Navigate to the next screen or show a success message
+                navigation.navigate('Login');
+              })
+              .catch(error => {
+                // set loading to false if there is an error
+                setLoading(false);
+
+                // catch errors
+                switch (error.code) {
+                  case 'auth/email-already-in-use':
+                    setError('That email address is already in use!');
+                    break;
+                  case 'auth/network-request-failed':
+                    setError('Connection error! please try again');
+                  case 'auth/operation-not-allowed':
+                    setError('That email/password is not allowed!');
+                  default:
+                    setError(' -----Something went wrong! please try again');
+                    break;
+                }
+              });
           });
       } catch (error) {
         // set loading to false if there is an error

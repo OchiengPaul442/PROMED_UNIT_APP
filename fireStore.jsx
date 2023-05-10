@@ -624,6 +624,8 @@ export async function createDiscussionBoard(
             Number_of_Members: [
               {
                 userId: currentUser.uid,
+                displayName: currentUser.displayName,
+                photoURL: currentUser.photoURL,
               },
             ],
             createdAt: firestore.Timestamp.fromDate(new Date()),
@@ -738,6 +740,8 @@ export async function joinDiscussionBoard(
       await memberRef.update({
         Number_of_Members: firestore.FieldValue.arrayUnion({
           userId: currentUser.uid,
+          displayName: currentUser.displayName,
+          photoURL: currentUser.photoURL,
         }),
       });
 

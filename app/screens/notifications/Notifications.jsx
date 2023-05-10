@@ -29,6 +29,8 @@ import Styles from '../../constants/Styles';
 
 // fetch functions
 import {fetchNotifications} from '../../../fireStore';
+import firestore from '@react-native-firebase/firestore';
+import auth from '@react-native-firebase/auth';
 
 const Notifications = ({navigation}) => {
   // context
@@ -45,6 +47,29 @@ const Notifications = ({navigation}) => {
 
   // set notifications state
   const [notifications, setNotifications] = React.useState([]);
+
+  // function to delete all notifications
+  // const deleteAllNotifications = () => {
+  //   setLoading(true);
+  //   firestore()
+  //     .collection('Users')
+  //     .doc(auth().currentUser.uid)
+  //     .collection('Notifications')
+  //     .get()
+  //     .then(querySnapshot => {
+  //       querySnapshot.forEach(documentSnapshot => {
+  //         documentSnapshot.ref.delete();
+  //       });
+  //     })
+  //     .then(() => {
+  //       setLoading(false);
+  //       setNotifications([]);
+  //     })
+  //     .catch(error => {
+  //       setLoading(false);
+  //       setError(error.message);
+  //     });
+  // };
 
   const toggleModal = () => {
     setOpen(!open);
@@ -68,6 +93,7 @@ const Notifications = ({navigation}) => {
   };
 
   React.useEffect(() => {
+    // deleteAllNotifications();
     // if route is focused
     const unsubscribe = navigation.addListener('focus', () => {
       // get notifications
