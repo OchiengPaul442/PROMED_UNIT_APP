@@ -1023,7 +1023,7 @@ export async function deleteDiscussionBoard(
 export async function sendLiveChatMessage(
   setErrorStatus,
   setError,
-  groupkey,
+  groupdata,
   message,
   setMessage,
 ) {
@@ -1032,7 +1032,7 @@ export async function sendLiveChatMessage(
     const currentUser = auth().currentUser;
 
     // check if current user is a member of the Groups collection()
-    const memberRef = firestore().collection('Groups').doc(groupkey);
+    const memberRef = firestore().collection('Groups').doc(groupdata.key);
 
     // Get the array of members
     const members = await memberRef

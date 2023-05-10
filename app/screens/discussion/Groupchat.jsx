@@ -91,7 +91,7 @@ const Groupchat = ({route, navigation}) => {
     sendLiveChatMessage(
       setErrorStatus,
       setError,
-      groupkey,
+      groupdata,
       message,
       setMessage,
     );
@@ -187,23 +187,25 @@ const Groupchat = ({route, navigation}) => {
                   inverted={true}
                   keyExtractor={item => item.id}
                   extraData={pastMessages}
-                  renderItem={({item}) =>
-                    item.userId === currentUser.uid ? (
-                      <Text key={item.id} style={Styles.rightChat}>
-                        {item.message}
-                        <Text style={Styles.timestamp}>
-                          {moment(item.createdAt).format('h:mm a')}
+                  renderItem={({item}) => (
+                    <View key={item.key}>
+                      {item.userId === currentUser.uid ? (
+                        <Text style={Styles.rightChat}>
+                          {item.message}
+                          <Text style={Styles.timestamp}>
+                            {moment(item.createdAt).format('h:mm a')}
+                          </Text>
                         </Text>
-                      </Text>
-                    ) : (
-                      <Text key={item.id} style={Styles.leftChat}>
-                        {item.message}
-                        <Text style={Styles.timestamp}>
-                          {moment(item.createdAt).format('h:mm a')}
+                      ) : (
+                        <Text style={Styles.leftChat}>
+                          {item.message}
+                          <Text style={Styles.timestamp}>
+                            {moment(item.createdAt).format('h:mm a')}
+                          </Text>
                         </Text>
-                      </Text>
-                    )
-                  }
+                      )}
+                    </View>
+                  )}
                 />
               )}
             </ScrollView>
