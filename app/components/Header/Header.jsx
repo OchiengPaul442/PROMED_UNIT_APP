@@ -1,19 +1,28 @@
 import {StyleSheet, Text, View, Image, TouchableOpacity} from 'react-native';
-import {COLORS, ProfileImage} from '../../constants';
-import React from 'react';
+import React, {useContext} from 'react';
 import {useNavigation} from '@react-navigation/native';
+
+// context
+import {AuthContext} from '../../navigations/Context/AuthContext';
+
+// constants
+import {COLORS, ProfileMale} from '../../constants';
 
 // icons
 import {Bell} from '../icons/Icons';
 
 const Header = () => {
+  // use the useContext hook to get the user data value
+  const {userData, anonymous} = useContext(AuthContext);
+
   // navigation
   const navigation = useNavigation();
 
-  // Get users info
-  const [user, setUser] = React.useState({
-    date: '11 Feb 2023',
-  });
+  // get current date in the formate of 11 April 2023
+  const date = new Date();
+  const currentDate = `${date.getDate()} ${date.toLocaleString('default', {
+    month: 'long',
+  })} ${date.getFullYear()}`;
 
   return (
     <View style={styles.Header}>
@@ -28,12 +37,12 @@ const Header = () => {
               height: 48,
               borderRadius: 50,
             }}
-            source={ProfileImage}
+            source={userData.photoURL ? {uri: userData.photoURL} : ProfileMale}
           />
         </TouchableOpacity>
         {/* Date section */}
         <View style={styles.date}>
-          <Text style={styles.dateText}>{user.date}</Text>
+          <Text style={styles.dateText}>{currentDate}</Text>
         </View>
         <TouchableOpacity
           onPress={() => navigation.navigate('Notification')}

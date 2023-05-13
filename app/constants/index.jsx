@@ -4,8 +4,10 @@ import Logo from '../assets/images/Logo.png';
 import RightPam from '../assets/images/right.png';
 import LeftPam from '../assets/images/left.png';
 import ProfileImage from '../assets/images/profilepic.jpg';
+import ProfileFemale from '../assets/images/profileFemale.png';
+import ProfileMale from '../assets/images/profileMale.png';
 
-export {Logo, RightPam, LeftPam, ProfileImage};
+export {Logo, RightPam, LeftPam, ProfileImage, ProfileFemale, ProfileMale};
 
 // COLORS
 export const COLORS = {
@@ -34,4 +36,15 @@ export const SIZES = {
   large: 20,
   xl: 24,
   xxl: 32,
+};
+
+// GLOBAL FONTS
+export const FONTS = {
+  Regular: 'RobotoSerif-Regular',
+  Bold: 'RobotoSerif-Bold',
+  Italic: 'RobotoSerif-Italic',
+  Medium: 'RobotoSerif-Medium',
+  Light: 'RobotoSerif-Light',
+  SemiBold: 'RobotoSerif-SemiBold',
+  ExtraBold: 'RobotoSerif-ExtraBold',
 };

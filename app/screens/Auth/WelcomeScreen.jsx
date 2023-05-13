@@ -1,10 +1,16 @@
 import {StyleSheet, View, Text, SafeAreaView, Image} from 'react-native';
+import React, {useContext} from 'react';
+// context
+import {AuthContext} from '../../navigations/Context/AuthContext';
+
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // components
 import {FocusedStatusBar, CurvedButton} from '../../components';
 
 // Constants
 import {COLORS, SIZES, RightPam, LeftPam} from '../../constants';
+import Styles from '../../constants/Styles';
 
 const WelcomeScreen = ({navigation}) => {
   return (
@@ -45,7 +51,9 @@ const WelcomeScreen = ({navigation}) => {
               shadowRadius: 6.27,
               elevation: 5,
             }}
-            onPress={() => navigation.push('Access')}
+            onPress={() => {
+              navigation.navigate('Access');
+            }}
           />
         </View>
       </View>
@@ -62,6 +70,7 @@ const styles = StyleSheet.create({
     height: '100%',
     alignItems: 'center',
   },
+
   detail: {
     position: 'absolute',
     bottom: 80,
@@ -70,22 +79,25 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+
   detailHeading: {
-    fontSize: SIZES.extraExtraExtraLarge,
+    fontSize: SIZES.xxl,
     color: COLORS.white,
     fontWeight: 'bold',
   },
+
   detailText: {
     textAlign: 'center',
-    fontSize: SIZES.large,
+    fontSize: 15,
     color: COLORS.white,
-    fontWeight: '300',
     paddingTop: 10,
-    width: 240,
+    width: 230,
   },
+
   button: {
     marginTop: 40,
   },
+
   images: {
     position: 'absolute',
     top: 90,

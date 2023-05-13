@@ -6,44 +6,66 @@ import {
   FlatList,
   TouchableOpacity,
 } from 'react-native';
-import React from 'react';
+import React, {useContext, Suspense} from 'react';
+// context
+import {AuthContext} from '../../navigations/Context/AuthContext';
 
 //General styles
 import Styles from '../../constants/Styles';
 
 // constants
 import {COLORS, SIZES} from '../../constants';
-import {Card, CenterHalf} from '../../components';
+import {Card, RoundLoadingAnimation} from '../../components';
 
 // screen layout
 import Screen from '../../layout/Screen';
 
-// services
-import MoodTracker from '../../services/moodTracker/MoodTracker';
+// lazy loading
+const MoodTracker = React.lazy(() =>
+  import('../../services/moodTracker/MoodTracker'),
+);
+const CenterHalf = React.lazy(() =>
+  import('../../components/Modals/CenterHalf'),
+);
 
-const HomeScreen = () => {
+// fetch functions
+import {
+  fetchUserAppointments,
+  fetchDailyMentalHealthTips,
+  fetchMoreDailyMentalHealthTips,
+} from '../../../fireStore';
+
+const HomeScreen = ({navigation, route}) => {
+  // use the useContext hook to get the user data value
+  const {userData, anonymous, setError} = useContext(AuthContext);
+
+  // loading
+  const [Loading, setLoading] = React.useState(false);
+  const [Loading2, setLoading2] = React.useState(false);
+
   // model
   const [open, setOpen] = React.useState(false);
-  const [selectedTip, setSelectedTip] = React.useState(null);
+  const [selectedTip, setSelectedTip] = React.useState('');
+
+  // Get the greeting based on the time of the day
+  const [greeting, setGreeting] = React.useState('');
+
+  // Health tips
+  const [healthTips, setHealthTips] = React.useState([]);
+
+  // Get the user appointments
+  const [userAppointments, setUserAppointments] = React.useState(0);
 
   const toggleModal = () => {
     setOpen(!open);
   };
 
-  // Get users info
-  const [user, setUser] = React.useState({
-    name: 'Kirabo',
-    mood: 'Happy',
-    sessions: 2,
-    date: '11 Feb 2023',
-  });
-
-  // Get the greeting based on the time of the day
-  const [greeting, setGreeting] = React.useState('');
-
+  // greetings function
   const getGreetings = () => {
+    // get the current time of the day
     const date = new Date();
     const hours = date.getHours();
+
     if (hours < 12) {
       setGreeting('Good Morning');
     } else if (hours >= 12 && hours <= 17) {
@@ -52,10 +74,6 @@ const HomeScreen = () => {
       setGreeting('Good Evening');
     }
   };
-
-  React.useEffect(() => {
-    getGreetings();
-  }, []);
 
   // generate random colors
   const randomColor = () => {
@@ -74,34 +92,39 @@ const HomeScreen = () => {
     return colors[random];
   };
 
-  // get daily tipcard list
-  const tipcard = [
-    {
-      id: 1,
-      title: 'Be Kind to your self1',
-      text: 'Lorem ipsum dolor sit amet, consectetur adipiscing eli Lorem ipsum dolor sit amet, consectetur adipiscing eli',
-    },
-    {
-      id: 2,
-      title: 'Be Kind to your sel2',
-      text: 'Lorem ipsum dolor sit amet, consectetur adipiscing eli Lorem ipsum dolor sit amet, consectetur adipiscing eli',
-    },
-    {
-      id: 3,
-      title: 'Be Kind to your sel3',
-      text: 'Lorem ipsum dolor sit amet, consectetur adipiscing eli Lorem ipsum dolor sit amet, consectetur adipiscing eli',
-    },
-    {
-      id: 4,
-      title: 'Be Kind to your sel4',
-      text: 'Lorem ipsum dolor sit amet, consectetur adipiscing eli Lorem ipsum dolor sit amet, consectetur adipiscing eli',
-    },
-    {
-      id: 5,
-      title: 'Be Kind to your sel5',
-      text: 'Lorem ipsum dolor sit amet, consectetur adipiscing eli Lorem ipsum dolor sit amet, consectetur adipiscing eli',
-    },
-  ];
+  // fetch the health tips once the component mounts
+  React.useEffect(() => {
+    // fetch the data only is the route is focused
+    const unsubscribe = navigation.addListener('focus', () => {
+      // get the greetings
+      getGreetings();
+
+      // fetch the health tips
+      fetchDailyMentalHealthTips(setLoading)
+        .then(tips => {
+          setHealthTips(tips);
+        })
+        .catch(e => {
+          // set the error
+          setError(e.message);
+        });
+
+      // fetch the user appointments
+      fetchUserAppointments()
+        .then(count => {
+          setUserAppointments(count);
+        })
+        .catch(e => {
+          // set the user appointments to 0
+          setUserAppointments(0);
+
+          // set the error
+          setError(e.message);
+        });
+    });
+
+    return unsubscribe;
+  }, []);
 
   return (
     <Screen>
@@ -109,9 +132,19 @@ const HomeScreen = () => {
         {/* intro text */}
         <View style={styles.greeting_container}>
           <Text style={styles.greeting}>{greeting}</Text>
-          <Text style={styles.username}>{user.name}</Text>
+          <Text style={styles.username}>
+            {anonymous ? (
+              'guest user'
+            ) : userData ? (
+              userData.displayName
+            ) : (
+              <Text style={Styles.text3}>loading...</Text>
+            )}
+          </Text>
           <Text style={styles.sessions}>
-            You have {user.sessions} sessions today
+            You have
+            {userAppointments ? ' ' + userAppointments + ' ' : ' 0 '}
+            Appointments
           </Text>
         </View>
 
@@ -124,74 +157,135 @@ const HomeScreen = () => {
                 Track Your Mood to get customized daily health tips
               </Text>
               {/* mood tracker */}
-              <MoodTracker />
+              <Suspense
+                fallback={<RoundLoadingAnimation width={80} height={80} />}>
+                <MoodTracker />
+              </Suspense>
             </View>
 
-            {/* daily mental health Tips */}
+            {/* Health tips */}
             <View style={styles.Health_tips}>
               <Text style={{paddingHorizontal: 10, ...Styles.heading}}>
                 Daily Mental Health Tips
               </Text>
-              <FlatList
-                style={{marginTop: 15}}
-                scrollEnabled={false}
-                data={tipcard}
-                keyExtractor={(item, index) => index.toString()}
-                renderItem={({item, index}) => (
-                  <View key={item.id} style={{paddingHorizontal: 10}}>
-                    <Card
-                      Press={() => {
-                        setSelectedTip(item);
-                        toggleModal();
-                      }}
-                      bgColor={COLORS.lightGray}
-                      height={90}>
-                      <View
+              {Loading ? (
+                <View
+                  style={{
+                    width: '100%',
+                    height: 300,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                  }}>
+                  <RoundLoadingAnimation width={100} height={100} />
+                </View>
+              ) : healthTips.length === 0 ? (
+                <View
+                  style={{
+                    width: '100%',
+                    height: 300,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                  }}>
+                  <Text style={Styles.title2}>
+                    No health tips available at the moment
+                  </Text>
+                </View>
+              ) : (
+                <View>
+                  <FlatList
+                    style={{marginTop: 15}}
+                    scrollEnabled={false}
+                    data={healthTips}
+                    keyExtractor={(item, index) => index.toString()}
+                    renderItem={({item, index}) => (
+                      <View key={item.id} style={{paddingHorizontal: 10}}>
+                        <Card
+                          Press={() => {
+                            setSelectedTip(item);
+                            toggleModal();
+                          }}
+                          bgColor={COLORS.lightGray}
+                          height={90}>
+                          <View
+                            style={{
+                              backgroundColor: randomColor(),
+                              width: 50,
+                              height: 50,
+                              borderRadius: 50,
+                              justifyContent: 'center',
+                              alignItems: 'center',
+                            }}>
+                            <Text style={styles.Tip_Number}>{index + 1}</Text>
+                          </View>
+                          <View style={styles.Tip_Container}>
+                            <Text style={Styles.title}>
+                              {item.title.substring(0, 30)}
+                            </Text>
+                            <Text style={Styles.text}>
+                              {item.description.substring(0, 85) + '...'}
+                            </Text>
+                          </View>
+                        </Card>
+                      </View>
+                    )}
+                  />
+                  {Loading2 ? (
+                    <View
+                      style={{
+                        width: '100%',
+                        height: 'auto',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                      }}>
+                      <RoundLoadingAnimation width={100} height={100} />
+                    </View>
+                  ) : (
+                    <TouchableOpacity
+                      onPress={() => {
+                        fetchMoreDailyMentalHealthTips(
+                          setLoading2,
+                          setHealthTips,
+                          healthTips,
+                          setError,
+                        );
+                      }}>
+                      <Text
                         style={{
-                          backgroundColor: randomColor(),
-                          width: 50,
-                          height: 50,
-                          borderRadius: 50,
-                          justifyContent: 'center',
-                          alignItems: 'center',
+                          textAlign: 'center',
+                          paddingVertical: 10,
+                          color: COLORS.red,
                         }}>
-                        <Text style={styles.Tip_Number}>{item.id}</Text>
-                      </View>
-                      <View style={styles.Tip_Container}>
-                        <Text style={Styles.title}>
-                          {item.title.substring(0, 30)}
-                        </Text>
-                        <Text style={Styles.text}>
-                          {item.text.substring(0, 85) + '...'}
-                        </Text>
-                      </View>
-                    </Card>
-                  </View>
-                )}
-              />
+                        Load More
+                      </Text>
+                    </TouchableOpacity>
+                  )}
+                </View>
+              )}
             </View>
           </ScrollView>
         </View>
       </View>
 
       {/* model */}
-      {selectedTip ? (
-        <CenterHalf Visibility={open} hide={toggleModal}>
-          <Text style={Styles.title}>{selectedTip.title}</Text>
-          <Text style={{paddingVertical: 10, ...Styles.text}}>
-            {selectedTip.text}
-          </Text>
-          <TouchableOpacity onPress={toggleModal}>
-            <Text
-              style={{
-                paddingVertical: 10,
-                color: COLORS.red,
-              }}>
-              Close
+      <Suspense fallback={<RoundLoadingAnimation width={80} height={80} />}>
+        {selectedTip ? (
+          <CenterHalf Visibility={open} hide={toggleModal}>
+            <Text style={Styles.title}>{selectedTip.title}</Text>
+            <Text style={{paddingVertical: 10, ...Styles.text}}>
+              {selectedTip.description}
             </Text>
-          </TouchableOpacity>
-        </CenterHalf>
-      ) : null}
+            <TouchableOpacity onPress={toggleModal}>
+              <Text
+                style={{
+                  paddingVertical: 10,
+                  color: COLORS.red,
+                }}>
+                Close
+              </Text>
+            </TouchableOpacity>
+          </CenterHalf>
+        ) : null}
+      </Suspense>
     </Screen>
   );
 };
@@ -247,6 +341,7 @@ const styles = StyleSheet.create({
 
   // This is the user's name
   username: {
+    textTransform: 'capitalize',
     fontSize: SIZES.medium,
     color: COLORS.white,
   },

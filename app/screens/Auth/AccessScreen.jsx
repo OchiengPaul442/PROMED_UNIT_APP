@@ -1,4 +1,10 @@
 import {View, Text, Image, SafeAreaView, StyleSheet} from 'react-native';
+import React, {useContext} from 'react';
+// context
+import {AuthContext} from '../../navigations/Context/AuthContext';
+
+// firebase imports
+import auth from '@react-native-firebase/auth';
 
 // components
 import {
@@ -10,9 +16,39 @@ import {
 } from '../../components';
 
 // constants
-import {COLORS, Logo} from '../../constants';
+import {COLORS, Logo, FONTS} from '../../constants';
 
 const AccessScreen = ({navigation}) => {
+  // use the useContext hook to get the user data value
+  const {setLoading, setAnonymous, setUserToken, setUserData} =
+    useContext(AuthContext);
+
+  // handle anonymous login
+  const HandleAnonymousLogin = () => {
+    setLoading(true);
+    // sign in anonymously
+    auth()
+      .signInAnonymously()
+      .then(() => {
+        // set loading to false
+        setLoading(false);
+        // set the user token to the anonymous user id
+        setUserToken(auth().currentUser.uid);
+        // set the user data to the anonymous user data
+        setUserData('');
+        // set anonymous to true
+        setAnonymous(true);
+      })
+      .catch(error => {
+        // set loading to false
+        setLoading(false);
+        // set anonymous to false
+        setAnonymous(false);
+        // set error
+        setError('Something went wrong, please try again!');
+      });
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       {/* StatusBar */}
@@ -26,13 +62,16 @@ const AccessScreen = ({navigation}) => {
 
       {/* Buttons */}
       <View style={styles.buttonSection}>
-        <Text style={styles.buttonHead}>
+        <Text
+          style={{
+            ...styles.buttonHead,
+          }}>
           Please signin / Register to continue
         </Text>
         <View style={styles.buttons}>
           <RecButton
             text="Sign In"
-            onPress={() => navigation.push('Login')}
+            onPress={() => navigation.navigate('Login')}
             bgColor={COLORS.white}
             textColor={COLORS.primary}
             w={300}
@@ -40,7 +79,7 @@ const AccessScreen = ({navigation}) => {
           />
           <RecButton
             text="Register"
-            onPress={() => navigation.push('Register')}
+            onPress={() => navigation.navigate('Register')}
             bgColor={COLORS.white}
             textColor={COLORS.primary}
             w={300}
@@ -51,7 +90,7 @@ const AccessScreen = ({navigation}) => {
             bgColor={COLORS.white}
             textColor={COLORS.primary}
             w={300}
-            onPress={() => navigation.navigate('App')}
+            onPress={HandleAnonymousLogin}
             icon={<GuestIcon width={20} height={20} />}
           />
         </View>
@@ -62,6 +101,7 @@ const AccessScreen = ({navigation}) => {
 
 // styles
 const styles = StyleSheet.create({
+  // main container
   container: {
     position: 'relative',
     flex: 1,
@@ -70,18 +110,23 @@ const styles = StyleSheet.create({
     height: '100%',
     alignItems: 'center',
   },
+
+  // logo section
   Logo: {
     alignItems: 'center',
     justifyContent: 'center',
     position: 'absolute',
     top: 50,
   },
+
   logoText: {
     fontSize: 35,
     fontWeight: 'bold',
     color: COLORS.white,
     marginBottom: 20,
   },
+
+  // buttons section
   buttonSection: {
     position: 'absolute',
     bottom: 50,
@@ -89,6 +134,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+
   buttonHead: {
     fontSize: 24,
     width: 300,

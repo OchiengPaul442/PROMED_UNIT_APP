@@ -1,0 +1,41 @@
+{
+  "migIndex": 1,
+  "data": [
+    {
+      "path": "app/assets/fonts/RobotoSerif-Black.ttf",
+      "sha1": "d5b6321aa70f5b87a9203e709055d36e4e564ef1"
+    },
+    {
+      "path": "app/assets/fonts/RobotoSerif-Bold.ttf",
+      "sha1": "1641d34a225d28a9da85c31fbe37ead417dc47ff"
+    },
+    {
+      "path": "app/assets/fonts/RobotoSerif-ExtraBold.ttf",
+      "sha1": "7115b1aac50fa63f0854a705aed782f1220ed29b"
+    },
+    {
+      "path": "app/assets/fonts/RobotoSerif-ExtraLight.ttf",
+      "sha1": "a5359718ded331205b2fe4435e20530b2cd11e1b"
+    },
+    {
+      "path": "app/assets/fonts/RobotoSerif-Italic.ttf",
+      "sha1": "328faa6a271218c7dbc2b999de26768b8c79f3f3"
+    },
+    {
+      "path": "app/assets/fonts/RobotoSerif-Light.ttf",
+      "sha1": "faf041535ff02ebe76547323532dc3a419a4d111"
+    },
+    {
+      "path": "app/assets/fonts/RobotoSerif-Medium.ttf",
+      "sha1": "74c8c4e006dce789962f9e63a543c0554e8505ee"
+    },
+    {
+      "path": "app/assets/fonts/RobotoSerif-Regular.ttf",
+      "sha1": "80bd9f521c4203fc5b304bcd36a9471dc5b05881"
+    },
+    {
+      "path": "app/assets/fonts/RobotoSerif-SemiBold.ttf",
+      "sha1": "6c025861c1dcc762acda94f69264a79208fb3a4a"
+    }
+  ]
+}

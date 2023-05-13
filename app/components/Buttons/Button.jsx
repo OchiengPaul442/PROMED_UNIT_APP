@@ -7,7 +7,6 @@ import {Back} from '../../constants';
 export const CurvedButton = props => {
   return (
     <TouchableOpacity
-      // disabled={props.disabled}
       style={{
         borderRadius: 50,
         display: 'flex',

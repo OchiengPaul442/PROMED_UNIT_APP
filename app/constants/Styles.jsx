@@ -57,7 +57,17 @@ export default Style = StyleSheet.create({
     color: COLORS.primary,
   },
 
-  // FORM ELEMENT STYLES //
+  text3: {
+    fontSize: SIZES.small,
+    color: COLORS.white,
+  },
+
+  text4: {
+    fontSize: SIZES.small,
+    color: COLORS.red,
+  },
+
+  // FORM ELEMENT STYLES  //
   Qlabel: {
     fontSize: SIZES.medium,
     color: COLORS.black,
@@ -120,28 +130,126 @@ export default Style = StyleSheet.create({
   },
 
   leftChat: {
-    color: COLORS.white,
-    width: 'auto',
-    height: 'auto',
-    textAlign: 'left',
-    padding: 15,
-    marginBottom: 15,
-    borderTopLeftRadius: 10,
-    borderTopRightRadius: 10,
-    borderBottomRightRadius: 10,
-    backgroundColor: COLORS.cyan,
+    alignSelf: 'flex-start',
+    backgroundColor: '#f0f0f0',
+    color: COLORS.black,
+    borderRadius: 10,
+    padding: 10,
+    margin: 5,
+    maxWidth: '80%',
+  },
+  rightChat: {
+    alignSelf: 'flex-end',
+    backgroundColor: '#e0f0e0',
+    color: COLORS.black,
+    borderRadius: 10,
+    padding: 10,
+    margin: 5,
+    maxWidth: '80%',
+  },
+  timestamp: {
+    fontSize: 10,
+    color: '#999',
   },
 
-  rightChat: {
-    color: COLORS.white,
-    width: 'auto',
+  // AUTH FORM STYLES //
+  // Styles for the form section within the main container
+  form: {
+    width: '100%',
+    height: '100%',
+    position: 'relative',
+    paddingBottom: 10,
+    paddingTop: 12,
+    paddingHorizontal: 10,
+  },
+
+  // form text
+  formText: {
+    fontSize: 18,
+    color: COLORS.darkGray,
+    textAlign: 'left',
+    marginBottom: 50,
+  },
+
+  // Styles for a group of related form elements
+  group: {
+    width: '100%',
+    height: 50,
+    position: 'relative',
+    marginBottom: 40,
+  },
+
+  // Styles for a form input field
+  input: {
+    position: 'relative',
+    bottom: 10,
+    width: '100%',
+    height: '100%',
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.primary,
+    fontSize: 18,
+    color: COLORS.black,
+    padding: 10,
+  },
+
+  // Styles for a label associated with a form input field
+  label: {
+    position: 'relative',
+    left: 0,
+    fontSize: 18,
+    color: COLORS.primary,
+    paddingHorizontal: 5,
+  },
+
+  // Styles for a button or link to recover a forgotten password
+  recButton: {
+    width: '100%',
+    height: 200,
+    alignItems: 'center',
+  },
+
+  // Styles for a separator element used to visually divide sections of the form
+  separatorWrapper: {
+    width: '100%',
+    height: 50,
+    padding: 10,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  // Styles for the separator line within the separator element
+  separator: {
+    width: '30%',
+    height: 1,
+    backgroundColor: COLORS.primary,
+  },
+
+  // Styles for text within the separator element
+  separatorText: {
+    color: COLORS.primary,
+    fontSize: 18,
+    paddingHorizontal: 10,
+  },
+
+  error: {
+    width: '100%',
     height: 'auto',
-    textAlign: 'right',
-    padding: 15,
-    marginBottom: 15,
-    borderBottomLeftRadius: 10,
-    borderTopLeftRadius: 10,
-    borderTopRightRadius: 10,
-    backgroundColor: COLORS.tertiary,
+    color: COLORS.red,
+    position: 'relative',
+    top: -9,
+  },
+
+  icon: {
+    position: 'absolute',
+    right: 10,
+    top: 35,
+    zIndex: 100,
+  },
+
+  // LOADING STYLE //
+  lottie: {
+    width: 150,
+    height: 150,
   },
 });

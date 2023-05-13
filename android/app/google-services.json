@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "903887597109",
+    "project_id": "promed-a9445",
+    "storage_bucket": "promed-a9445.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:903887597109:android:8f0400e1162fa3fc9acb7c",
+        "android_client_info": {
+          "package_name": "com.promed_unit_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "903887597109-gvpijg4iui0ek2i23ftacv8an23saeqr.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD0UTrb1u3IvKBpL8eK42-2eik5gRoJXHA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "903887597109-gvpijg4iui0ek2i23ftacv8an23saeqr.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

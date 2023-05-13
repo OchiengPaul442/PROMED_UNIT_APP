@@ -5,18 +5,71 @@ import {
   ScrollView,
   TouchableOpacity,
   SafeAreaView,
-  FlatList,
 } from 'react-native';
-import React from 'react';
+import React, {useContext} from 'react';
+// context
+import {AuthContext} from '../../navigations/Context/AuthContext';
+
+// constants
 import {COLORS} from '../../constants';
-import {BackBtn, FocusedStatusBar, CenterHalf, Card} from '../../components';
+
+// components
+import {
+  BackBtn,
+  FocusedStatusBar,
+  Card,
+  RoundLoadingAnimation,
+} from '../../components';
+
+// lazy loading for center half modal
+import CenterHalf from '../../components/Modals/CenterHalf';
+
 //General styles
 import Styles from '../../constants/Styles';
 
+// fetch functions
+import {fetchNotifications} from '../../../fireStore';
+import firestore from '@react-native-firebase/firestore';
+import auth from '@react-native-firebase/auth';
+
 const Notifications = ({navigation}) => {
+  // context
+  const {setError} = useContext(AuthContext);
+
   // modal
   const [open, setOpen] = React.useState(false);
-  const [selectedNotification, setSelectedNotification] = React.useState(null);
+
+  // selected notification
+  const [selectedNotification, setSelectedNotification] = React.useState('');
+
+  // set loading state
+  const [loading, setLoading] = React.useState(false);
+
+  // set notifications state
+  const [notifications, setNotifications] = React.useState([]);
+
+  // function to delete all notifications
+  // const deleteAllNotifications = () => {
+  //   setLoading(true);
+  //   firestore()
+  //     .collection('Users')
+  //     .doc(auth().currentUser.uid)
+  //     .collection('Notifications')
+  //     .get()
+  //     .then(querySnapshot => {
+  //       querySnapshot.forEach(documentSnapshot => {
+  //         documentSnapshot.ref.delete();
+  //       });
+  //     })
+  //     .then(() => {
+  //       setLoading(false);
+  //       setNotifications([]);
+  //     })
+  //     .catch(error => {
+  //       setLoading(false);
+  //       setError(error.message);
+  //     });
+  // };
 
   const toggleModal = () => {
     setOpen(!open);
@@ -39,44 +92,23 @@ const Notifications = ({navigation}) => {
     return colors[random];
   };
 
-  // Notification list
-  const notificationList = [
-    {
-      id: 1,
-      title: 'New session1',
-      description: 'You have a new session with your therapist',
-    },
-    {
-      id: 2,
-      title: 'New session2',
-      description: 'You have a new session with your therapist',
-    },
-    {
-      id: 3,
-      title: 'New session3',
-      description: 'You have a new session with your therapist',
-    },
-    {
-      id: 4,
-      title: 'New session4',
-      description: 'You have a new session with your therapist',
-    },
-    {
-      id: 5,
-      title: 'New session5',
-      description: 'You have a new session with your therapist',
-    },
-    {
-      id: 6,
-      title: 'New session6',
-      description: 'You have a new session with your therapist',
-    },
-    {
-      id: 6,
-      title: 'New session6',
-      description: 'You have a new session with your therapist',
-    },
-  ];
+  React.useEffect(() => {
+    // deleteAllNotifications();
+    // if route is focused
+    const unsubscribe = navigation.addListener('focus', () => {
+      // get notifications
+      fetchNotifications(setLoading)
+        .then(notifications => {
+          setNotifications(notifications);
+        })
+        .catch(error => {
+          setError(error.message);
+        });
+    });
+
+    // Return the function to unsubscribe from the event so it gets removed on unmount
+    return unsubscribe;
+  }, []);
 
   return (
     <SafeAreaView>
@@ -120,12 +152,29 @@ const Notifications = ({navigation}) => {
         {/* Content section */}
         <View style={styles.notification_container}>
           <ScrollView showsVerticalScrollIndicator={false}>
-            <FlatList
-              scrollEnabled={false}
-              data={notificationList}
-              keyExtractor={(item, index) => index.toString()}
-              renderItem={({item, index}) => (
-                <View style={{paddingHorizontal: 10}}>
+            {loading ? (
+              <View
+                style={{
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  height: 300,
+                }}>
+                <RoundLoadingAnimation width={80} height={80} />
+              </View>
+            ) : notifications.length === 0 ? (
+              <View
+                style={{
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  height: 300,
+                }}>
+                <Text style={Styles.title2}>No notifications</Text>
+              </View>
+            ) : (
+              notifications.map((item, index) => (
+                <View style={{paddingHorizontal: 10}} key={index}>
                   <Card
                     Press={() => {
                       setSelectedNotification(item);
@@ -138,20 +187,20 @@ const Notifications = ({navigation}) => {
                         backgroundColor: randomColor(),
                         ...styles.notification_number,
                       }}>
-                      <Text>{item.id}</Text>
+                      <Text>{index + 1}</Text>
                     </View>
                     <View style={{width: '100%', paddingHorizontal: 10}}>
                       <Text style={styles.notification_title}>
                         {item.title}
                       </Text>
                       <Text style={styles.notification_description}>
-                        {item.description}
+                        {item.body}
                       </Text>
                     </View>
                   </Card>
                 </View>
-              )}
-            />
+              ))
+            )}
           </ScrollView>
         </View>
       </View>
@@ -161,7 +210,10 @@ const Notifications = ({navigation}) => {
         <CenterHalf Visibility={open} hide={toggleModal}>
           <Text style={Styles.title}>{selectedNotification.title}</Text>
           <Text style={{paddingVertical: 10, ...Styles.text}}>
-            {selectedNotification.description}
+            {selectedNotification.body}
+          </Text>
+          <Text style={{paddingVertical: 10, ...Styles.text}}>
+            {selectedNotification.createdAt.toDate().toDateString()}
           </Text>
           <TouchableOpacity onPress={toggleModal}>
             <Text

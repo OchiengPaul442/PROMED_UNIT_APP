@@ -8,7 +8,7 @@ const Card = props => {
       style={{
         height: props.height,
         backgroundColor: props.bgColor,
-        ...styles.Tip_card,
+        ...styles.card,
       }}>
       {props.children}
     </TouchableOpacity>
@@ -19,7 +19,7 @@ export default Card;
 
 const styles = StyleSheet.create({
   // This is the card for each tip
-  Tip_card: {
+  card: {
     position: 'relative',
     width: '100%',
     display: 'flex',

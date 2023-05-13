@@ -383,9 +383,95 @@ export const LogoutIcon = props => {
     <Svg
       width={props.width}
       height={props.height}
+      fill={props.fill}
       viewBox="0 0 32 32"
       xmlns="http://www.w3.org/2000/svg">
       <Path d="M3.651 16.989h17.326a1 1 0 100-2H3.713l3.617-3.617a.999.999 0 10-1.414-1.414L.009 16.02l5.907 6.063a.999.999 0 101.414-1.414zM29.989 0h-17a2 2 0 00-2 2v9h2.013V3.22c0-.668.542-1.21 1.21-1.21h14.523c.669 0 1.21.542 1.21 1.21l.032 25.572a1.21 1.21 0 01-1.21 1.21H14.214a1.21 1.21 0 01-1.21-1.21v-7.824l-2.013.003v9.03a2 2 0 002 2H29.99a2 2 0 002.001-2v-28a2 2 0 00-2-2z" />
+    </Svg>
+  );
+};
+
+// view icon eye
+export const ViewIconeye = props => {
+  return (
+    <Svg
+      width={props.width}
+      height={props.height}
+      fill={props.fill}
+      viewBox="-3.5 0 32 32"
+      xmlns="http://www.w3.org/2000/svg">
+      <Path d="M12.406 13.844c1.188 0 2.156.969 2.156 2.156s-.969 2.125-2.156 2.125-2.125-.938-2.125-2.125.938-2.156 2.125-2.156zm0-5.313c7.063 0 12.156 6.625 12.156 6.625.344.438.344 1.219 0 1.656 0 0-5.094 6.625-12.156 6.625S.25 16.812.25 16.812c-.344-.438-.344-1.219 0-1.656 0 0 5.094-6.625 12.156-6.625zm0 12.813c2.938 0 5.344-2.406 5.344-5.344s-2.406-5.344-5.344-5.344S7.062 13.062 7.062 16s2.406 5.344 5.344 5.344z" />
+    </Svg>
+  );
+};
+
+// close icon eye
+export const CloseIconeye = props => {
+  return (
+    <Svg
+      width={props.width}
+      height={props.height}
+      fill={props.fill}
+      viewBox="0 0 48 48"
+      xmlns="http://www.w3.org/2000/svg">
+      <G data-name="Layer 2">
+        <Path fill="none" data-name="invisible box" d="M0 0H48V48H0z" />
+        <G data-name="icons Q2">
+          <Path d="M45.3 22.1C43.2 19.5 35.4 11 24 11a23.4 23.4 0 00-3.8.3l19.7 19.8a30.1 30.1 0 005.4-5.2 3 3 0 000-3.8zM41.1 38.3L29.4 26.6A5.9 5.9 0 0124 30a6 6 0 01-6-6 5.9 5.9 0 013.4-5.4L9.7 6.9a2 2 0 00-2.8 2.8l4.8 4.8a31.4 31.4 0 00-9 7.6 3 3 0 000 3.8C4.8 28.5 12.6 37 24 37a25.2 25.2 0 008.5-1.6l5.8 5.7a2 2 0 102.8-2.8z" />
+        </G>
+      </G>
+    </Svg>
+  );
+};
+
+// tick icon
+export const TickIcon = props => {
+  return (
+    <Svg
+      viewBox="0 0 24 24"
+      fill={props.fill}
+      xmlns="http://www.w3.org/2000/svg"
+      width={props.width}
+      height={props.height}>
+      <Path
+        d="M12 2C6.49 2 2 6.49 2 12s4.49 10 10 10 10-4.49 10-10S17.51 2 12 2zm4.78 7.7l-5.67 5.67a.75.75 0 01-1.06 0l-2.83-2.83a.754.754 0 010-1.06c.29-.29.77-.29 1.06 0l2.3 2.3 5.14-5.14c.29-.29.77-.29 1.06 0 .29.29.29.76 0 1.06z"
+        fill={props.fill}
+      />
+    </Svg>
+  );
+};
+
+// close icon
+export const CloseIcon = props => {
+  return (
+    <Svg
+      viewBox="0 0 24 24"
+      fill={props.fill}
+      width={props.width}
+      height={props.height}
+      xmlns="http://www.w3.org/2000/svg">
+      <Path
+        d="M12 2C6.49 2 2 6.49 2 12s4.49 10 10 10 10-4.49 10-10S17.51 2 12 2zm3.36 12.3c.29.29.29.77 0 1.06-.15.15-.34.22-.53.22s-.38-.07-.53-.22l-2.3-2.3-2.3 2.3c-.15.15-.34.22-.53.22s-.38-.07-.53-.22a.754.754 0 010-1.06l2.3-2.3-2.3-2.3a.754.754 0 010-1.06c.29-.29.77-.29 1.06 0l2.3 2.3 2.3-2.3c.29-.29.77-.29 1.06 0 .29.29.29.77 0 1.06l-2.3 2.3 2.3 2.3z"
+        fill={props.fill}
+      />
+    </Svg>
+  );
+};
+
+// delete icon
+export const DeleteIcon = props => {
+  return (
+    <Svg
+      viewBox="0 0 1024 1024"
+      className="icon"
+      xmlns="http://www.w3.org/2000/svg"
+      width={props.width}
+      height={props.height}
+      fill={props.fill}>
+      <G fill={props.fill}>
+        <Path d="M960 160H668.8a160 160 0 00-313.6 0H64a32 32 0 000 64h896a32 32 0 000-64zM512 96a96 96 0 0190.24 64H421.76A96 96 0 01512 96zm332.16 194.56a32 32 0 00-34.88 6.72A32 32 0 00800 320a32 32 0 1064 0 33.6 33.6 0 00-9.28-22.72 32 32 0 00-10.56-6.72zM832 416a32 32 0 00-32 32v96a32 32 0 0064 0v-96a32 32 0 00-32-32zm0 224a32 32 0 00-32 32v224a32 32 0 01-32 32H256a32 32 0 01-32-32V320a32 32 0 00-64 0v576a96 96 0 0096 96h512a96 96 0 0096-96V672a32 32 0 00-32-32z" />
+        <Path d="M384 768V352a32 32 0 00-64 0v416a32 32 0 0064 0zm160 0V352a32 32 0 00-64 0v416a32 32 0 0064 0zm160 0V352a32 32 0 00-64 0v416a32 32 0 0064 0z" />
+      </G>
     </Svg>
   );
 };

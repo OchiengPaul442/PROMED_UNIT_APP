@@ -1,5 +1,15 @@
 import {StyleSheet, Text, View, TouchableOpacity, Image} from 'react-native';
-import React from 'react';
+import React, {useContext} from 'react';
+//  moment
+import moment from 'moment';
+
+// context
+import {AuthContext} from '../../navigations/Context/AuthContext';
+
+// firebase imports
+import auth from '@react-native-firebase/auth';
+import firestore from '@react-native-firebase/firestore';
+
 // screens
 import Screen from '../../layout/Screen';
 
@@ -8,11 +18,51 @@ import Styles from '../../constants/Styles';
 
 // constants
 import {COLORS} from '../../constants';
-import {ConfirmIcon, EditIcon, CurvedButton} from '../../components';
+import {
+  ConfirmIcon,
+  EditIcon,
+  CurvedButton,
+  RoundLoadingAnimation,
+} from '../../components';
+
+// fetch function
+import {confirmUserBooking} from '../../../fireStore';
 
 const ConfirmationScreen = ({route, navigation}) => {
+  // context
+  const {userData, setError, setErrorStatus} = useContext(AuthContext);
+
   // get params from route
-  const {name, title, image} = route.params;
+  const {name, title, image, date, time, therapistId, token} = route.params;
+
+  // set loading state
+  const [loading, setLoading] = React.useState(false);
+
+  // Handle Booking Confirmation
+  const handleBooking = async () => {
+    confirmUserBooking(
+      therapistId,
+      date,
+      time,
+      setLoading,
+      setErrorStatus,
+      setError,
+      userData,
+      token,
+      navigation,
+      name,
+    );
+  };
+
+  // function to cancel booking
+  const cancelAppointment = () => {
+    //  set error status
+    setErrorStatus('');
+    // set error message
+    setError('');
+
+    navigation.navigate('Therapy');
+  };
 
   return (
     <Screen>
@@ -37,14 +87,19 @@ const ConfirmationScreen = ({route, navigation}) => {
                   justifyContent: 'space-between',
                   alignItems: 'center',
                 }}>
-                <Text style={Styles.text}>ID: 2203942034802</Text>
+                <Text style={Styles.text}>
+                  TokenID:{' '}
+                  <Text style={Styles.text4}>
+                    {userData.phoneNumber + token}
+                  </Text>
+                </Text>
                 <TouchableOpacity onPress={() => navigation.goBack()}>
                   <EditIcon width={20} height={20} fill={COLORS.black} />
                 </TouchableOpacity>
               </View>
               <View style={styles.Therapist_details}>
                 <Image
-                  source={image}
+                  source={{uri: image}}
                   style={{
                     width: 60,
                     height: 60,
@@ -64,15 +119,15 @@ const ConfirmationScreen = ({route, navigation}) => {
               <View>
                 <View style={styles.schedule_details}>
                   <Text style={Styles.title2}>Name:</Text>
-                  <Text style={Styles.text}>Kirabo</Text>
+                  <Text style={Styles.text}>{userData.userName}</Text>
                 </View>
                 <View style={styles.schedule_details}>
                   <Text style={Styles.title2}>Date:</Text>
-                  <Text style={Styles.text}>12/12/2020</Text>
+                  <Text style={Styles.text}>{date}</Text>
                 </View>
                 <View style={styles.schedule_details}>
                   <Text style={Styles.title2}>Time:</Text>
-                  <Text style={Styles.text}>12:00pm - 12:30pm (30mins)</Text>
+                  <Text style={Styles.text}>{time}</Text>
                 </View>
               </View>
             </View>
@@ -85,14 +140,20 @@ const ConfirmationScreen = ({route, navigation}) => {
               paddingHorizontal: 10,
             }}>
             <CurvedButton
-              text="Confirm Booking"
+              text={
+                loading ? (
+                  <RoundLoadingAnimation width={50} height={50} />
+                ) : (
+                  'Confirm Booking'
+                )
+              }
               textColor={COLORS.black}
               style={{
                 backgroundColor: COLORS.secondary,
                 width: '100%',
                 height: 50,
               }}
-              onPress={() => navigation.navigate('Home')}
+              onPress={handleBooking}
             />
             <CurvedButton
               text="Cancel Booking"
@@ -102,13 +163,7 @@ const ConfirmationScreen = ({route, navigation}) => {
                 width: '100%',
                 height: 50,
               }}
-              onPress={() =>
-                navigation.push('Therapy', {
-                  name: name,
-                  title: title,
-                  image: image,
-                })
-              }
+              onPress={cancelAppointment}
             />
           </View>
         </View>

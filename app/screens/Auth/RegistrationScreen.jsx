@@ -1,185 +1,331 @@
-import {View, Text, StyleSheet, TextInput} from 'react-native';
-import React from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  TextInput,
+  KeyboardAvoidingView,
+} from 'react-native';
+import React, {useContext} from 'react';
+import {AuthContext} from '../../navigations/Context/AuthContext';
+
+// firebase imports
+import firestore from '@react-native-firebase/firestore';
+import firebase from '@react-native-firebase/app';
+
+// yup and formik imports
+import {object, string} from 'yup';
+import {Formik} from 'formik';
 
 // components
-import {RecButton, Checkbox} from '../../components';
+import {
+  RecButton,
+  Checkbox,
+  ViewIconeye,
+  CloseIconeye,
+  Loader,
+} from '../../components';
 
 // dropdown import
 import DropDownPicker from 'react-native-dropdown-picker';
 
 // constants
-import {COLORS} from '../../constants';
+import {COLORS, ProfileMale} from '../../constants';
+import Styles from '../../constants/Styles';
 
 //layout
 import AuthScreen from '../../layout/AuthScreen';
 
+// min 8 characters, 1 upper case letter, 1 lower case letter, 1 numeric digit.
+const passwordRules = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$/;
+
+// phone number regex
+const phoneRegex = /^\(?([0-9]{3})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})$/;
+
+// form validation schema
+let registrationValidationSchema = object({
+  username: string().required(),
+  email: string()
+    .email('Please enter a valid email!')
+    .required('Email is required!'),
+  phone: string()
+    .matches(phoneRegex, 'Phone number is not valid!')
+    .required('Phone number is required!'),
+  password: string()
+    .min(6, ({min}) => `Password must be at least ${min} characters!`)
+    .required('Password is required!')
+    .matches(
+      passwordRules,
+      'Password must contain at least 1 uppercase letter, 1 lowercase letter and 1 numeric digit!',
+    ),
+});
+
 const RegistrationScreen = ({navigation}) => {
+  // use the useContext hook to get the user data value
+  const {setError, setLoading} = useContext(AuthContext);
+
+  // show password
+  const [showPassword, setShowPassword] = React.useState(true);
+
   // form fields
   const [username, setUsername] = React.useState('');
   const [email, setEmail] = React.useState('');
   const [phone, setPhone] = React.useState('');
   const [password, setPassword] = React.useState('');
-
-  // list of items in the form with their labels and placeholders for the input fields respectively using maps and their own keys
-  const formItems = [
-    {
-      id: 1,
-      value: username,
-      label: 'Username',
-      placeholder: '',
-    },
-    {
-      id: 2,
-      value: email,
-      label: 'Email Address',
-      placeholder: 'example@gmail.com',
-    },
-    {
-      id: 3,
-      value: phone,
-      label: 'Phone Number',
-      placeholder: '+256-444-445-666',
-    },
-    {
-      id: 4,
-      value: password,
-      label: 'Password',
-      placeholder: '',
-    },
-  ];
+  const [gender, setGender] = React.useState(null);
 
   // handle dropdown
   const [open, setOpen] = React.useState(false);
-  const [gender, setGender] = React.useState(null);
   const [items, setItems] = React.useState([
     {label: 'Female', value: 'Female'},
     {label: 'Male', value: 'Male'},
     {label: 'Other', value: 'Other'},
   ]);
 
-  return (
-    <AuthScreen form_title="SIGN UP FORM">
-      <View style={styles.form}>
-        {/* form items */}
-        {formItems.map(item => (
-          <View key={item.id} style={styles.group}>
-            <Text style={styles.label}>{item.label}</Text>
-            <TextInput
-              style={styles.input}
-              placeholder={item.placeholder}
-              value={item.value}
-              onChangeText={text => {
-                if (item.id === 1) {
-                  setUsername(text);
-                } else if (item.id === 2) {
-                  setEmail(text);
-                } else if (item.id === 3) {
-                  setPhone(text);
-                } else if (item.id === 4) {
-                  setPassword(text);
+  // Accept terms and conditions
+  const [agree, setAgree] = React.useState(false);
+
+  const toggleCheckbox = () => {
+    setAgree(!agree);
+  };
+
+  // create a new user using firebase authentication and add the user details to the database
+  const createUser = async (email, password, username, phone, gender) => {
+    if (agree) {
+      try {
+        // set loading to true before creating the user
+        setLoading(true);
+
+        // Create a user with email and password using Firebase authentication
+        firebase
+          .auth()
+          .createUserWithEmailAndPassword(email, password)
+          .then(userRecord => {
+            // update user profile
+            userRecord.user
+              .updateProfile({
+                displayName: username,
+                photoURL:
+                  `https://source.unsplash.com/collection/139386/160x160/?sig=${Math.floor(
+                    Math.random() * 1000,
+                  )}` || ProfileMale,
+              })
+              .then(() => {
+                // Get the user UID after creating the user
+                const uid = userRecord.user.uid;
+
+                // Create a new user in the database
+                firestore()
+                  .collection('Users')
+                  .doc(uid)
+                  .set({
+                    email: email,
+                    phoneNumber: phone,
+                    gender: gender,
+                    userType: 'Client',
+                    createdAt: firestore.Timestamp.fromDate(new Date()),
+                    updatedAt: firestore.Timestamp.fromDate(new Date()),
+                  });
+              })
+              .then(() => {
+                // Set the isLoading state to false to hide the loading screen
+                setLoading(false);
+                // Navigate to the next screen or show a success message
+                navigation.navigate('Login');
+              })
+              .catch(error => {
+                // set loading to false if there is an error
+                setLoading(false);
+
+                // catch errors
+                switch (error.code) {
+                  case 'auth/email-already-in-use':
+                    setError('That email address is already in use!');
+                    break;
+                  case 'auth/network-request-failed':
+                    setError('Connection error! please try again');
+                  case 'auth/operation-not-allowed':
+                    setError('That email/password is not allowed!');
+                  default:
+                    setError(' -----Something went wrong! please try again');
+                    break;
                 }
-              }}
-              secureTextEntry={item.id === 4 ? true : false}
-            />
-          </View>
-        ))}
+              });
+          });
+      } catch (error) {
+        // set loading to false if there is an error
+        setLoading(false);
+      }
+    } else {
+      setError('Please accept the terms and conditions');
+    }
+  };
 
-        {/* dropdown */}
-        <View style={styles.group}>
-          <DropDownPicker
-            listMode="SCROLLVIEW"
-            showsVerticalScrollIndicator={false}
-            open={open}
-            value={gender}
-            items={items}
-            setOpen={setOpen}
-            setValue={setGender}
-            setItems={setItems}
-            placeholder="Select your Gender"
-            style={styles.dropdown}
-            dropDownDirection="TOP"
-            dropDownContainerStyle={styles.dropdownContainer}
-          />
-        </View>
+  return (
+    <Formik
+      initialValues={{
+        username: '',
+        email: '',
+        phone: '',
+        password: '',
+        gender: '',
+      }}
+      validateOnMount={true}
+      validationSchema={registrationValidationSchema}
+      onSubmit={(values, {resetForm}) => {
+        createUser(
+          values.email,
+          values.password,
+          values.username,
+          values.phone,
+          values.gender,
+        );
+        setEmail(values.email);
+        setUsername(values.username);
+        setPhone(values.phone);
+        setPassword(values.password);
 
-        {/* checkbox */}
-        <Checkbox text="I agree to the terms & conditions" />
+        // reset the form after submission
+        resetForm({values: ''});
+      }}>
+      {({
+        handleChange,
+        handleBlur,
+        handleSubmit,
+        values,
+        errors,
+        isValid,
+        touched,
+      }) => (
+        <AuthScreen form_title="SIGN UP FORM">
+          <KeyboardAvoidingView behavior="padding">
+            <View style={Styles.form}>
+              <View style={Styles.group}>
+                <Text style={Styles.label}>Username</Text>
+                <TextInput
+                  style={Styles.input}
+                  placeholder=""
+                  onBlur={handleBlur('username')}
+                  value={values.username}
+                  onChangeText={handleChange('username')}
+                />
+                {errors.username && touched.username && (
+                  <Text style={Styles.error}>{errors.username}</Text>
+                )}
+              </View>
+              <View style={Styles.group}>
+                <Text style={Styles.label}>Email Address</Text>
+                <TextInput
+                  style={Styles.input}
+                  placeholder=""
+                  onBlur={handleBlur('email')}
+                  value={values.email}
+                  onChangeText={handleChange('email')}
+                />
+                {errors.email && touched.email && (
+                  <Text style={Styles.error}>{errors.email}</Text>
+                )}
+              </View>
+              <View style={Styles.group}>
+                <Text style={Styles.label}>Phone Number</Text>
+                <TextInput
+                  style={Styles.input}
+                  placeholder=""
+                  onBlur={handleBlur('phone')}
+                  value={values.phone}
+                  onChangeText={handleChange('phone')}
+                />
+                {errors.phone && touched.phone && (
+                  <Text style={Styles.error}>{errors.phone}</Text>
+                )}
+              </View>
+              <View style={Styles.group}>
+                <Text style={Styles.label}>Password</Text>
+                <TextInput
+                  style={Styles.input}
+                  placeholder=""
+                  onBlur={handleBlur('password')}
+                  value={values.password}
+                  onChangeText={handleChange('password')}
+                  secureTextEntry={showPassword}
+                />
+                <TouchableOpacity
+                  style={Styles.icon}
+                  onPress={() => setShowPassword(!showPassword)}>
+                  {!showPassword ? (
+                    <ViewIconeye width={24} height={24} fill={COLORS.primary} />
+                  ) : (
+                    <CloseIconeye
+                      width={24}
+                      height={24}
+                      fill={COLORS.primary}
+                    />
+                  )}
+                </TouchableOpacity>
+                {errors.password && touched.password && (
+                  <Text style={Styles.error}>{errors.password}</Text>
+                )}
+              </View>
 
-        {/* buttons */}
-        <View style={styles.recButton}>
-          <RecButton
-            text="Sign Up"
-            bgColor={COLORS.primary}
-            textColor={COLORS.white}
-            onPress={() => navigation.push('Login')}
-            w="100%"
-          />
-          <View style={styles.separatorWrapper}>
-            <View style={styles.separator}></View>
-            <Text style={styles.separatorText}>OR</Text>
-            <View style={styles.separator}></View>
-          </View>
-          <RecButton
-            text="Login"
-            bgColor={COLORS.secondary}
-            textColor={COLORS.primary}
-            onPress={() => navigation.push('Login')}
-            w="100%"
-          />
-        </View>
-      </View>
-    </AuthScreen>
+              {/* dropdown */}
+              <View style={{paddingTop: 30, paddingBottom: 20}}>
+                <DropDownPicker
+                  listMode="SCROLLVIEW"
+                  showsVerticalScrollIndicator={false}
+                  open={open}
+                  value={gender}
+                  items={items}
+                  listItemLabelStyle={{color: COLORS.white}}
+                  setOpen={setOpen}
+                  setValue={setGender}
+                  setItems={setItems}
+                  onChangeValue={handleChange('gender')}
+                  onBlur={handleBlur('gender')}
+                  placeholder="Select your Gender"
+                  dropDownDirection="TOP"
+                  dropDownContainerStyle={styles.dropdownContainer}
+                />
+              </View>
+
+              {/* checkbox */}
+              <Checkbox
+                text="I agree to the terms & conditions"
+                setAgree={toggleCheckbox}
+                agree={agree}
+              />
+
+              {/* buttons */}
+              <View style={Styles.recButton}>
+                <RecButton
+                  text="Sign Up"
+                  bgColor={isValid && agree ? COLORS.primary : COLORS.gray}
+                  textColor={COLORS.white}
+                  onPress={handleSubmit}
+                  w="100%"
+                />
+                <View style={Styles.separatorWrapper}>
+                  <View style={Styles.separator}></View>
+                  <Text style={Styles.separatorText}>OR</Text>
+                  <View style={Styles.separator}></View>
+                </View>
+                <RecButton
+                  text="Login"
+                  bgColor={COLORS.secondary}
+                  textColor={COLORS.primary}
+                  onPress={() => navigation.navigate('Login')}
+                  w="100%"
+                />
+              </View>
+            </View>
+          </KeyboardAvoidingView>
+        </AuthScreen>
+      )}
+    </Formik>
   );
 };
 
 // styles
 const styles = StyleSheet.create({
-  // Styles for the form section within the main container
-  form: {
-    width: '100%',
-    height: '100%',
-    position: 'relative',
-    paddingBottom: 10,
-    paddingTop: 12,
-  },
-
-  // Styles for a group of related form elements
-  group: {
-    width: '100%',
-    height: 50,
-    position: 'relative',
-    marginBottom: 30,
-  },
-
-  // Styles for a form input field
-  input: {
-    width: '100%',
-    height: '100%',
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.primary,
-    fontSize: 18,
-    color: COLORS.primary,
-    padding: 10,
-    marginTop: 10,
-  },
-
-  // Styles for a label associated with a form input field
-  label: {
-    position: 'absolute',
-    left: 0,
-    top: -10,
-    fontSize: 18,
-    color: COLORS.primary,
-    paddingHorizontal: 5,
-  },
-
-  // dropdown styles here
-  dropdown: {
-    backgroundColor: COLORS.white,
-    borderColor: COLORS.primary,
-    width: '100%',
-  },
-
   // Styles for a dropdown menu container
   dropdownContainer: {
     width: '100%',
@@ -188,7 +334,6 @@ const styles = StyleSheet.create({
     borderColor: COLORS.primary,
     borderWidth: 1,
     borderRadius: 10,
-    zIndex: 100,
   },
 
   // Styles for a dropdown menu
@@ -222,37 +367,6 @@ const styles = StyleSheet.create({
   fwdText: {
     color: COLORS.primary,
     fontSize: 18,
-  },
-
-  // Styles for a button or link to recover a forgotten password
-  recButton: {
-    width: '100%',
-    height: 200,
-    alignItems: 'center',
-  },
-
-  // Styles for a separator element used to visually divide sections of the form
-  separatorWrapper: {
-    width: '100%',
-    height: 50,
-    padding: 10,
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-
-  // Styles for the separator line within the separator element
-  separator: {
-    width: '30%',
-    height: 1,
-    backgroundColor: COLORS.primary,
-  },
-
-  // Styles for text within the separator element
-  separatorText: {
-    color: COLORS.primary,
-    fontSize: 18,
-    paddingHorizontal: 10,
   },
 });
 

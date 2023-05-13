@@ -1,8 +1,14 @@
 import React from 'react';
-import {StyleSheet, Text, View} from 'react-native';
+import {StyleSheet, Text} from 'react-native';
+// firebase imports
+import auth from '@react-native-firebase/auth';
+import firestore from '@react-native-firebase/firestore';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+// NetInfo
+import NetInfo from '@react-native-community/netinfo';
 
 // navigation
-import {NavigationContainer} from '@react-navigation/native';
 import {createStackNavigator} from '@react-navigation/stack';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import {createDrawerNavigator} from '@react-navigation/drawer';
@@ -10,6 +16,7 @@ import {createDrawerNavigator} from '@react-navigation/drawer';
 // constants
 import {COLORS} from '../constants';
 import Styles from '../constants/Styles';
+import {Loader, ErrorHandle} from '../components';
 
 // icons
 import {
@@ -29,7 +36,6 @@ import {
   LoginScreen,
   RegistrationScreen,
   PasswordRecovery,
-  ChangePassword,
   SuccessScreen,
   HomeScreen,
   Therapy,
@@ -43,8 +49,12 @@ import {
   Notifications,
   Groupchat,
   Profile,
+  Groupdetails,
   Splash,
 } from '../screens';
+
+// context
+import {AuthContext} from './Context/AuthContext';
 
 // stacks
 const AuthStack = createStackNavigator();
@@ -53,6 +63,7 @@ const TherapyStack = createStackNavigator();
 const GroupStack = createStackNavigator();
 const DrawerStack = createDrawerNavigator();
 const ProfileStack = createStackNavigator();
+const Stack = createStackNavigator();
 
 // Auth stack
 const AuthNavigation = () => {
@@ -65,7 +76,6 @@ const AuthNavigation = () => {
       <AuthStack.Screen name="Access" component={AccessScreen} />
       <AuthStack.Screen name="Login" component={LoginScreen} />
       <AuthStack.Screen name="PasswordRecovery" component={PasswordRecovery} />
-      <AuthStack.Screen name="ChangePassword" component={ChangePassword} />
       <AuthStack.Screen name="Success" component={SuccessScreen} />
       <AuthStack.Screen name="Register" component={RegistrationScreen} />
     </AuthStack.Navigator>
@@ -74,9 +84,13 @@ const AuthNavigation = () => {
 
 // Drawer stack
 const DrawerStackScreen = () => {
+  // use the useContext hook to get the user data value
+  const {userData} = React.useContext(AuthContext);
+
   //Define an array of drawer items with their names, components and icons
   const drawers = [
     {name: 'HomeScreen', label: 'Home', component: BottomTabs, icon: Home},
+
     {
       name: 'Profile_root',
       label: 'Profile',
@@ -89,7 +103,12 @@ const DrawerStackScreen = () => {
       component: Notifications,
       icon: Bell,
     },
-    {name: 'Logout', label: 'Logout', component: '', icon: LogoutIcon},
+    {
+      name: 'Logout',
+      label: 'Logout',
+      component: HandleLogout,
+      icon: LogoutIcon,
+    },
   ];
 
   return (
@@ -126,7 +145,6 @@ const BottomTabs = () => {
 
   return (
     <BottomTabStack.Navigator
-      initialRouteName="Home"
       screenOptions={{
         headerShown: false,
         tabBarShowLabel: false,
@@ -157,6 +175,7 @@ const BottomTabs = () => {
 const TherapyStackScreen = () => {
   return (
     <TherapyStack.Navigator
+      initialRouteName="Therapy"
       screenOptions={{
         headerShown: false,
       }}>
@@ -174,12 +193,12 @@ const TherapyStackScreen = () => {
 const GroupStackScreen = () => {
   return (
     <GroupStack.Navigator
-      initialRouteName="Groups"
       screenOptions={{
         headerShown: false,
       }}>
       <GroupStack.Screen name="Groups" component={Groups} />
       <GroupStack.Screen name="Groupchat" component={Groupchat} />
+      <GroupStack.Screen name="Groupdetails" component={Groupdetails} />
     </GroupStack.Navigator>
   );
 };
@@ -196,25 +215,120 @@ const ProfileStackScreen = () => {
   );
 };
 
-// Root Navigation stack
-const AppNavigations = () => {
-  const [isLoading, setIsLoading] = React.useState(true);
-  const [userToken, setUserToken] = React.useState(true);
+// Handle logout
+const HandleLogout = () => {
+  const {setUserToken, setUserData, setAnonymous} =
+    React.useContext(AuthContext);
 
   React.useEffect(() => {
-    setTimeout(() => {
-      setIsLoading(false);
-    }, 1000);
+    // signout the user
+    auth()
+      .signOut()
+      .then(() => {
+        // remove the user token from async storage
+        AsyncStorage.removeItem('userToken');
+        // set the user token to null
+        setUserToken('');
+        // set the user data to null
+        setUserData('');
+        // set anonymous to false
+        setAnonymous(false);
+      })
+      .catch(error => {
+        console.log(error);
+      });
   }, []);
 
-  if (isLoading) {
-    return <Splash />;
-  }
+  return null;
+};
+
+// Root Navigation stack
+const AppNavigations = () => {
+  const [loading, setLoading] = React.useState(false);
+  const [errorStatus, setErrorStatus] = React.useState('');
+  const [error, setError] = React.useState('');
+  const [anonymous, setAnonymous] = React.useState(false);
+  const [userToken, setUserToken] = React.useState('');
+  const [userData, setUserData] = React.useState('');
+
+  // get current user UID
+  const user = auth().currentUser;
+
+  // if usertoken is set, get stream of user data for the current user from firestore
+  React.useEffect(() => {
+    if (userToken) {
+      // get current user UID
+      const user = auth().currentUser;
+
+      // get display name and photo url from auth
+      const {displayName, photoURL} = user;
+
+      // get user data from firestore
+      firestore()
+        .collection('Users')
+        .doc(user.uid)
+        .onSnapshot(documentSnapshot => {
+          // if connection is established successfully set user data
+          if (documentSnapshot.exists) {
+            // set userData state
+            setUserData({
+              ...documentSnapshot.data(),
+              displayName,
+              photoURL,
+            });
+          } else {
+            // if connection is not established successfully
+            setUserData('');
+            // set error status to true
+            setErrorStatus(true);
+            // set error message
+            setError('Error connecting to server');
+          }
+        });
+    }
+
+    // if app is not connected to internet
+    NetInfo.addEventListener(state => {
+      if (!state.isConnected) {
+        // set error status to true
+        setErrorStatus(true);
+        // set error message
+        setError('No internet connection');
+      } else {
+        // set error status to false
+        setErrorStatus(false);
+        // set error message
+        setError('');
+      }
+    });
+  }, [userToken]);
 
   return (
-    <NavigationContainer>
+    <AuthContext.Provider
+      value={{
+        user,
+        userToken,
+        setUserToken,
+        userData,
+        setUserData,
+        anonymous,
+        setAnonymous,
+        loading,
+        setLoading,
+        error,
+        setError,
+        errorStatus,
+        setErrorStatus,
+      }}>
+      {/* Display */}
       {userToken ? <DrawerStackScreen /> : <AuthNavigation />}
-    </NavigationContainer>
+      {/* <DrawerStackScreen /> */}
+
+      {/* Loader */}
+      <Loader loading={loading} />
+      {/* Error handler */}
+      <ErrorHandle message={error} />
+    </AuthContext.Provider>
   );
 };
 
@@ -222,6 +336,7 @@ export default AppNavigations;
 
 const styles = StyleSheet.create({
   menuBar: {
+    height: 50,
     position: 'absolute',
     bottom: 3,
     marginHorizontal: 3,

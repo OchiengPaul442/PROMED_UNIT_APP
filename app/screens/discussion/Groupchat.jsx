@@ -7,19 +7,52 @@ import {
   ScrollView,
   TextInput,
   Keyboard,
+  FlatList,
 } from 'react-native';
-import React from 'react';
-import {COLORS} from '../../constants';
-import {FocusedStatusBar, BackBtn, SendIcon} from '../../components';
+import React, {useContext} from 'react';
 import {useFocusEffect} from '@react-navigation/native';
+import moment from 'moment';
+
+// context
+import {AuthContext} from '../../navigations/Context/AuthContext';
+
+// constants
+import {COLORS} from '../../constants';
+
+// components
+import {
+  FocusedStatusBar,
+  BackBtn,
+  Menu,
+  SendIcon,
+  RoundLoadingAnimation,
+} from '../../components';
 import Styles from '../../constants/Styles';
 
-const Groupchat = ({route, navigation}) => {
-  // text input
-  const [text, onChangeText] = React.useState('');
+// fetch function
+import {sendLiveChatMessage, fetchLiveChatMessages} from '../../../fireStore';
 
+// firebase
+import auth from '@react-native-firebase/auth';
+import firestore from '@react-native-firebase/firestore';
+import Groupdetails from './Groupdetails';
+
+const Groupchat = ({route, navigation}) => {
   // get params
-  const {groupname} = route.params;
+  const {groupdata} = route.params;
+
+  // context
+  const {setErrorStatus, setError} = useContext(AuthContext);
+
+  // current user
+  const currentUser = auth().currentUser;
+
+  // set loading
+  const [loading, setLoading] = React.useState(false);
+
+  // text input
+  const [message, setMessage] = React.useState(''); // message
+  const [pastMessages, setPastMessages] = React.useState([]); // past messages
 
   // Height of the keyboard
   const [keyboardHeight2, setKeyboardHeight2] = React.useState(0);
@@ -54,6 +87,37 @@ const Groupchat = ({route, navigation}) => {
     }, [navigation]),
   );
 
+  // handle send message
+  const handleSendMessage = () => {
+    sendLiveChatMessage(
+      setErrorStatus,
+      setError,
+      groupdata,
+      message,
+      setMessage,
+    );
+  };
+
+  // function to delete all messages
+  // const deleteAllMessages = () => {
+  //   firestore()
+  //     .collection('Groups')
+  //     .doc(groupdata.key)
+  //     .collection('Messages')
+  //     .get()
+  //     .then(querySnapshot => {
+  //       querySnapshot.forEach(documentSnapshot => {
+  //         documentSnapshot.ref.delete();
+  //       });
+  //     });
+  // };
+
+  React.useEffect(() => {
+    // deleteAllMessages();
+    // fetch messages
+    fetchLiveChatMessages(setLoading, setPastMessages, groupdata);
+  }, []);
+
   return (
     <SafeAreaView>
       {/* StatusBar */}
@@ -69,11 +133,11 @@ const Groupchat = ({route, navigation}) => {
             height: '8%',
             flexDirection: 'row',
             justifyContent: 'space-between',
-            alignItems: 'flex-start',
+            alignItems: 'center',
           }}>
           <TouchableOpacity
-            style={(padding = 10)}
-            onPress={() => navigation.push('Groups')}>
+            style={{padding: 10}}
+            onPress={() => navigation.navigate('Groups')}>
             <BackBtn width={30} height={30} fill={COLORS.secondary} />
           </TouchableOpacity>
           <View>
@@ -83,31 +147,79 @@ const Groupchat = ({route, navigation}) => {
                 fontWeight: 'bold',
                 color: COLORS.white,
               }}>
-              {groupname}
+              {groupdata.name}
             </Text>
           </View>
+          <TouchableOpacity
+            style={{padding: 10}}
+            onPress={() => navigation.navigate('Groupdetails', {groupdata})}>
+            <Menu width={30} height={30} fill={COLORS.secondary} />
+          </TouchableOpacity>
         </View>
 
         {/* Content */}
         <View style={styles.Content}>
           <View style={Styles.chats}>
             <ScrollView showsVerticalScrollIndicator={false}>
-              <Text style={Styles.leftChat}>Hello world</Text>
-              <Text style={Styles.rightChat}>Hello world</Text>
+              {loading ? (
+                <View
+                  style={{
+                    flex: 1,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    paddingVertical: 20,
+                  }}>
+                  <RoundLoadingAnimation width={80} height={80} />
+                </View>
+              ) : pastMessages.length === 0 ? (
+                <View
+                  style={{
+                    flex: 1,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    paddingVertical: 20,
+                  }}>
+                  <Text style={{color: COLORS.black}}>No messages yet...</Text>
+                </View>
+              ) : (
+                <FlatList
+                  data={pastMessages}
+                  scrollEnabled={false}
+                  inverted={true}
+                  keyExtractor={item => item.id}
+                  extraData={pastMessages}
+                  renderItem={({item}) => (
+                    <View key={item.key}>
+                      <Text
+                        style={
+                          item.userId === currentUser.uid
+                            ? Styles.rightChat
+                            : Styles.leftChat
+                        }>
+                        {item.message + ' '}
+                        <Text style={Styles.timestamp}>
+                          {moment(item.createdAt).format('h:mm a')}
+                        </Text>
+                      </Text>
+                    </View>
+                  )}
+                />
+              )}
             </ScrollView>
           </View>
+          {/* message input */}
           <View
             style={{
               bottom: keyboardHeight2 ? 18 : 2,
               ...Styles.inputfield_con,
             }}>
             <TextInput
-              onChangeText={onChangeText}
-              value={text}
+              onChangeText={setMessage}
+              value={message}
               placeholder="Ask me..."
               style={Styles.inputfield}
             />
-            <TouchableOpacity>
+            <TouchableOpacity onPress={handleSendMessage}>
               <SendIcon width={50} height={50} fill={COLORS.tertiary} />
             </TouchableOpacity>
           </View>
