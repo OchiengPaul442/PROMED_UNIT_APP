@@ -102,7 +102,7 @@ const Groupchat = ({route, navigation}) => {
   // const deleteAllMessages = () => {
   //   firestore()
   //     .collection('Groups')
-  //     .doc(groupkey)
+  //     .doc(groupdata.key)
   //     .collection('Messages')
   //     .get()
   //     .then(querySnapshot => {
@@ -190,21 +190,17 @@ const Groupchat = ({route, navigation}) => {
                   extraData={pastMessages}
                   renderItem={({item}) => (
                     <View key={item.key}>
-                      {item.userId === currentUser.uid ? (
-                        <Text style={Styles.rightChat}>
-                          {item.message}
-                          <Text style={Styles.timestamp}>
-                            {moment(item.createdAt).format('h:mm a')}
-                          </Text>
+                      <Text
+                        style={
+                          item.userId === currentUser.uid
+                            ? Styles.rightChat
+                            : Styles.leftChat
+                        }>
+                        {item.message + ' '}
+                        <Text style={Styles.timestamp}>
+                          {moment(item.createdAt).format('h:mm a')}
                         </Text>
-                      ) : (
-                        <Text style={Styles.leftChat}>
-                          {item.message}
-                          <Text style={Styles.timestamp}>
-                            {moment(item.createdAt).format('h:mm a')}
-                          </Text>
-                        </Text>
-                      )}
+                      </Text>
                     </View>
                   )}
                 />

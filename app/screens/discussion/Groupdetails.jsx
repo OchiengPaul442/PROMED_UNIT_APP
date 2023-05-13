@@ -24,15 +24,78 @@ import {COLORS} from '../../constants';
 import {
   FocusedStatusBar,
   BackBtn,
-  Card,
   Menu,
+  LogoutIcon,
+  DeleteIcon,
   RoundLoadingAnimation,
 } from '../../components';
 import Styles from '../../constants/Styles';
 
+// firebase
+import auth from '@react-native-firebase/auth';
+import firestore from '@react-native-firebase/firestore';
+
+// fetch
+import {fetchMembers, fetchAllMembers, deleteGroup} from '../../../fireStore';
+
 const Groupdetails = ({route, navigation}) => {
   // get params
   const {groupdata} = route.params;
+
+  // get current user
+  const {user, setErrorStatus, setError} = useContext(AuthContext);
+
+  // loading state
+  const [loading, setLoading] = React.useState(true);
+
+  // get group members
+  const [groupMembers, setGroupMembers] = React.useState([]);
+
+  // handle leaving group
+  const handleLeaveGroup = async () => {
+    try {
+      // create an object with current user data
+      const currentUserData = {
+        userId: user.uid,
+        displayName: user.displayName,
+        photoURL: user.photoURL,
+      };
+
+      // remove user from group
+      await firestore()
+        .collection('Groups')
+        .doc(groupdata.key)
+        .update({
+          Number_of_Members: firestore.FieldValue.arrayRemove(currentUserData),
+        });
+    } catch (error) {
+      setError(error.message);
+    } finally {
+      navigation.navigate('Groups');
+    }
+  };
+
+  // handle remove user from group
+  const handleRemoveUser = async item => {
+    try {
+      // remove user from group
+      await firestore()
+        .collection('Groups')
+        .doc(groupdata.key)
+        .update({
+          Number_of_Members: firestore.FieldValue.arrayRemove({
+            userId: item.userId,
+            displayName: item.displayName,
+            photoURL: item.photoURL,
+          }),
+        });
+
+      // fetch members
+      fetchMembers(setLoading, setGroupMembers, groupdata);
+    } catch (error) {
+      setError(error.message);
+    }
+  };
 
   // useFocusEffect hook
   useFocusEffect(
@@ -52,6 +115,10 @@ const Groupdetails = ({route, navigation}) => {
       };
     }, [navigation]),
   );
+
+  React.useEffect(() => {
+    fetchMembers(setLoading, setGroupMembers, groupdata);
+  }, []);
 
   return (
     <SafeAreaView>
@@ -111,7 +178,8 @@ const Groupdetails = ({route, navigation}) => {
                         paddingVertical: 10,
                         color: COLORS.primary,
                       }}>
-                      Group: 123 participants
+                      Group: {groupdata.Number_of_Members.length} participant
+                      {groupdata.Number_of_Members.length > 1 ? 's' : null}
                     </Text>
                   </View>
                 </View>
@@ -126,43 +194,178 @@ const Groupdetails = ({route, navigation}) => {
                     }}>
                     Participants
                   </Text>
-                  {groupdata.Number_of_Members.map((item, index) => (
+                  {loading ? (
                     <View
-                      key={index}
                       style={{
-                        position: 'relative',
-                        flexDirection: 'row',
-                        justifyContent: 'space-between',
+                        width: '100%',
+                        justifyContent: 'center',
                         alignItems: 'center',
-                        backgroundColor: COLORS.orange,
-                        paddingVertical: 10,
+                        paddingVertical: 20,
+                      }}>
+                      <RoundLoadingAnimation width={80} height={80} />
+                    </View>
+                  ) : !groupMembers ? (
+                    <Text
+                      style={{
+                        width: '100%',
+                        paddingVertical: 20,
+                        textAlign: 'center',
+                        color: COLORS.black,
+                      }}>
+                      No Members
+                    </Text>
+                  ) : (
+                    <FlatList
+                      data={groupMembers}
+                      scrollEnabled={false}
+                      renderItem={({item}) => (
+                        <View
+                          style={{
+                            position: 'relative',
+                            flexDirection: 'row',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            paddingVertical: 10,
+                          }}>
+                          <View
+                            style={{
+                              position: 'relative',
+                              flexDirection: 'row',
+                              alignItems: 'center',
+                              flex: 1,
+                            }}>
+                            <Image
+                              source={{uri: item.photoURL}}
+                              style={{
+                                width: 50,
+                                height: 50,
+                                borderRadius: 50,
+                              }}
+                            />
+                            <Text
+                              style={{
+                                fontSize: 15,
+                                fontWeight: 'bold',
+                                textAlign: 'left',
+                                width: '100%',
+                                color: COLORS.primary,
+                                paddingLeft: 10,
+                              }}>
+                              {item.displayName}
+                            </Text>
+                          </View>
+                          {groupdata.createdBy ===
+                          item.userId ? null : groupdata.createdBy ===
+                            user.uid ? (
+                            <TouchableOpacity
+                              onPress={() => handleRemoveUser(item)}>
+                              <Text
+                                style={{
+                                  fontSize: 15,
+                                  textAlign: 'center',
+                                  color: COLORS.red,
+                                }}>
+                                Remove
+                              </Text>
+                            </TouchableOpacity>
+                          ) : null}
+                        </View>
+                      )}
+                      keyExtractor={item => item.userId}
+                    />
+                  )}
+                  <TouchableOpacity
+                    onPress={() =>
+                      fetchAllMembers(
+                        setGroupMembers,
+                        groupdata,
+                        setErrorStatus,
+                        setError,
+                      )
+                    }>
+                    <Text
+                      style={{
+                        fontSize: 15,
+                        fontWeight: 'bold',
+                        textAlign: 'left',
+                        width: '100%',
+                        width: '100%',
+                        textAlign: 'center',
+                        color: COLORS.tertiary,
+                      }}>
+                      View all
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+                <View style={styles.card}>
+                  <View
+                    style={{
+                      flexDirection: 'column',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                    }}>
+                    <Text
+                      style={{
+                        fontSize: 15,
+                        fontWeight: 'bold',
+                        textAlign: 'left',
+                        width: '100%',
+                        color: COLORS.primary,
+                      }}>
+                      Actions
+                    </Text>
+                    <TouchableOpacity
+                      onPress={handleLeaveGroup}
+                      style={{
+                        width: '100%',
                       }}>
                       <View
                         style={{
-                          backgroundColor: COLORS.red,
+                          flexDirection: 'row',
+                          alignItems: 'flex-start',
+                          width: '100%',
+                          paddingVertical: 10,
                         }}>
-                        <Image
-                          source={{uri: item.photoURL}}
-                          style={{
-                            width: 50,
-                            height: 50,
-                            borderRadius: 50,
-                          }}
-                        />
+                        <LogoutIcon width={20} height={20} fill={COLORS.red} />
                         <Text
                           style={{
-                            fontSize: 15,
-                            fontWeight: 'bold',
-                            textAlign: 'left',
-                            width: '100%',
-                            color: COLORS.primary,
                             paddingLeft: 10,
+                            color: COLORS.black,
                           }}>
-                          {item.displayName}
+                          Exit group
                         </Text>
                       </View>
-                    </View>
-                  ))}
+                    </TouchableOpacity>
+                    {groupdata.createdBy === user.uid ? (
+                      <TouchableOpacity
+                        onPress={() => {
+                          deleteGroup(groupdata, navigation);
+                        }}
+                        style={{
+                          width: '100%',
+                        }}>
+                        <View
+                          style={{
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            paddingVertical: 10,
+                          }}>
+                          <DeleteIcon
+                            width={20}
+                            height={20}
+                            fill={COLORS.red}
+                          />
+                          <Text
+                            style={{
+                              paddingLeft: 10,
+                              color: COLORS.black,
+                            }}>
+                            Delete group
+                          </Text>
+                        </View>
+                      </TouchableOpacity>
+                    ) : null}
+                  </View>
                 </View>
               </View>
             </ScrollView>

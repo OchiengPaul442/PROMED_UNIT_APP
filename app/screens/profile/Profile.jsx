@@ -39,11 +39,21 @@ const CenterHalf = React.lazy(() =>
   import('../../components/Modals/CenterHalf'),
 );
 
+// checkbox
+import CheckBox from '@react-native-community/checkbox';
+
+// dropdown
+import DropDownPicker from 'react-native-dropdown-picker';
+
 // fetch functions
 import {
   editUserProfile,
   changeUserPassword,
   deleteUserAccount,
+  uploadTherapistDetailsToFirestore,
+  checkIfTherapistDetailsExists,
+  fetchUserAppointments,
+  fetchUserDiscussionBoards,
 } from '../../../fireStore';
 
 // min 8 characters, 1 upper case letter, 1 lower case letter, 1 numeric digit.
@@ -96,36 +106,162 @@ const Profile = ({navigation}) => {
     setLoading,
   } = useContext(AuthContext);
 
+  // edit mode
+  const [editMode, setEditMode] = React.useState(false);
+
+  // Get the user appointments
+  const [userAppointments, setUserAppointments] = React.useState(0);
+
+  // get the user discussion boards
+  const [userDiscussionBoards, setUserDiscussionBoards] = React.useState(0);
+
   // show password
   const [showPassword1, setShowPassword1] = React.useState(true);
   const [showPassword2, setShowPassword2] = React.useState(true);
   const [showPassword3, setShowPassword3] = React.useState(true);
 
   // MODAL
-  const [isModalVisible, setModalVisible] = React.useState(false);
   const [isModalVisible2, setModalVisible2] = React.useState(false);
 
-  // groups
-  const [groups, setGroups] = React.useState([]);
+  // therapist details
+  const [TherapistDetailsExists, setTherapistDetailsExists] =
+    React.useState(false);
+  const [name, setName] = React.useState('');
+  const [Location, setLocation] = React.useState('');
+  const [title, setTitle] = React.useState('');
+  const [workplace, setWorkplace] = React.useState('');
+  const [about, setAbout] = React.useState('');
 
-  const toggleModal = () => {
-    setModalVisible(!isModalVisible);
+  // dropdown
+  const [open, setOpen] = React.useState(false);
+  const [value, setValue] = React.useState(null);
+  const [items, setItems] = React.useState([
+    {label: 'active', value: 'active'},
+    {label: 'inactive', value: 'inactive'},
+  ]);
+
+  // days available
+  const [dayValue, setDayValue] = React.useState([]);
+  const [days, setDays] = React.useState([
+    {label: 'Mon', checked: false},
+    {label: 'Tue', checked: false},
+    {label: 'Wed', checked: false},
+    {label: 'Thus', checked: false},
+    {label: 'Frid', checked: false},
+  ]);
+
+  // appointment time
+  const [appointmentValue, setAppointmentValue] = React.useState([]);
+  const [appointment, setAppointment] = React.useState([
+    {label: '8 Am', checked: false},
+    {label: '9 Am', checked: false},
+    {label: '12 Pm', checked: false},
+    {label: '3 Pm', checked: false},
+    {label: '4 Pm', checked: false},
+  ]);
+
+  // Languages
+  const [languageValue, setLanguageValue] = React.useState([]);
+  const [language, setLanguage] = React.useState([
+    {label: 'English', checked: false},
+    {label: 'Acholi', checked: false},
+    {label: 'Luganda', checked: false},
+  ]);
+
+  const handleCheck1 = index => {
+    // copy the options array
+    const newOptions = [...days];
+    // toggle the checked value of the selected option
+    newOptions[index].checked = !newOptions[index].checked;
+    // update the state
+    setDays(newOptions);
+
+    // allow multiple selection of days and add setDaysValue to the array
+    const selectedDays = newOptions
+      .filter(option => option.checked)
+      .map(option => option.label);
+    setDayValue(selectedDays);
+  };
+
+  const handleCheck2 = index => {
+    // copy the options array
+    const newOptions = [...appointment];
+    // toggle the checked value of the selected option
+    newOptions[index].checked = !newOptions[index].checked;
+    // update the state
+    setAppointment(newOptions);
+
+    // allow multiple selection of appointments and add setAppointmentValue to the array
+    const selectedAppointments = newOptions
+      .filter(option => option.checked)
+      .map(option => option.label);
+    setAppointmentValue(selectedAppointments);
+  };
+
+  const handleCheck3 = index => {
+    // copy the options array
+    const newOptions = [...language];
+    // toggle the checked value of the selected option
+    newOptions[index].checked = !newOptions[index].checked;
+    // update the state
+    setLanguage(newOptions);
+
+    // allow multiple selection of languages and add setLanguageValue to the array
+    const selectedLanguages = newOptions
+      .filter(option => option.checked)
+      .map(option => option.label);
+    setLanguageValue(selectedLanguages);
   };
 
   const toggleModal2 = () => {
     setModalVisible2(!isModalVisible2);
   };
 
+  // function upload therapist details to firestore
+  const uploadTherapistDetails = async () => {
+    // check if the user is anonymous
+    if (anonymous) {
+      // if the user is anonymous, show an alert
+      Alert.alert(
+        'Anonymous User',
+        'You need to create an account to access this feature',
+        [
+          {
+            text: 'Cancel',
+            onPress: () => console.log('Cancel Pressed'),
+            style: 'cancel',
+          },
+          {
+            text: 'Create Account',
+            onPress: () => navigation.navigate('Register'),
+          },
+        ],
+      );
+    } else {
+      // if the user is not anonymous, upload the therapist details to firestore
+      uploadTherapistDetailsToFirestore(
+        setLoading,
+        setErrorStatus,
+        setError,
+        name,
+        Location,
+        title,
+        workplace,
+        about,
+        value,
+        dayValue,
+        appointmentValue,
+        languageValue,
+      );
+    }
+  };
+
   // Edit user profile function
   const editProfile = async (values, resetForm) => {
-    editUserProfile(
-      setLoading,
-      setErrorStatus,
-      setError,
-      toggleModal,
-      values,
-      resetForm,
-    );
+    editUserProfile(setLoading, setErrorStatus, setError, values, resetForm);
+
+    // set edit mode to false
+    setEditMode(false);
   };
 
   // Change user password function
@@ -143,6 +279,37 @@ const Profile = ({navigation}) => {
       setUserToken,
     );
   };
+
+  React.useEffect(() => {
+    // check if therapist details exists
+    checkIfTherapistDetailsExists(setTherapistDetailsExists);
+
+    // fetch number of discussion boards joined
+    fetchUserDiscussionBoards()
+      .then(count => {
+        setUserDiscussionBoards(count);
+      })
+      .catch(e => {
+        // set the user discussion boards to 0
+        setUserDiscussionBoards(0);
+
+        // set the error
+        setError(e.message);
+      });
+
+    // fetch the user appointments
+    fetchUserAppointments()
+      .then(count => {
+        setUserAppointments(count);
+      })
+      .catch(e => {
+        // set the user appointments to 0
+        setUserAppointments(0);
+
+        // set the error
+        setError(e.message);
+      });
+  }, []);
 
   return (
     <SafeAreaView>
@@ -163,7 +330,7 @@ const Profile = ({navigation}) => {
             <TouchableOpacity onPress={() => navigation.goBack()}>
               <BackBtn width={30} height={30} fill={COLORS.secondary} />
             </TouchableOpacity>
-            <TouchableOpacity onPress={toggleModal}>
+            <TouchableOpacity onPress={() => setEditMode(true)}>
               <EditIcon width={30} height={30} fill={COLORS.secondary} />
             </TouchableOpacity>
           </View>
@@ -171,7 +338,9 @@ const Profile = ({navigation}) => {
           {/* Profile Image */}
           <View style={styles.Profile_image}>
             <Image
-              source={userData ? {uri: userData.photoURL} : ProfileMale}
+              source={
+                userData.photoURL ? {uri: userData.photoURL} : ProfileMale
+              }
               style={{width: 120, height: 120, borderRadius: 100}}
             />
           </View>
@@ -180,7 +349,11 @@ const Profile = ({navigation}) => {
           <View style={Styles.Content}>
             <View style={styles.Profile_container}>
               <ScrollView showsVerticalScrollIndicator={false}>
+                {/* dashboard */}
                 <View style={{paddingHorizontal: 10, paddingBottom: 180}}>
+                  <Text style={{paddingVertical: 10, ...Styles.heading2}}>
+                    Dashboard
+                  </Text>
                   <View
                     style={{
                       width: '100%',
@@ -194,7 +367,7 @@ const Profile = ({navigation}) => {
                     <View style={styles.card_container}>
                       <View style={{width: 100, ...styles.card}}>
                         <Text style={{textAlign: 'center', ...Styles.heading2}}>
-                          {anonymous ? 'N/A' : '2'}
+                          {anonymous ? 'N/A' : userAppointments}
                         </Text>
                       </View>
                       <Text style={Styles.text2}>Appointments</Text>
@@ -202,7 +375,7 @@ const Profile = ({navigation}) => {
                     <View style={styles.card_container}>
                       <View style={{width: 100, ...styles.card}}>
                         <Text style={{textAlign: 'center', ...Styles.heading2}}>
-                          {anonymous ? 'N/A' : '2'}
+                          {anonymous ? 'N/A' : userDiscussionBoards}
                         </Text>
                       </View>
                       <Text style={Styles.text2}>Communities Joined</Text>
@@ -222,60 +395,176 @@ const Profile = ({navigation}) => {
                       width: '100%',
                       ...styles.card,
                     }}>
-                    <Text
-                      style={{
-                        textAlign: 'left',
-                        width: '100%',
-                        ...Styles.title,
-                      }}>
-                      Personal Details
-                    </Text>
-                    <View style={styles.pesonal_details}>
-                      <Text style={Styles.title2}>Name:</Text>
-                      <Text
-                        style={{
-                          flex: 1,
-                          textAlign: 'right',
-                          textTransform: 'capitalize',
-                          ...Styles.text,
+                    {!editMode ? (
+                      <View>
+                        <Text
+                          style={{
+                            textAlign: 'left',
+                            width: '100%',
+                            ...Styles.title,
+                          }}>
+                          Personal Details
+                        </Text>
+                        <View style={styles.pesonal_details}>
+                          <Text style={Styles.title2}>Name:</Text>
+                          <Text
+                            style={{
+                              flex: 1,
+                              textAlign: 'right',
+                              textTransform: 'capitalize',
+                              ...Styles.text,
+                            }}>
+                            {anonymous
+                              ? 'N/A'
+                              : userData.displayName
+                              ? userData.displayName
+                              : 'Loading...'}
+                          </Text>
+                        </View>
+                        <View style={styles.pesonal_details}>
+                          <Text style={Styles.title2}>Email address:</Text>
+                          <Text
+                            style={{
+                              flex: 1,
+                              textAlign: 'right',
+                              ...Styles.text,
+                            }}>
+                            {anonymous
+                              ? 'N/A'
+                              : userData
+                              ? userData.email
+                              : 'Loading...'}
+                          </Text>
+                        </View>
+                        <View style={styles.pesonal_details}>
+                          <Text style={Styles.title2}>Phone number:</Text>
+                          <Text
+                            style={{
+                              flex: 1,
+                              textAlign: 'right',
+                              ...Styles.text,
+                            }}>
+                            {anonymous
+                              ? 'N/A'
+                              : userData
+                              ? userData.phoneNumber
+                              : 'Loading...'}
+                          </Text>
+                        </View>
+                      </View>
+                    ) : (
+                      <Formik
+                        initialValues={{
+                          username: anonymous
+                            ? 'N/A'
+                            : userData
+                            ? userData.displayName
+                            : 'Loading...',
+                          email: anonymous
+                            ? 'N/A'
+                            : userData
+                            ? userData.email
+                            : 'Loading...',
+                          phone: anonymous
+                            ? 'N/A'
+                            : userData
+                            ? userData.phoneNumber
+                            : 'Loading...',
+                        }}
+                        validateOnMount={true}
+                        validationSchema={EditValidationSchema}
+                        onSubmit={(values, {resetForm}) => {
+                          editProfile(values, resetForm);
                         }}>
-                        {anonymous
-                          ? 'N/A'
-                          : userData
-                          ? userData.displayName
-                          : 'Loading...'}
-                      </Text>
-                    </View>
-                    <View style={styles.pesonal_details}>
-                      <Text style={Styles.title2}>Email address:</Text>
-                      <Text
-                        style={{
-                          flex: 1,
-                          textAlign: 'right',
-                          ...Styles.text,
-                        }}>
-                        {anonymous
-                          ? 'N/A'
-                          : userData
-                          ? userData.email
-                          : 'Loading...'}
-                      </Text>
-                    </View>
-                    <View style={styles.pesonal_details}>
-                      <Text style={Styles.title2}>Phone number:</Text>
-                      <Text
-                        style={{
-                          flex: 1,
-                          textAlign: 'right',
-                          ...Styles.text,
-                        }}>
-                        {anonymous
-                          ? 'N/A'
-                          : userData
-                          ? userData.phoneNumber
-                          : 'Loading...'}
-                      </Text>
-                    </View>
+                        {({
+                          handleChange,
+                          handleBlur,
+                          handleSubmit,
+                          values,
+                          errors,
+                          touched,
+                        }) => (
+                          <View style={{width: '100%'}}>
+                            <Text style={Styles.title}>
+                              Edit Personal details
+                            </Text>
+                            <View
+                              style={{
+                                width: '100%',
+                                position: 'relative',
+                              }}>
+                              <View style={Styles.Qgroup}>
+                                <Text style={Styles.Qlabel}>Username</Text>
+                                <TextInput
+                                  style={{marginBottom: 10, ...Styles.Qinput}}
+                                  placeholder=""
+                                  onBlur={handleBlur('username')}
+                                  value={values.username}
+                                  onChangeText={handleChange('username')}
+                                />
+                                {errors.username && touched.username && (
+                                  <Text style={Styles.error}>
+                                    {errors.username}
+                                  </Text>
+                                )}
+                              </View>
+                              <View style={Styles.Qgroup}>
+                                <Text style={Styles.Qlabel}>Email Address</Text>
+                                <TextInput
+                                  style={{marginBottom: 10, ...Styles.Qinput}}
+                                  placeholder=""
+                                  onBlur={handleBlur('email')}
+                                  value={values.email}
+                                  onChangeText={handleChange('email')}
+                                />
+                                {errors.email && touched.email && (
+                                  <Text style={Styles.error}>
+                                    {errors.email}
+                                  </Text>
+                                )}
+                              </View>
+                              <View style={Styles.Qgroup}>
+                                <Text style={Styles.Qlabel}>Phone Number</Text>
+                                <TextInput
+                                  style={{marginBottom: 10, ...Styles.Qinput}}
+                                  placeholder=""
+                                  onBlur={handleBlur('phone')}
+                                  value={values.phone}
+                                  onChangeText={handleChange('phone')}
+                                />
+                                {errors.phone && touched.phone && (
+                                  <Text style={Styles.error}>
+                                    {errors.phone}
+                                  </Text>
+                                )}
+                              </View>
+                              <View
+                                style={{
+                                  width: '100%',
+                                  flexDirection: 'row',
+                                  justifyContent: 'flex-start',
+                                  alignItems: 'center',
+                                }}>
+                                <RecButton
+                                  onPress={anonymous ? null : handleSubmit}
+                                  w={100}
+                                  text={anonymous ? 'N/A' : 'Edit'}
+                                  bgColor={COLORS.primary}
+                                  textColor={COLORS.white}
+                                />
+                                <RecButton
+                                  onPress={() => setEditMode(false)}
+                                  w={100}
+                                  text="Close"
+                                  bgColor={COLORS.tertiary}
+                                  textColor={COLORS.white}
+                                />
+                              </View>
+                            </View>
+                          </View>
+                        )}
+                      </Formik>
+                    )}
                   </View>
 
                   {/* change password section */}
@@ -425,6 +714,181 @@ const Profile = ({navigation}) => {
                     )}
                   </Formik>
 
+                  {/* Therapist details */}
+                  {userData && userData.userType === 'Therapist' ? (
+                    <View style={{width: '100%', ...styles.card}}>
+                      <Text
+                        style={{
+                          textAlign: 'left',
+                          width: '100%',
+                          marginBottom: 10,
+                          ...Styles.title,
+                        }}>
+                        Therapist account settings
+                      </Text>
+                      {TherapistDetailsExists ? (
+                        <View
+                          style={{
+                            width: '100%',
+                            marginBottom: 10,
+                          }}>
+                          <Text
+                            style={{
+                              textAlign: 'center',
+                              width: '100%',
+                              marginBottom: 10,
+                              ...Styles.text,
+                            }}>
+                            You have already filled in your therapist details.
+                          </Text>
+                        </View>
+                      ) : (
+                        <View>
+                          <View style={{width: '100%', ...Styles.Qgroup}}>
+                            <Text style={Styles.Qlabel}>Doctors Name</Text>
+                            <TextInput
+                              style={{marginBottom: 10, ...Styles.Qinput}}
+                              placeholder=""
+                              value={name}
+                              onChangeText={setName}
+                            />
+                          </View>
+                          <View style={{width: '100%', ...Styles.Qgroup}}>
+                            <Text style={Styles.Qlabel}>Location</Text>
+                            <TextInput
+                              style={{marginBottom: 10, ...Styles.Qinput}}
+                              placeholder=""
+                              value={Location}
+                              onChangeText={setLocation}
+                            />
+                          </View>
+                          <View style={{width: '100%', ...Styles.Qgroup}}>
+                            <Text style={Styles.Qlabel}>Job title</Text>
+                            <TextInput
+                              style={{marginBottom: 10, ...Styles.Qinput}}
+                              placeholder=""
+                              value={title}
+                              onChangeText={setTitle}
+                            />
+                          </View>
+                          <View style={{width: '100%', ...Styles.Qgroup}}>
+                            <Text style={Styles.Qlabel}>Workplace</Text>
+                            <TextInput
+                              style={{marginBottom: 10, ...Styles.Qinput}}
+                              placeholder=""
+                              value={workplace}
+                              onChangeText={setWorkplace}
+                            />
+                          </View>
+                          <View style={{width: '100%'}}>
+                            <Text style={Styles.Qlabel}>About</Text>
+                            <TextInput
+                              multiline={true}
+                              style={{
+                                marginBottom: 10,
+                                ...Styles.Qinput,
+                                height: 100,
+                              }}
+                              placeholder=""
+                              value={about}
+                              onChangeText={setAbout}
+                            />
+                          </View>
+                          <View style={{width: '100%', marginBottom: 10}}>
+                            <Text style={Styles.Qlabel}>Language</Text>
+                            <View>
+                              {language.map((option, index) => (
+                                <View
+                                  key={index}
+                                  style={{
+                                    flexDirection: 'row',
+                                    alignItems: 'center',
+                                  }}>
+                                  <CheckBox
+                                    disabled={false}
+                                    value={option.checked}
+                                    onValueChange={() => handleCheck3(index)}
+                                  />
+                                  <Text>{option.label}</Text>
+                                </View>
+                              ))}
+                            </View>
+                          </View>
+                          <View style={{width: '100%', marginBottom: 10}}>
+                            <Text style={Styles.Qlabel}>
+                              Availability Status
+                            </Text>
+                            <DropDownPicker
+                              listMode="SCROLLVIEW"
+                              showsVerticalScrollIndicator={false}
+                              open={open}
+                              setOpen={setOpen}
+                              items={items}
+                              setItems={setItems}
+                              value={value}
+                              setValue={setValue}
+                              onChangeItem={item => setValue(item.value)}
+                              placeholder="Select Status"
+                              dropDownDirection="TOP"
+                              dropDownContainerStyle={{
+                                backgroundColor: COLORS.white,
+                                borderRadius: 10,
+                              }}
+                            />
+                          </View>
+                          <View style={{width: '100%', marginBottom: 10}}>
+                            <Text style={Styles.Qlabel}>Days Available</Text>
+                            <View>
+                              {days.map((option1, index) => (
+                                <View
+                                  key={index}
+                                  style={{
+                                    flexDirection: 'row',
+                                    alignItems: 'center',
+                                  }}>
+                                  <CheckBox
+                                    disabled={false}
+                                    value={option1.checked}
+                                    onValueChange={() => handleCheck1(index)}
+                                  />
+                                  <Text>{option1.label}</Text>
+                                </View>
+                              ))}
+                            </View>
+                          </View>
+                          <View style={{width: '100%', marginBottom: 10}}>
+                            <Text style={Styles.Qlabel}>Appointment Times</Text>
+                            <View>
+                              {appointment.map((option, index) => (
+                                <View
+                                  key={index}
+                                  style={{
+                                    flexDirection: 'row',
+                                    alignItems: 'center',
+                                  }}>
+                                  <CheckBox
+                                    disabled={false}
+                                    value={option.checked}
+                                    onValueChange={() => handleCheck2(index)}
+                                  />
+                                  <Text>{option.label + ' ' + 'Session'}</Text>
+                                </View>
+                              ))}
+                            </View>
+                          </View>
+                          <View style={{width: '100%', marginTop: 10}}>
+                            <RecButton
+                              onPress={uploadTherapistDetails}
+                              text="Upload data"
+                              textColor={COLORS.black}
+                              bgColor={COLORS.secondary}
+                            />
+                          </View>
+                        </View>
+                      )}
+                    </View>
+                  ) : null}
+
                   {/* Delete account */}
                   <View style={{width: '100%', ...styles.card}}>
                     <Text
@@ -453,113 +917,7 @@ const Profile = ({navigation}) => {
       </View>
 
       <Suspense fallback={<RoundLoadingAnimation width={80} height={80} />}>
-        {/* MODAL1 */}
-        <CenterHalf Visibility={isModalVisible} hide={toggleModal}>
-          <Formik
-            initialValues={{
-              username: anonymous
-                ? 'N/A'
-                : userData
-                ? userData.displayName
-                : 'Loading...',
-              email: anonymous
-                ? 'N/A'
-                : userData
-                ? userData.email
-                : 'Loading...',
-              phone: anonymous
-                ? 'N/A'
-                : userData
-                ? userData.phoneNumber
-                : 'Loading...',
-            }}
-            validateOnMount={true}
-            validationSchema={EditValidationSchema}
-            onSubmit={(values, {resetForm}) => {
-              editProfile(values, resetForm);
-            }}>
-            {({
-              handleChange,
-              handleBlur,
-              handleSubmit,
-              values,
-              errors,
-              touched,
-            }) => (
-              <View style={{width: '100%'}}>
-                <Text style={Styles.title}>Edit details</Text>
-                <View
-                  style={{
-                    width: '100%',
-                    position: 'relative',
-                  }}>
-                  <View style={Styles.Qgroup}>
-                    <Text style={Styles.Qlabel}>Username</Text>
-                    <TextInput
-                      style={{marginBottom: 10, ...Styles.Qinput}}
-                      placeholder=""
-                      onBlur={handleBlur('username')}
-                      value={values.username}
-                      onChangeText={handleChange('username')}
-                    />
-                    {errors.username && touched.username && (
-                      <Text style={Styles.error}>{errors.username}</Text>
-                    )}
-                  </View>
-                  <View style={Styles.Qgroup}>
-                    <Text style={Styles.Qlabel}>Email Address</Text>
-                    <TextInput
-                      style={{marginBottom: 10, ...Styles.Qinput}}
-                      placeholder=""
-                      onBlur={handleBlur('email')}
-                      value={values.email}
-                      onChangeText={handleChange('email')}
-                    />
-                    {errors.email && touched.email && (
-                      <Text style={Styles.error}>{errors.email}</Text>
-                    )}
-                  </View>
-                  <View style={Styles.Qgroup}>
-                    <Text style={Styles.Qlabel}>Phone Number</Text>
-                    <TextInput
-                      style={{marginBottom: 10, ...Styles.Qinput}}
-                      placeholder=""
-                      onBlur={handleBlur('phone')}
-                      value={values.phone}
-                      onChangeText={handleChange('phone')}
-                    />
-                    {errors.phone && touched.phone && (
-                      <Text style={Styles.error}>{errors.phone}</Text>
-                    )}
-                  </View>
-                  <View
-                    style={{
-                      width: '100%',
-                      flexDirection: 'row',
-                      justifyContent: 'flex-start',
-                      alignItems: 'center',
-                    }}>
-                    <RecButton
-                      onPress={anonymous ? null : handleSubmit}
-                      w={100}
-                      text={anonymous ? 'N/A' : 'Save'}
-                      bgColor={COLORS.primary}
-                      textColor={COLORS.white}
-                    />
-                    <RecButton
-                      onPress={toggleModal}
-                      w={100}
-                      text="Close"
-                      bgColor={COLORS.tertiary}
-                      textColor={COLORS.white}
-                    />
-                  </View>
-                </View>
-              </View>
-            )}
-          </Formik>
-        </CenterHalf>
-        {/* MODAL2 */}
+        {/* MODAL */}
         <CenterHalf Visibility={isModalVisible2} hide={toggleModal2}>
           <Text style={Styles.title}>Are You sure about this?</Text>
           <View

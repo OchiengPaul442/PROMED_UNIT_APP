@@ -251,6 +251,9 @@ const AppNavigations = () => {
   const [userToken, setUserToken] = React.useState('');
   const [userData, setUserData] = React.useState('');
 
+  // get current user UID
+  const user = auth().currentUser;
+
   // if usertoken is set, get stream of user data for the current user from firestore
   React.useEffect(() => {
     if (userToken) {
@@ -303,6 +306,7 @@ const AppNavigations = () => {
   return (
     <AuthContext.Provider
       value={{
+        user,
         userToken,
         setUserToken,
         userData,

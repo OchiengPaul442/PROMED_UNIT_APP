@@ -37,7 +37,7 @@ const Header = () => {
               height: 48,
               borderRadius: 50,
             }}
-            source={userData ? {uri: userData.photoURL} : ProfileMale}
+            source={userData.photoURL ? {uri: userData.photoURL} : ProfileMale}
           />
         </TouchableOpacity>
         {/* Date section */}

@@ -12,7 +12,7 @@ import React from 'react';
 import {useNavigation} from '@react-navigation/native';
 
 //-------------------------------------------------------------------------//
-// APPOINTMENT FUNCTION
+// GENERAL FUNCTIONS
 //-------------------------------------------------------------------------//
 // fetch User Appointments
 export async function fetchUserAppointments() {
@@ -26,6 +26,21 @@ export async function fetchUserAppointments() {
     .get();
 
   // return the number of sessions
+  return count.size;
+}
+
+// function to fetch total number of discussion boards the user is a member of
+export async function fetchUserDiscussionBoards() {
+  // get current user data
+  const currentUser = auth().currentUser;
+
+  // loop through all the discussion boards and find out how many groups the current user is in
+  const count = await firestore()
+    .collection('Groups')
+    .where('Number_of_Members', 'array-contains', currentUser.uid)
+    .get();
+
+  // return the number of discussion boards
   return count.size;
 }
 
@@ -266,12 +281,13 @@ export async function confirmUserBooking(
 ) {
   // set loading to true
   setLoading(true);
+
   // get current user
   const user = auth().currentUser;
 
   try {
     // save booking to firestore
-    await firestore()
+    const bookingRef = await firestore()
       .collection('Appointments')
       .add({
         userId: user.uid,
@@ -282,16 +298,11 @@ export async function confirmUserBooking(
         createdAt: firestore.FieldValue.serverTimestamp(),
       });
 
-    // set error status
-    setErrorStatus('success');
-    // set error message
-    setError('Appointment booked successfully');
-
     // send notification to user
     sendNotification(name, date, time);
 
     // Update therapist schedule in firestore
-    await firestore()
+    const scheduleRef = await firestore()
       .collection('Therapists')
       .doc(therapistId)
       .collection('Schedule')
@@ -303,22 +314,24 @@ export async function confirmUserBooking(
         createdAt: firestore.FieldValue.serverTimestamp(),
       });
 
-    // set timeout
+    // set error status
+    setErrorStatus('success');
+    // set error message
+    setError('Appointment booked successfully');
+
+    // navigate to home screen after a delay
     setTimeout(() => {
-      // set error status
-      setErrorStatus('');
-      // set error message
-      setError('');
-      // navigate to home screen
       navigation.navigate('Therapy');
     }, 1000);
   } catch (error) {
+    // set error status
+    setErrorStatus('error');
     // set error message
     setError(error.message);
+  } finally {
+    // set loading to false
+    setLoading(false);
   }
-
-  // set loading to false
-  setLoading(false);
 }
 
 // Send notification to user after booking a session
@@ -352,6 +365,159 @@ export async function sendNotification(name, date, time) {
     });
 }
 
+// function to upload the therapist details to firestore
+export async function uploadTherapistDetailsToFirestore(
+  setLoading,
+  setErrorStatus,
+  setError,
+  name,
+  Location,
+  title,
+  workplace,
+  about,
+  value,
+  dayValue,
+  appointmentValue,
+  languageValue,
+) {
+  // set loading to true while uploading therapist details
+  setLoading(true);
+
+  // get current logged in user id
+  const uid = auth().currentUser.uid;
+
+  try {
+    // upload therapist details to firestore
+    await firestore()
+      .collection('Therapists')
+      .doc(uid)
+      .set({
+        name: name,
+        Location: Location,
+        title: title,
+        workplace: workplace,
+        about: about,
+        value: value,
+        image: `https://source.unsplash.com/collection/139386/160x160/?sig=${Math.floor(
+          Math.random() * 1000,
+        )}`,
+        dayValue: [...dayValue],
+        appointmentValue: [...appointmentValue],
+        languageValue: [...languageValue],
+        createdAt: firestore.FieldValue.serverTimestamp(),
+      });
+
+    // set loading to false after uploading therapist details
+    setLoading(false);
+
+    // update error status
+    setErrorStatus('success');
+
+    // set error message
+    setError('Therapist details uploaded successfully!');
+  } catch (error) {
+    // set loading to false after uploading therapist details
+    setLoading(false);
+
+    // update error status
+    setErrorStatus('error');
+
+    // set error message
+    setError(error.message);
+  }
+}
+
+// function to edit the therapist details in firestore
+export async function editTherapistDetailsInFirestore(
+  setLoading,
+  setErrorStatus,
+  setError,
+  about,
+  status,
+  availability,
+  appointmentTime,
+) {
+  // get current logged in user id
+  const uid = auth().currentUser.uid;
+
+  try {
+    // set loading to true while uploading therapist details
+    setLoading(true);
+
+    // check that input fields are not empty
+    about === '' ||
+    status === '' ||
+    availability === '' ||
+    appointmentTime === ''
+      ? // set error status and message if any field is empty
+        (setErrorStatus('error'), setError('Please fill in all fields!'))
+      : // upload therapist details to firestore if all fields are filled
+        await firestore()
+          .collection('Therapists')
+          .doc(uid)
+          .update({
+            // use object shorthand notation
+            about,
+            value: status,
+            dayValue: [...availability],
+            appointmentValue: [...appointmentTime],
+            createdAt: firestore.FieldValue.serverTimestamp(),
+          });
+  } catch (error) {
+    // set error status and message if upload fails
+    setErrorStatus('error');
+    setError(error.message);
+  } finally {
+    // set loading to false after uploading therapist details
+    setLoading(false);
+
+    // recall fetchTherapist function to get updated therapist details
+    fetchTherapist(setLoading);
+  }
+}
+
+// function to fetch selected therapist details from firestore
+export async function fetchSelectedTherapist(item) {
+  try {
+    // fetch therapist details
+    const res = await firestore().collection('Therapists').doc(item.key).get();
+
+    // check if the document exists
+    if (res.exists) {
+      // return the data as an object
+      return res.data();
+    } else {
+      // throw an error if no document found
+      throw new Error('No therapist found with this id');
+    }
+  } catch (error) {
+    // set error message
+    setError(error.message);
+  }
+}
+
+// function to check if therapist details exists in firestore
+export async function checkIfTherapistDetailsExists(setTherapistDetailsExists) {
+  // get current logged in user id
+  const uid = auth().currentUser.uid;
+
+  // check if therapist details exists in firestore
+  await firestore()
+    .collection('Therapists')
+    .doc(uid)
+    .get()
+    .then(documentSnapshot => {
+      // check if document exists
+      if (documentSnapshot.exists) {
+        // set therapist details exists to true
+        setTherapistDetailsExists(true);
+      } else {
+        // set therapist details exists to false
+        setTherapistDetailsExists(false);
+      }
+    });
+}
+
 //-------------------------------------------------------------------------//
 // PROFILE SCREEN FUNCTIONS
 //-------------------------------------------------------------------------//
@@ -360,7 +526,6 @@ export async function editUserProfile(
   setLoading,
   setErrorStatus,
   setError,
-  toggleModal,
   values,
   resetForm,
 ) {
@@ -370,34 +535,33 @@ export async function editUserProfile(
   // get current logged in user id
   const uid = auth().currentUser.uid;
 
-  // update user profile
-  await firestore()
-    .collection('Users')
-    .doc(uid)
-    .update({
-      userName: values.username,
+  try {
+    //update display name
+    await auth().currentUser.updateProfile({
+      displayName: values.name,
+    });
+
+    // update user profile
+    await firestore().collection('Users').doc(uid).update({
       email: values.email,
       phoneNumber: values.phone,
-    })
-    .then(() => {
-      // set loading to false after updating user profile
-      setLoading(false);
-      // reset form
-      resetForm();
-      // close modal
-      toggleModal();
-      // update error status
-      setErrorStatus('success');
-      // set error message
-      setError('Profile updated!');
-    })
-    .catch(error => {
-      // set loading to false after updating user profile
-      setLoading(false);
-      // update error status
-      setErrorStatus('error');
-      setError('Something went wrong!');
     });
+    // set loading to false after updating user profile
+    setLoading(false);
+    // reset form
+    resetForm();
+    // update error status
+    setErrorStatus('success');
+    // set error message
+    setError('Profile updated!');
+  } catch (error) {
+    // set loading to false after updating user profile
+    setLoading(false);
+    // update error status
+    setErrorStatus('error');
+    // set error message
+    setError('Something went wrong!');
+  }
 }
 
 // Change user password
@@ -420,40 +584,31 @@ export async function changeUserPassword(
     values.currentPassword,
   );
 
-  // re-authenticate user
-  await auth()
-    .currentUser.reauthenticateWithCredential(credential)
-    .then(() => {
-      // update user password
-      auth()
-        .currentUser.updatePassword(values.newPassword)
-        .then(() => {
-          // set loading to false after updating user password
-          setLoading(false);
-          // reset form
-          resetForm();
-          // update error status
-          setErrorStatus('success');
-          // set error message
-          setError('Password updated!');
-        })
-        .catch(error => {
-          // set loading to false after updating user password
-          setLoading(false);
-          // update error status
-          setErrorStatus('error');
-          // set error message
-          setError('Something went wrong!');
-        });
-    })
-    .catch(error => {
-      // set loading to false after updating user password
-      setLoading(false);
-      // update error status
-      setErrorStatus('error');
-      // set error message
+  try {
+    // re-authenticate user
+    await auth().currentUser.reauthenticateWithCredential(credential);
+    // update user password
+    await auth().currentUser.updatePassword(values.newPassword);
+    // set loading to false after updating user password
+    setLoading(false);
+    // reset form
+    resetForm();
+    // update error status
+    setErrorStatus('success');
+    // set error message
+    setError('Password updated!');
+  } catch (error) {
+    // set loading to false after updating user password
+    setLoading(false);
+    // update error status
+    setErrorStatus('error');
+    // set error message based on error code
+    if (error.code === 'auth/wrong-password') {
       setError('Current password is incorrect!');
-    });
+    } else {
+      setError('Something went wrong!');
+    }
+  }
 }
 
 // Delete user account
@@ -613,24 +768,27 @@ export async function createDiscussionBoard(
       const group = await groupRef.get();
 
       if (group.empty) {
-        // create a new discussion board
+        // create a new discussion board object with name, image, members, timestamp and creator
+        const newDiscussionBoard = {
+          name: createGroup.charAt(0).toUpperCase() + createGroup.slice(1),
+          image: `https://source.unsplash.com/collection/139386/160x160/?sig=${Math.floor(
+            Math.random() * 1000,
+          )}`,
+          Number_of_Members: [
+            {
+              userId: currentUser.uid,
+              displayName: currentUser.displayName,
+              photoURL: currentUser.photoURL,
+            },
+          ],
+          createdAt: firestore.Timestamp.fromDate(new Date()),
+          createdBy: currentUser.uid,
+        };
+
+        // add the new discussion board to the Groups collection
         await firestore()
           .collection('Groups')
-          .add({
-            name: createGroup.charAt(0).toUpperCase() + createGroup.slice(1),
-            image: `https://source.unsplash.com/collection/139386/160x160/?sig=${Math.floor(
-              Math.random() * 1000,
-            )}`,
-            Number_of_Members: [
-              {
-                userId: currentUser.uid,
-                displayName: currentUser.displayName,
-                photoURL: currentUser.photoURL,
-              },
-            ],
-            createdAt: firestore.Timestamp.fromDate(new Date()),
-            createdBy: currentUser.uid,
-          })
+          .add(newDiscussionBoard)
           .then(async () => {
             // get discussion board
             const discussionBoard = await fetchDiscussionBoard(setLoading);
@@ -649,35 +807,22 @@ export async function createDiscussionBoard(
             toggleModal2();
 
             // send notification to user that created the discussion board
+            // create a notification object with user id, title, body and timestamp
+            const notification = {
+              userId: currentUser.uid,
+              title: 'Discussion Board',
+              body: `You created a new discussion board called  ${
+                createGroup.charAt(0).toUpperCase() + createGroup.slice(1)
+              }. Created on ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}`,
+              createdAt: firestore.FieldValue.serverTimestamp(),
+            };
+
+            // add the notification to the Users collection
             await firestore()
               .collection('Users')
               .doc(currentUser.uid)
               .collection('Notifications')
-              .add({
-                userId: currentUser.uid,
-                title: 'Discussion Board',
-                body: `Your created a new discussion board called  ${
-                  createGroup.charAt(0).toUpperCase() + createGroup.slice(1)
-                }. Created on ${
-                  new Date().getDate() +
-                  '/' +
-                  new Date().getMonth() +
-                  '/' +
-                  new Date().getFullYear()
-                } at ${
-                  new Date().getHours() > 12 && new Date().getHours() < 24
-                    ? new Date().getHours() -
-                      12 +
-                      ':' +
-                      new Date().getMinutes() +
-                      ' PM'
-                    : new Date().getHours() +
-                      ':' +
-                      new Date().getMinutes() +
-                      ' AM'
-                }`,
-                createdAt: firestore.FieldValue.serverTimestamp(),
-              });
+              .add(notification);
           });
       } else {
         // set loading to false
@@ -696,333 +841,6 @@ export async function createDiscussionBoard(
   }
 }
 
-// function to join a discussion board
-export async function joinDiscussionBoard(
-  setLoading,
-  setLoading2,
-  setErrorStatus,
-  setError,
-  toggleModal,
-  setGroup,
-  selectedGroup,
-  setMemberStatus,
-) {
-  try {
-    // set loading to true
-    setLoading2(true);
-
-    // get current user data
-    const currentUser = auth().currentUser;
-
-    // check if current user is a member of the Groups collection()
-    const memberRef = firestore().collection('Groups').doc(selectedGroup.key);
-
-    // Get the array of members
-    const members = await memberRef
-      .get()
-      .then(snapshot => snapshot.data().Number_of_Members);
-
-    // caputure the userId element of the array
-    const userId = members.map(item => item.userId);
-
-    // Check if the current user is a member of the array
-    const isMember = userId.includes(currentUser.uid);
-
-    // If the current user is a member of the array, then they are a member of the group
-    if (isMember) {
-      // set loading to false
-      setLoading2(false);
-
-      // set error
-      setError('You are already a member of this group');
-    } else {
-      // add current user to the array of members
-      await memberRef.update({
-        Number_of_Members: firestore.FieldValue.arrayUnion({
-          userId: currentUser.uid,
-          displayName: currentUser.displayName,
-          photoURL: currentUser.photoURL,
-        }),
-      });
-
-      // get discussion board
-      const discussionBoard = await fetchDiscussionBoard(setLoading);
-
-      // set discussion board
-      setGroup(discussionBoard);
-
-      //set error
-      setErrorStatus('success');
-      setError('You have joined this group successfully');
-
-      // set loading to false
-      setLoading2(false);
-
-      // set modal visible to false
-      toggleModal();
-
-      // set member status to true
-      setMemberStatus(true);
-
-      // send notification to user that created the discussion board
-      await firestore()
-        .collection('Users')
-        .doc(currentUser.uid)
-        .collection('Notifications')
-        .add({
-          userId: currentUser.uid,
-          title: 'Discussion Board',
-          body: `You joined the discussion board called  ${
-            selectedGroup.name
-          }. Joined on ${
-            new Date().getDate() +
-            '/' +
-            new Date().getMonth() +
-            '/' +
-            new Date().getFullYear()
-          } at ${
-            new Date().getHours() > 12 && new Date().getHours() < 24
-              ? new Date().getHours() -
-                12 +
-                ':' +
-                new Date().getMinutes() +
-                ' PM'
-              : new Date().getHours() + ':' + new Date().getMinutes() + ' AM'
-          }`,
-          createdAt: firestore.FieldValue.serverTimestamp(),
-        });
-    }
-  } catch (error) {
-    // set loading to false
-    setLoading2(false);
-
-    // set error
-    setError(error.message);
-  }
-}
-
-// function to leave a discussion board
-export async function leaveDiscussionBoard(
-  setLoading,
-  setLoading2,
-  setErrorStatus,
-  setError,
-  toggleModal,
-  setGroup,
-  selectedGroup,
-  setMemberStatus,
-) {
-  try {
-    // set loading to true
-    setLoading2(true);
-
-    // get current user data
-    const currentUser = auth().currentUser;
-
-    // check if current user is a member of the Groups collection()
-    const memberRef = firestore().collection('Groups').doc(selectedGroup.key);
-
-    // Get the array of members
-    const members = await memberRef
-      .get()
-      .then(snapshot => snapshot.data().Number_of_Members);
-
-    // caputure the userId element of the array
-    const userId = members.map(item => item.userId);
-
-    // Check if the current user is a member of the array
-    const isMember = userId.includes(currentUser.uid);
-
-    // If the current user is a member of the array, then they are a member of the group
-    if (isMember) {
-      // remove current user from the array of members
-      await memberRef.update({
-        Number_of_Members: firestore.FieldValue.arrayRemove({
-          userId: currentUser.uid,
-        }),
-      });
-
-      // get discussion board
-      const discussionBoard = await fetchDiscussionBoard(setLoading);
-
-      // set discussion board
-      setGroup(discussionBoard);
-
-      //set error
-      setErrorStatus('success');
-      setError('You have left this group successfully');
-
-      // set loading to false
-      setLoading2(false);
-
-      // set modal visible to false
-      toggleModal();
-
-      // set member status to false
-      setMemberStatus(false);
-
-      // send notification to user that created the discussion board
-      await firestore()
-        .collection('Users')
-        .doc(currentUser.uid)
-        .collection('Notifications')
-        .add({
-          userId: currentUser.uid,
-          title: 'Discussion Board',
-          body: `You left the discussion board called  ${
-            selectedGroup.name
-          }. Left on ${
-            new Date().getDate() +
-            '/' +
-            new Date().getMonth() +
-            '/' +
-            new Date().getFullYear()
-          } at ${
-            new Date().getHours() > 12 && new Date().getHours() < 24
-              ? new Date().getHours() -
-                12 +
-                ':' +
-                new Date().getMinutes() +
-                ' PM'
-              : new Date().getHours() + ':' + new Date().getMinutes() + ' AM'
-          }`,
-          createdAt: firestore.FieldValue.serverTimestamp(),
-        });
-    } else {
-      // set loading to false
-      setLoading2(false);
-
-      // set error
-      setError('You are not a member of this group');
-    }
-  } catch (error) {
-    // set loading to false
-    setLoading2(false);
-
-    // set error
-    setError('Yes its this' + error.message);
-  }
-}
-
-// function to delete a discussion board
-export async function deleteDiscussionBoard(
-  setLoading,
-  setLoading2,
-  setErrorStatus,
-  setError,
-  toggleModal,
-  setGroup,
-  selectedGroup,
-  setMemberStatus,
-) {
-  try {
-    // set loading to true
-    setLoading2(true);
-
-    // get current user data
-    const currentUser = auth().currentUser;
-
-    // check if current user is a member of the Groups collection()
-    const memberRef = firestore().collection('Groups').doc(selectedGroup.key);
-
-    // Get the array of members
-    const members = await memberRef
-      .get()
-      .then(snapshot => snapshot.data().Number_of_Members);
-
-    // caputure the userId element of the array
-    const userId = members.map(item => item.userId);
-
-    // Check if the current user is a member of the array
-    const isMember = userId.includes(currentUser.uid);
-
-    // If the current user is a member of the array, then they are a member of the group
-    if (isMember) {
-      // check if current user is the creator of the discussion board
-      if (currentUser.uid === selectedGroup.createdBy) {
-        // remove current user from the array of members
-        await memberRef.update({
-          Number_of_Members: firestore.FieldValue.arrayRemove({
-            userId: currentUser.uid,
-          }),
-        });
-
-        // delete discussion board
-        await memberRef.delete();
-
-        // get discussion board
-        const discussionBoard = await fetchDiscussionBoard(setLoading);
-
-        // set discussion board
-        setGroup(discussionBoard);
-
-        //set error
-        setErrorStatus('success');
-        setError('You have deleted this group successfully');
-
-        // set loading to false
-        setLoading2(false);
-
-        // set modal visible to false
-        toggleModal();
-
-        // set member status to false
-        setMemberStatus(false);
-
-        // send notification to user that created the discussion board
-        await firestore()
-          .collection('Users')
-          .doc(currentUser.uid)
-          .collection('Notifications')
-          .add({
-            userId: currentUser.uid,
-            title: 'Deleted Discussion Board',
-            body: `You deleted the discussion board called  ${
-              selectedGroup.name
-            }. Deleted on ${
-              new Date().getDate() +
-              '/' +
-              new Date().getMonth() +
-              '/' +
-              new Date().getFullYear()
-            } at ${
-              new Date().getHours() > 12 && new Date().getHours() < 24
-                ? new Date().getHours() -
-                  12 +
-                  ':' +
-                  new Date().getMinutes() +
-                  ' PM'
-                : new Date().getHours() + ':' + new Date().getMinutes() + ' AM'
-            }`,
-            createdAt: firestore.FieldValue.serverTimestamp(),
-          });
-      } else {
-        // set loading to false
-        setLoading2(false);
-        setErrorStatus('error');
-        // set error
-        setError('You are not the creator / admin of this group');
-      }
-    } else {
-      // set loading to false
-      setLoading2(false);
-
-      // set error status
-      setErrorStatus('error');
-
-      // set error
-      setError('You are not a member of this group');
-    }
-  } catch (error) {
-    // set loading to false
-    setLoading2(false);
-
-    setErrorStatus('error');
-    // set error
-    setError('Yes its this' + error.message);
-  }
-}
-
 // function to send live chat message with in the group
 export async function sendLiveChatMessage(
   setErrorStatus,
@@ -1035,53 +853,43 @@ export async function sendLiveChatMessage(
     // get current user data
     const currentUser = auth().currentUser;
 
-    // check if current user is a member of the Groups collection()
-    const memberRef = firestore().collection('Groups').doc(groupdata.key);
+    // get the group document reference
+    const groupRef = firestore().collection('Groups').doc(groupdata.key);
 
-    // Get the array of members
-    const members = await memberRef
+    // get the array of members
+    const members = await groupRef
       .get()
       .then(snapshot => snapshot.data().Number_of_Members);
 
-    // caputure the userId element of the array
-    const userId = members.map(item => item.userId);
+    // check if current user is a member of the group
+    const isMember = members.some(item => item.userId === currentUser.uid);
 
-    // Check if the current user is a member of the array
-    const isMember = userId.includes(currentUser.uid);
-
-    // If the current user is a member of the array, then they are a member of the group
-    if (isMember) {
-      // check if message is empty
-      if (message === '') {
-        // set error status
-        setErrorStatus('error');
-        // set error
-        setError('Message cannot be empty');
-      } else {
-        // send message
-        await memberRef.collection('Messages').add({
-          userId: currentUser.uid,
-          message: message,
-          createdAt: new Date().getTime(),
-          date: new Date().getDate(),
-        });
-
-        // set message to empty
-        setMessage('');
-      }
-    } else {
-      // set error status
-      setErrorStatus('error');
-
-      // set error
-      setError('You are not a member of this group');
+    // check if message is empty
+    if (message === '') {
+      throw new Error('Message cannot be empty');
     }
+
+    // check if user is a member of the group
+    if (!isMember) {
+      throw new Error('You are not a member of this group');
+    }
+
+    // send message
+    await groupRef.collection('Messages').add({
+      userId: currentUser.uid,
+      message: message,
+      createdAt: new Date().getTime(),
+      date: new Date().getDate(),
+    });
+
+    // set message to empty
+    setMessage('');
   } catch (error) {
     // set error status
     setErrorStatus('error');
 
     // set error
-    setError('Yes its this' + error.message);
+    setError(error.message);
   }
 }
 
@@ -1095,23 +903,21 @@ export async function fetchLiveChatMessages(
     // Set loading to true
     setLoading(true);
 
-    // Get current user data
-    const currentUser = auth().currentUser;
+    // Get current user id
+    const currentUserId = auth().currentUser.uid;
 
     // Get the group document reference
     const groupRef = firestore().collection('Groups').doc(groupdata.key);
 
-    // Get the group data
-    const groupData = await groupRef.get();
+    // Get the number of members field from the group document
+    const numberOfMembers = await groupRef
+      .get()
+      .then(snapshot => snapshot.get('Number_of_Members'));
 
-    // Get the array of members
-    const {Number_of_Members: members} = groupData.data();
-
-    // Get the user ids of the members
-    const userIds = members.map(member => member.userId);
-
-    // Check if the current user is a member of the group
-    const isMember = userIds.includes(currentUser.uid);
+    // Check if the current user id is in the number of members array
+    const isMember = numberOfMembers.some(
+      member => member.userId === currentUserId,
+    );
 
     // If the current user is a member of the group, then fetch messages
     if (isMember) {
@@ -1120,32 +926,316 @@ export async function fetchLiveChatMessages(
 
       // Subscribe to the messages snapshot
       messagesRef.orderBy('createdAt', 'desc').onSnapshot(snapshot => {
-        // Create an empty array for messages
-        const messages = [];
-
-        // Loop through the snapshot documents and push them to the array
-        snapshot.forEach(doc => {
-          messages.push({
-            key: doc.id,
-            ...doc.data(),
-          });
-        });
+        // Map the snapshot documents to an array of messages with key and data
+        const messages = snapshot.docs.map(doc => ({
+          key: doc.id,
+          ...doc.data(),
+        }));
 
         // Set messages state
         setPastMessages(messages);
-
-        // Set loading to false
-        setLoading(false);
       });
-    } else {
-      // Set loading to false
-      setLoading(false);
     }
   } catch (error) {
     // Handle error
     console.error(error);
-
+  } finally {
     // Set loading to false
     setLoading(false);
+  }
+}
+
+// function to fetch only 5 members of the group from database
+export async function fetchMembers(setLoading, setGroupMembers, groupdata) {
+  try {
+    // set loading to true
+    setLoading(true);
+
+    // get the number of members field from the group document
+    const numberOfMembers = await firestore()
+      .collection('Groups')
+      .doc(groupdata.key)
+      .get()
+      .then(snapshot => snapshot.get('Number_of_Members'));
+
+    // get the first 5 members
+    const firstFiveMembers = numberOfMembers.slice(0, 5);
+
+    // set members state
+    setGroupMembers(firstFiveMembers);
+  } catch (error) {
+    // handle error
+  } finally {
+    // set loading to false
+    setLoading(false);
+  }
+}
+
+// function to fetch all members of the group from database
+export async function fetchAllMembers(
+  setGroupMembers,
+  groupdata,
+  setErrorStatus,
+  setError,
+) {
+  try {
+    // get the number of members field from the group document
+    const numberOfMembers = await firestore()
+      .collection('Groups')
+      .doc(groupdata.key)
+      .get()
+      .then(snapshot => snapshot.get('Number_of_Members'));
+
+    // set members state
+    setGroupMembers(numberOfMembers);
+  } catch (error) {
+    // set error status
+    setErrorStatus('error');
+
+    // set error
+    setError('Yes its this' + error.message);
+  }
+}
+
+// function to delete the group
+export async function deleteGroup(groupdata, navigation) {
+  try {
+    // delete group document from the Groups collection
+    await firestore().collection('Groups').doc(groupdata.key).delete();
+
+    // navigate to home screen
+    navigation.navigate('Groups');
+
+    // create a notification object with title, body and group id
+    const notification = {
+      title: 'Group Deleted',
+      body: 'The group ' + groupdata.name + ' has been deleted',
+      createdAt: new Date().getTime(),
+    };
+
+    // send notification to all members of the group
+    await sendNotification(notification);
+  } catch (error) {
+    // set error status
+    setErrorStatus('error');
+
+    // set error
+    setError('Yes its this' + error.message);
+  }
+}
+
+// function to join the group plus send notification to the group members and person who just joined
+export async function joinGroup(
+  setLoading,
+  groupdata,
+  navigation,
+  setErrorStatus,
+  setError,
+  setGroup,
+  toggleModal,
+) {
+  try {
+    toggleModal();
+
+    // set loading to true
+    setLoading(true);
+
+    // get current user data
+    const currentUser = auth().currentUser;
+
+    // get the member reference
+    const memberRef = firestore().collection('Groups').doc(groupdata.key);
+
+    // get the number of members field
+    const numberOfMembers = await memberRef
+      .get()
+      .then(snapshot => snapshot.get('Number_of_Members'));
+
+    // check if current user id is in the number of members array
+    const isMember = numberOfMembers.some(
+      member => member.userId === currentUser.uid,
+    );
+
+    // if current user is not a member of the group
+    if (!isMember) {
+      // create an object with current user data
+      const currentUserData = {
+        userId: currentUser.uid,
+        displayName: currentUser.displayName,
+        photoURL: currentUser.photoURL,
+      };
+
+      // add current user to the array of members
+      await memberRef.update({
+        Number_of_Members: firestore.FieldValue.arrayUnion(currentUserData),
+      });
+
+      // get discussion board
+      const discussionBoard = await fetchDiscussionBoard(setLoading);
+
+      // set discussion board
+      setGroup(discussionBoard);
+
+      // send notification to user
+      // create a notification object with current user id, title, body and timestamp
+      const notification = {
+        userId: currentUser.uid,
+        title: 'Joined Discussion Board',
+        body: `You joined the discussion board called  ${
+          groupdata.name
+        }. Joined on ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}`,
+        createdAt: firestore.FieldValue.serverTimestamp(),
+      };
+
+      // add the notification to the Users collection
+      await firestore()
+        .collection('Users')
+        .doc(currentUser.uid)
+        .collection('Notifications')
+        .add(notification);
+
+      // set loading to false
+      setLoading(false);
+
+      // navigate to home screen
+      navigation.navigate('Groups');
+    } else {
+      // set error status
+      setErrorStatus('error');
+
+      // set error
+      setError('You are already a member of this group');
+    }
+  } catch (error) {
+    // set error status
+    setErrorStatus('error');
+
+    // set error
+    setError('Yes its this' + error.message);
+  }
+}
+
+// function to leave the group plus send notification to the group members and person who just left
+export async function leaveGroup(
+  setLoading,
+  groupdata,
+  navigation,
+  setErrorStatus,
+  setError,
+  setGroup,
+  toggleModal,
+) {
+  try {
+    // toggle modal
+    toggleModal();
+
+    // set loading to true
+    setLoading(true);
+
+    // get current user data
+    const currentUser = auth().currentUser;
+
+    // get the member reference
+    const memberRef = firestore().collection('Groups').doc(groupdata.key);
+
+    // get the number of members field
+    const numberOfMembers = await memberRef
+      .get()
+      .then(snapshot => snapshot.get('Number_of_Members'));
+
+    // check if current user id is in the number of members array
+    const isMember = numberOfMembers.some(
+      member => member.userId === currentUser.uid,
+    );
+
+    // if current user is a member of the group
+    if (isMember) {
+      // create an object with current user data
+      const currentUserData = {
+        userId: currentUser.uid,
+        displayName: currentUser.displayName,
+        photoURL: currentUser.photoURL,
+      };
+
+      // remove current user from the array of members
+      await memberRef.update({
+        Number_of_Members: firestore.FieldValue.arrayRemove(currentUserData),
+      });
+
+      // get discussion board
+      const discussionBoard = await fetchDiscussionBoard(setLoading);
+
+      // set discussion board
+      setGroup(discussionBoard);
+
+      // send notification to all members of the group
+      // create a notification object with current user id, title, body and timestamp
+      const notification = {
+        userId: currentUser.uid,
+        title: 'Discussion Board',
+        body: `You left the discussion board called  ${
+          groupdata.name
+        }. Left on ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}`,
+        createdAt: firestore.FieldValue.serverTimestamp(),
+      };
+
+      // add the notification to the Users collection
+      await firestore()
+        .collection('Users')
+        .doc(currentUser.uid)
+        .collection('Notifications')
+        .add(notification);
+
+      // set loading to false
+      setLoading(false);
+
+      // navigate to home screen
+      navigation.navigate('Groups');
+    } else {
+      // set loading to false
+      setLoading(false);
+
+      // set error status
+      setErrorStatus('error');
+
+      // set error
+      setError('You are not a member of this group');
+    }
+  } catch (error) {
+    // set loading to false
+    setLoading(false);
+
+    // set error status
+    setErrorStatus('error');
+
+    // set error
+    setError('Yes its this' + error.message);
+  }
+}
+
+// function to check if user is a member of the group
+export async function checkIfMember(item, setError, setStatus) {
+  try {
+    // get current user id
+    const currentUserId = auth().currentUser.uid;
+
+    // get the member reference
+    const memberRef = firestore().collection('Groups').doc(item.key);
+
+    // get the number of members field
+    const numberOfMembers = await memberRef
+      .get()
+      .then(snapshot => snapshot.get('Number_of_Members'));
+
+    // check if current user id is in the number of members array
+    const isMember = numberOfMembers.some(
+      member => member.userId === currentUserId,
+    );
+
+    // set status to the result of the check
+    setStatus(isMember);
+  } catch (error) {
+    // set error
+    setError('Yes its this' + error.message);
   }
 }

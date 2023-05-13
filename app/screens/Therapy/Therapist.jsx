@@ -1,6 +1,7 @@
 import {
   View,
   Text,
+  TextInput,
   ScrollView,
   StyleSheet,
   TouchableOpacity,
@@ -23,8 +24,15 @@ import Styles from '../../constants/Styles';
 import Screen from '../../layout/Screen';
 
 // constants
-import {COLORS} from '../../constants';
-import {BackBtn, MessageIcon, CallIcon, CurvedButton} from '../../components';
+import {COLORS, ProfileMale} from '../../constants';
+import {
+  BackBtn,
+  MessageIcon,
+  CallIcon,
+  CurvedButton,
+  EditIcon,
+  DeleteIcon,
+} from '../../components';
 
 // Lazy load the Table and Datepicker components
 const Table = React.lazy(() => import('../../components/table/Table'));
@@ -32,12 +40,23 @@ const Datepicker = React.lazy(() =>
   import('../../components/date&timepicker/Datepicker'),
 );
 
+// checkbox
+import CheckBox from '@react-native-community/checkbox';
+
+// dropdown
+import DropDownPicker from 'react-native-dropdown-picker';
+
 // fetch functions
-import {fetchTherapistSchedule} from '../../../fireStore';
+import {
+  fetchTherapistSchedule,
+  editTherapistDetailsInFirestore,
+  fetchSelectedTherapist,
+} from '../../../fireStore';
 
 const Therapy = ({navigation, route}) => {
   // context
-  const {anonymous, setError} = useContext(AuthContext);
+  const {anonymous, setError, setErrorStatus, userData} =
+    useContext(AuthContext);
 
   // get params
   const {item} = route.params;
@@ -45,12 +64,83 @@ const Therapy = ({navigation, route}) => {
   // set loading state
   const [Loading, setLoading] = React.useState(true);
 
+  // items
+  const [details, setDetails] = React.useState([]);
+
   // time and date
   const [date, setDate] = React.useState('');
   const [time, setTime] = React.useState('');
 
   // set schedule
   const [schedule, setSchedule] = React.useState([]);
+
+  // set edit mode
+  const [editMode, setEditMode] = React.useState(false);
+
+  // about
+  const [about, setAbout] = React.useState(details.about);
+
+  // dropdown
+  const [open, setOpen] = React.useState(false);
+  const [status, setStatus] = React.useState('');
+  const [items, setItems] = React.useState([
+    {label: 'active', value: 'active'},
+    {label: 'inactive', value: 'inactive'},
+  ]);
+
+  // availability
+  const [availability, setAvailability] = React.useState([]);
+  const [availabe, setAvailable] = React.useState([
+    {label: 'Mon', checked: false},
+    {label: 'Tue', checked: false},
+    {label: 'Wed', checked: false},
+    {label: 'Thus', checked: false},
+    {label: 'Frid', checked: false},
+  ]);
+
+  // appointment time
+  const [appointmentTime, setAppointmentTime] = React.useState([]);
+  const [appointments, setAppointments] = React.useState([
+    {label: '8 Am', checked: false},
+    {label: '9 Am', checked: false},
+    {label: '12 Pm', checked: false},
+    {label: '3 Pm', checked: false},
+    {label: '4 Pm', checked: false},
+  ]);
+
+  const handleCheck = index => {
+    // copy the options array
+    const newOptions = [...availabe];
+    // toggle the checked value of the selected option
+    newOptions[index].checked = !newOptions[index].checked;
+    // update the state
+    setAvailable(newOptions);
+
+    const availabilityValue = [];
+    newOptions.forEach(item => {
+      if (item.checked) {
+        availabilityValue.push(item.label);
+      }
+    });
+    setAvailability(availabilityValue);
+  };
+
+  const handleCheck2 = index => {
+    // copy the options array
+    const newOptions = [...appointments];
+    // toggle the checked value of the selected option
+    newOptions[index].checked = !newOptions[index].checked;
+    // update the state
+    setAppointments(newOptions);
+
+    const appointmentValue = [];
+    newOptions.forEach(item => {
+      if (item.checked) {
+        appointmentValue.push(item.label);
+      }
+    });
+    setAppointmentTime(appointmentValue);
+  };
 
   // function to BookAppointment
   const bookAppointment = () => {
@@ -74,10 +164,10 @@ const Therapy = ({navigation, route}) => {
         } else {
           // navigate to confirmation screen
           navigation.push('Confirmation', {
-            name: item.name,
-            therapistId: item.key,
-            title: item.title,
-            image: item.image,
+            name: details.name,
+            therapistId: details.key,
+            title: details.title,
+            image: details.image,
             date: date,
             time: time,
             token: Math.random().toString(36).substring(2),
@@ -90,9 +180,35 @@ const Therapy = ({navigation, route}) => {
     }
   };
 
+  // function to edit therapist details
+  const editTherapistDetails = () => {
+    editTherapistDetailsInFirestore(
+      setLoading,
+      setErrorStatus,
+      setError,
+      about,
+      status,
+      availability,
+      appointmentTime,
+    );
+
+    // set edit mode to false
+    setEditMode(false);
+
+    // call fetchSelectedTherapist function
+    fetchSelectedTherapist(item).then(res => {
+      setDetails(res);
+    });
+  };
+
   React.useEffect(() => {
     // fetch data if screen is focused
     const unsubscribe = navigation.addListener('focus', () => {
+      // fetch therapist details
+      fetchSelectedTherapist(item).then(res => {
+        setDetails(res);
+      });
+
       // fetchSchedule
       fetchTherapistSchedule(setLoading, item)
         .then(res => {
@@ -105,11 +221,11 @@ const Therapy = ({navigation, route}) => {
     return unsubscribe;
   }, []);
 
-  // radio buttons Options for time using iteration for item.sessionTime array
+  // radio buttons Options for time using iteration for appointmentValue array
   const radioButtons = React.useMemo(() => {
     const options = [];
-    if (item.sessionTime) {
-      item.sessionTime.forEach((time, index) => {
+    if (details.appointmentValue) {
+      details.appointmentValue.forEach((time, index) => {
         options.push({
           id: time + ' Session',
           label: time + ' Session',
@@ -136,7 +252,7 @@ const Therapy = ({navigation, route}) => {
     }
 
     return options;
-  }, [item.sessionTime]);
+  }, [details.appointmentValue]);
 
   // table content
   const TABLECONTENT = {
@@ -167,17 +283,48 @@ const Therapy = ({navigation, route}) => {
                 }}>
                 <Text style={Styles.heading}>Therapist</Text>
               </View>
-              <View style={{paddingHorizontal: 10}}>
+              <View
+                style={{
+                  paddingHorizontal: 10,
+                  display: 'flex',
+                  flexDirection: 'row',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  width: '100%',
+                }}>
                 <TouchableOpacity onPress={() => navigation.goBack()}>
                   <BackBtn width={30} height={30} fill={COLORS.primary} />
                 </TouchableOpacity>
+                {userData.userType === 'Therapist' ? (
+                  editMode ? (
+                    <TouchableOpacity onPress={editTherapistDetails}>
+                      <Text
+                        style={{
+                          color: COLORS.white,
+                          fontSize: 16,
+                          padding: 10,
+                          borderRadius: 10,
+                          backgroundColor: COLORS.orange,
+                        }}>
+                        Save changes
+                      </Text>
+                    </TouchableOpacity>
+                  ) : (
+                    <TouchableOpacity onPress={() => setEditMode(true)}>
+                      <EditIcon width={30} height={30} fill={COLORS.tertiary} />
+                    </TouchableOpacity>
+                  )
+                ) : null}
               </View>
               {/* Therapist information */}
               <View style={styles.Therapist_information}>
+                {/* top info section */}
                 <View style={styles.card}>
                   <View>
                     <Image
-                      source={{uri: item.image}}
+                      source={
+                        details.image ? {uri: details.image} : ProfileMale
+                      }
                       style={{
                         width: 80,
                         height: 80,
@@ -192,9 +339,27 @@ const Therapy = ({navigation, route}) => {
                       alignItems: 'flex-end',
                     }}>
                     <View style={{position: 'relative'}}>
-                      <Text style={Styles.heading2}>{item.name}</Text>
-                      <Text style={Styles.title2}>{item.title}</Text>
-                      <Text style={Styles.text}>Language: {item.language}</Text>
+                      <Text style={Styles.heading2}>
+                        {details.name ? details.name : 'Loading...'}
+                      </Text>
+                      <Text style={Styles.title2}>
+                        {details.title ? details.title : 'Loading...'}
+                      </Text>
+                      <Text style={Styles.text}>
+                        Language:
+                        {details.languageValue
+                          ? details.languageValue.map((lang, index) => {
+                              return (
+                                <Text key={index}>
+                                  {lang}
+                                  {index === details.languageValue.length - 1
+                                    ? ''
+                                    : ', '}
+                                </Text>
+                              );
+                            })
+                          : 'Loading...'}
+                      </Text>
                     </View>
                   </View>
                   <View
@@ -232,119 +397,208 @@ const Therapy = ({navigation, route}) => {
 
                 {/* About section */}
                 <View style={styles.card}>
-                  <View>
+                  <View style={{width: '100%'}}>
                     <Text style={Styles.heading2}>About</Text>
-                    <Text style={Styles.text}>
-                      {item.about ? item.about : 'N/A'}
-                    </Text>
+                    {editMode ? (
+                      <TextInput
+                        multiline={true}
+                        cursorColor={
+                          Platform.OS === 'ios' ? COLORS.primary : COLORS.black
+                        }
+                        style={{
+                          flex: 1,
+                          borderWidth: 1,
+                          width: '100%',
+                          height: 100,
+                          backgroundColor: COLORS.white,
+                          borderRadius: 10,
+                          padding: 10,
+                          marginTop: 10,
+                          ...Styles.text,
+                        }}
+                        onChangeText={text => setAbout(text)}
+                        value={about}></TextInput>
+                    ) : (
+                      <Text style={Styles.text}>
+                        {details.about ? details.about : 'Loading...'}
+                      </Text>
+                    )}
                   </View>
                 </View>
 
                 {/* Availability section */}
                 <View style={styles.card}>
                   <View style={{flex: 1}}>
-                    <Text style={Styles.heading2}>Availability</Text>
-                    <View
-                      style={{
-                        width: 'auto',
-                        display: 'flex',
-                        flexDirection: 'row',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                      }}>
-                      <Text style={{paddingVertical: 10, ...Styles.text}}>
-                        {item.daysAvailable
-                          ? item.daysAvailable.map((day, index) => {
-                              return (
-                                <Text key={index}>
-                                  {day}
-                                  {index === item.daysAvailable.length - 1
-                                    ? ''
-                                    : ', '}
-                                </Text>
-                              );
-                            })
-                          : 'N/A'}
-                      </Text>
-                      <Text
-                        style={{
-                          width: 50,
-                          padding: 5,
-                          backgroundColor:
-                            item.availabilityStatus === 'active'
-                              ? COLORS.primary
-                              : item.availabilityStatus
-                              ? COLORS.red
-                              : null,
-                          borderRadius: 8,
-                          textAlign: 'center',
-                          ...Styles.text3,
-                        }}>
-                        {item.availabilityStatus}
-                      </Text>
-                    </View>
-                  </View>
-                </View>
-
-                {/* Schedule section */}
-                <View style={styles.card}>
-                  <View style={{flex: 1}}>
-                    <Text style={Styles.heading2}>Schedule</Text>
-                    {/* table */}
-                    <View style={{width: '100%', paddingVertical: 10}}>
-                      {schedule.length === 0 ? (
-                        <Text style={{...Styles.text, textAlign: 'center'}}>
-                          No schedule available
-                        </Text>
-                      ) : !Loading ? (
-                        <Table
-                          tableHead={TABLECONTENT.tableHead}
-                          tableData={TABLECONTENT.tableData}
-                          BorderColor={COLORS.primary}
-                          BorderWidth={1}
-                          tableDataColor={COLORS.black}
-                          HeaderTextColor={COLORS.white}
-                          HeaderBackgroundColor={COLORS.primary}
-                        />
+                    <Text style={{paddingBottom: 10, ...Styles.heading2}}>
+                      Availability
+                    </Text>
+                    <View>
+                      {editMode ? (
+                        <View>
+                          {availabe.map((option, index) => (
+                            <View
+                              key={index}
+                              style={{
+                                flexDirection: 'row',
+                                alignItems: 'center',
+                              }}>
+                              <CheckBox
+                                disabled={false}
+                                value={option.checked}
+                                onValueChange={() => handleCheck(index)}
+                              />
+                              <Text>{option.label}</Text>
+                            </View>
+                          ))}
+                          <Text style={{paddingVertical: 10, ...Styles.text}}>
+                            Availability Status
+                          </Text>
+                          <View style={{height: 'auto', position: 'relative'}}>
+                            <DropDownPicker
+                              listMode="SCROLLVIEW"
+                              showsVerticalScrollIndicator={false}
+                              open={open}
+                              setOpen={setOpen}
+                              items={items}
+                              setItems={setItems}
+                              value={status}
+                              setValue={setStatus}
+                              onChangeItem={item => setStatus(item.value)}
+                              placeholder="Select Status"
+                              dropDownDirection="TOP"
+                              dropDownContainerStyle={{
+                                backgroundColor: COLORS.white,
+                                borderRadius: 10,
+                              }}
+                            />
+                          </View>
+                        </View>
                       ) : (
-                        <Text style={{...Styles.text, textAlign: 'center'}}>
-                          Loading schedule...
-                        </Text>
+                        <View
+                          style={{
+                            width: 'auto',
+                            display: 'flex',
+                            flexDirection: 'row',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                          }}>
+                          <Text style={{paddingVertical: 10, ...Styles.text}}>
+                            {details.dayValue
+                              ? details.dayValue.map((day, index) => {
+                                  return (
+                                    <Text key={index}>
+                                      {day}
+                                      {index === details.dayValue.length - 1
+                                        ? ''
+                                        : ', '}
+                                    </Text>
+                                  );
+                                })
+                              : 'Loading...'}
+                          </Text>
+                          <Text
+                            style={{
+                              padding: 5,
+                              backgroundColor:
+                                details.value === 'active'
+                                  ? COLORS.primary
+                                  : details.value
+                                  ? COLORS.red
+                                  : null,
+                              borderRadius: 8,
+                              textAlign: 'center',
+                              ...Styles.text3,
+                            }}>
+                            {details.value}
+                          </Text>
+                        </View>
                       )}
                     </View>
                   </View>
                 </View>
 
-                <View style={styles.card}>
-                  <Text style={Styles.heading2}>Select Appointment Date</Text>
-                </View>
+                {/* Schedule section */}
+                {userData.userType === 'Therapist' ? (
+                  <View style={styles.card}>
+                    <View style={{flex: 1}}>
+                      <Text style={Styles.heading2}>Schedule</Text>
+                      {/* table */}
+                      <View style={{width: '100%', paddingVertical: 10}}>
+                        {schedule.length === 0 ? (
+                          <Text style={{...Styles.text, textAlign: 'center'}}>
+                            No schedule available
+                          </Text>
+                        ) : !Loading ? (
+                          <Table
+                            tableHead={TABLECONTENT.tableHead}
+                            tableData={TABLECONTENT.tableData}
+                            BorderColor={COLORS.primary}
+                            BorderWidth={1}
+                            tableDataColor={COLORS.black}
+                            HeaderTextColor={COLORS.white}
+                            HeaderBackgroundColor={COLORS.primary}
+                          />
+                        ) : (
+                          <Text style={{...Styles.text, textAlign: 'center'}}>
+                            Loading schedule...
+                          </Text>
+                        )}
+                      </View>
+                    </View>
+                  </View>
+                ) : null}
 
                 {/* Date picker */}
-                <Datepicker style={styles.card} datachange={e => setDate(e)} />
+                <View
+                  style={{
+                    ...styles.card2,
+                  }}>
+                  <Text style={{paddingVertical: 10, ...Styles.heading2}}>
+                    Select Appointment Date
+                  </Text>
+                  <Datepicker datachange={e => setDate(e)} />
+                </View>
 
                 {/* Time picker */}
                 <View style={styles.card}>
                   <View>
                     <Text style={Styles.heading2}>Select Appointment Time</Text>
-                    <Text style={{paddingBottom: 10, ...Styles.text}}>
-                      select based on Therapists availability!
-                    </Text>
-                    <View
-                      style={{
-                        display: 'flex',
-                        justifyContent: 'center',
-                        alignItems: 'flex-start',
-                      }}>
-                      <RadioGroup
-                        radioButtons={radioButtons}
-                        onPress={time => {
-                          setTime(time);
-                        }}
-                        value={time}
-                        selectedId={time}
-                        layout="column"
-                      />
-                    </View>
+                    {editMode ? (
+                      appointments.map((option, index) => (
+                        <View
+                          key={index}
+                          style={{flexDirection: 'row', alignItems: 'center'}}>
+                          <CheckBox
+                            disabled={false}
+                            value={option.checked}
+                            onValueChange={() => handleCheck2(index)}
+                          />
+                          <Text>{option.label + ' ' + 'Session'}</Text>
+                        </View>
+                      ))
+                    ) : (
+                      <View>
+                        <Text style={{paddingBottom: 10, ...Styles.text}}>
+                          select based on Therapists availability!
+                        </Text>
+                        <View
+                          style={{
+                            display: 'flex',
+                            justifyContent: 'center',
+                            alignItems: 'flex-start',
+                          }}>
+                          <RadioGroup
+                            radioButtons={radioButtons}
+                            onPress={time => {
+                              setTime(time);
+                            }}
+                            value={time}
+                            selectedId={time}
+                            layout="column"
+                          />
+                        </View>
+                      </View>
+                    )}
                   </View>
                 </View>
 
@@ -357,13 +611,12 @@ const Therapy = ({navigation, route}) => {
                         width: '100%',
                         height: 'auto',
                         display: 'flex',
-                        justifyContent: 'center',
-                        alignItems: 'center',
+                        justifyContent: 'flex-start',
                         paddingVertical: 10,
                       }}>
                       <Text
                         style={{
-                          ...Styles.text,
+                          ...Styles.title2,
                         }}>
                         N/A
                       </Text>
@@ -423,6 +676,28 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     display: 'flex',
     flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    shadowColor: COLORS.black,
+    padding: 10,
+    shadowOffset: {
+      width: 0,
+      height: 5,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+
+  card2: {
+    position: 'relative',
+    width: '100%',
+    height: 'auto',
+    backgroundColor: COLORS.lightGray,
+    borderRadius: 10,
+    marginBottom: 15,
+    display: 'flex',
+    flexDirection: 'column',
     justifyContent: 'space-between',
     alignItems: 'center',
     shadowColor: COLORS.black,

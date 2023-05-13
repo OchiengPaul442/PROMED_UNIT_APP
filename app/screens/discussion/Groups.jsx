@@ -42,8 +42,9 @@ import {
   fetchDiscussionBoard,
   createDiscussionBoard,
   searchDiscussionBoard,
-  leaveDiscussionBoard,
-  joinDiscussionBoard,
+  leaveGroup,
+  joinGroup,
+  checkIfMember,
 } from '../../../fireStore';
 
 // firebase
@@ -73,8 +74,8 @@ const Groups = ({navigation}) => {
   // set create group state
   const [createGroup, setCreateGroup] = React.useState(false);
 
-  // member status
-  const [memberStatus, setMemberStatus] = React.useState(false);
+  // set status
+  const [status, setStatus] = React.useState(false);
 
   const toggleModal = () => {
     setModalVisible(!isModalVisible);
@@ -99,29 +100,29 @@ const Groups = ({navigation}) => {
 
   // join group
   const handleJoinGroup = () => {
-    joinDiscussionBoard(
+    const groupdata = selectedGroup;
+    joinGroup(
       setLoading,
-      setLoading2,
+      groupdata,
+      navigation,
       setErrorStatus,
       setError,
-      toggleModal,
       setGroup,
-      selectedGroup,
-      setMemberStatus,
+      toggleModal,
     );
   };
 
   // leave group
   const handleLeaveGroup = () => {
-    leaveDiscussionBoard(
+    const groupdata = selectedGroup;
+    leaveGroup(
       setLoading,
-      setLoading2,
+      groupdata,
+      navigation,
       setErrorStatus,
       setError,
-      toggleModal,
       setGroup,
-      selectedGroup,
-      setMemberStatus,
+      toggleModal,
     );
   };
 
@@ -252,11 +253,7 @@ const Groups = ({navigation}) => {
                             </View>
                             <TouchableOpacity
                               onPress={() => {
-                                item.Number_of_Members.map(
-                                  item => item.userId,
-                                ).includes(currentUser.uid)
-                                  ? setMemberStatus(true)
-                                  : setMemberStatus(false);
+                                checkIfMember(item, setError, setStatus);
                                 setSelectedGroup(item);
                                 toggleModal();
                               }}
@@ -288,10 +285,10 @@ const Groups = ({navigation}) => {
               {selectedGroup.name}
             </Text>
             <TouchableOpacity
-              onPress={memberStatus ? handleLeaveGroup : handleJoinGroup}
+              onPress={status ? handleLeaveGroup : handleJoinGroup}
               style={{paddingVertical: 10}}>
               <Text style={Styles.title}>
-                {memberStatus ? 'Leave Group' : 'Join Group'}
+                {status ? 'Leave group' : 'Join group'}
               </Text>
             </TouchableOpacity>
             <View style={styles.separator}></View>

@@ -31,7 +31,11 @@ const BottomModal = React.lazy(() =>
 );
 
 // fetch functions
-import {fetchTherapist, fetchMoreTherapist} from '../../../fireStore';
+import {
+  fetchTherapist,
+  fetchMoreTherapist,
+  fetchTherapistDetailsV1,
+} from '../../../fireStore';
 
 const Therapy = ({navigation}) => {
   // context
@@ -151,7 +155,7 @@ const Therapy = ({navigation}) => {
                                   justifyContent: 'space-between',
                                 }}>
                                 <Text style={Styles.title}>{item.name}</Text>
-                                <Text style={Styles.text}>{item.location}</Text>
+                                <Text style={Styles.text}>{item.Location}</Text>
                                 <Text style={Styles.text}>{item.title}</Text>
                               </View>
                             </View>
