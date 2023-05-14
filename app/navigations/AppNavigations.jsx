@@ -37,56 +37,26 @@ import {
 import {
   WelcomeScreen,
   AccessScreen,
-  // LoginScreen,
-  // RegistrationScreen,
-  // PasswordRecovery,
-  // SuccessScreen,
-  // HomeScreen,
-  // Therapy,
-  // Groups,
-  // Bot,
-  // Terms,
-  // Test,
-  // TestResult,
-  // TherapistScreen,
-  // ConfirmationScreen,
-  // Notifications,
-  // Groupchat,
-  // Profile,
-  // Groupdetails,
+  LoginScreen,
+  RegistrationScreen,
+  PasswordRecovery,
+  SuccessScreen,
+  HomeScreen,
+  Therapy,
+  Groups,
+  Bot,
+  Terms,
+  Test,
+  TestResult,
+  TherapistScreen,
+  ConfirmationScreen,
+  Notifications,
+  Groupchat,
+  Profile,
+  Groupdetails,
+  PrivateChat,
   // Splash,
 } from '../screens';
-// use React.lazy to create lazy-loaded screens
-const LoginScreen = React.lazy(() => import('../screens/Auth/LoginScreen'));
-const RegistrationScreen = React.lazy(() =>
-  import('../screens/Auth/RegistrationScreen'),
-);
-const PasswordRecovery = React.lazy(() =>
-  import('../screens/Auth/PasswordRecovery'),
-);
-const SuccessScreen = React.lazy(() => import('../screens/Auth/SuccessScreen'));
-const HomeScreen = React.lazy(() => import('../screens/Home/HomeScreen'));
-const Therapy = React.lazy(() => import('../screens/Therapy/Therapy'));
-const Groups = React.lazy(() => import('../screens/discussion/Groups'));
-const Bot = React.lazy(() => import('../screens/Bot/Bot'));
-const Terms = React.lazy(() => import('../screens/Therapy/Terms'));
-const Test = React.lazy(() => import('../screens/Therapy/Test'));
-const TestResult = React.lazy(() => import('../screens/Therapy/TestResult'));
-const TherapistScreen = React.lazy(() =>
-  import('../screens/Therapy/Therapist'),
-);
-const ConfirmationScreen = React.lazy(() =>
-  import('../screens/Therapy/ConfirmationScreen'),
-);
-const Notifications = React.lazy(() =>
-  import('../screens/notifications/Notifications'),
-);
-const Groupchat = React.lazy(() => import('../screens/discussion/Groupchat'));
-const Profile = React.lazy(() => import('../screens/profile/Profile'));
-const Groupdetails = React.lazy(() =>
-  import('../screens/discussion/Groupdetails'),
-);
-const PrivateChat = React.lazy(() => import('../screens/Therapy/PrivateChat'));
 
 // context
 import {AuthContext} from './Context/AuthContext';
@@ -101,7 +71,6 @@ const TherapyStack = createStackNavigator();
 const GroupStack = createStackNavigator();
 const DrawerStack = createDrawerNavigator();
 const ProfileStack = createStackNavigator();
-const Stack = createStackNavigator();
 
 // Auth stack
 const AuthNavigation = () => {

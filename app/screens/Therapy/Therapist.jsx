@@ -14,6 +14,8 @@ import RadioGroup from 'react-native-radio-buttons-group';
 import CheckBox from '@react-native-community/checkbox';
 import DropDownPicker from 'react-native-dropdown-picker';
 
+import {Formik} from 'formik';
+
 // constants
 import {COLORS, ProfileMale} from '../../constants';
 import Styles from '../../constants/Styles';
@@ -57,7 +59,7 @@ const Therapy = ({navigation, route}) => {
   const [Loading, setLoading] = React.useState(true);
 
   // therapist details
-  const [details, setDetails] = React.useState([]);
+  const [details, setDetails] = React.useState({});
 
   // time and date
   const [date, setDate] = React.useState('');
@@ -70,7 +72,7 @@ const Therapy = ({navigation, route}) => {
   const [editMode, setEditMode] = React.useState(false);
 
   // about therapist
-  const [aboutTherapist, setAboutTherapist] = React.useState();
+  // const [aboutTherapist, setAboutTherapist] = React.useState(details.about);
 
   // dropdown
   const [open, setOpen] = React.useState(false);
@@ -173,12 +175,12 @@ const Therapy = ({navigation, route}) => {
   };
 
   // function to edit therapist details
-  const editTherapistDetails = () => {
+  const editTherapistDetails = values => {
     editTherapistDetailsInFirestore(
       setLoading,
       setErrorStatus,
       setError,
-      aboutTherapist,
+      values,
       status,
       availability,
       appointmentTime,
@@ -260,194 +262,350 @@ const Therapy = ({navigation, route}) => {
     <Screen>
       <View style={Styles.Container}>
         {/* Content */}
-        <View style={Styles.Content}>
-          <ScrollView showsVerticalScrollIndicator={false}>
-            <View style={styles.wrapper}>
-              <View
-                style={{
-                  width: '100%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  paddingTop: 20,
-                  paddingVertical: 20,
-                  paddingHorizontal: 10,
-                }}>
-                <Text style={Styles.heading}>Therapist</Text>
-              </View>
-
-              <View
-                style={{
-                  paddingHorizontal: 10,
-                  display: 'flex',
-                  flexDirection: 'row',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  width: '100%',
-                }}>
-                <TouchableOpacity onPress={() => navigation.goBack()}>
-                  <BackBtn width={30} height={30} fill={COLORS.primary} />
-                </TouchableOpacity>
-                {userData.userType === 'Therapist' ? (
-                  editMode ? (
-                    <View
-                      style={{
-                        display: 'flex',
-                        flexDirection: 'row',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                      }}>
-                      <TouchableOpacity onPress={editTherapistDetails}>
-                        <Text
-                          style={{
-                            color: COLORS.white,
-                            fontSize: 16,
-                            padding: 10,
-                            borderRadius: 10,
-                            backgroundColor: COLORS.orange,
-                            marginRight: 10,
-                          }}>
-                          Save changes
-                        </Text>
-                      </TouchableOpacity>
-                      <TouchableOpacity onPress={() => setEditMode(false)}>
-                        <Text
-                          style={{
-                            color: COLORS.white,
-                            fontSize: 16,
-                            padding: 10,
-                            borderRadius: 10,
-                            backgroundColor: COLORS.red,
-                            textAlign: 'center',
-                          }}>
-                          Close
-                        </Text>
-                      </TouchableOpacity>
-                    </View>
-                  ) : (
-                    <TouchableOpacity onPress={() => setEditMode(true)}>
-                      <EditIcon width={30} height={30} fill={COLORS.tertiary} />
-                    </TouchableOpacity>
-                  )
-                ) : null}
-              </View>
-              {/* Therapist information */}
-              <View style={styles.Therapist_information}>
-                {/* top info section */}
-                <View style={styles.card}>
-                  <View>
-                    <Image
-                      source={
-                        details.image ? {uri: details.image} : ProfileMale
-                      }
-                      style={{
-                        width: 80,
-                        height: 80,
-                        borderRadius: 50,
-                      }}
-                    />
-                  </View>
+        <Formik
+          initialValues={{
+            about: item.about,
+          }}
+          onSubmit={values => {
+            editTherapistDetails(values);
+          }}>
+          {({handleChange, handleBlur, handleSubmit, values}) => (
+            <View style={Styles.Content}>
+              <ScrollView showsVerticalScrollIndicator={false}>
+                <View style={styles.wrapper}>
                   <View
                     style={{
+                      width: '100%',
                       display: 'flex',
-                      justifyContent: 'center',
-                      alignItems: 'flex-end',
-                    }}>
-                    <View style={{position: 'relative'}}>
-                      <Text style={Styles.heading2}>
-                        {details.name ? details.name : 'Loading...'}
-                      </Text>
-                      <Text style={Styles.title2}>
-                        {details.title ? details.title : 'Loading...'}
-                      </Text>
-                      <Text style={Styles.text}>
-                        Language:
-                        {details.languageValue
-                          ? details.languageValue.map((lang, index) => {
-                              return (
-                                <Text key={index}>
-                                  {lang}
-                                  {index === details.languageValue.length - 1
-                                    ? ''
-                                    : ', '}
-                                </Text>
-                              );
-                            })
-                          : 'Loading...'}
-                      </Text>
-                    </View>
-                  </View>
-                  <View
-                    style={{
-                      position: 'relative',
-                      right: 8,
-                      height: 'auto',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      justifyContent: 'space-around',
                       alignItems: 'center',
-                      marginTop: 10,
+                      justifyContent: 'center',
+                      paddingTop: 20,
+                      paddingVertical: 20,
+                      paddingHorizontal: 10,
                     }}>
-                    <TouchableOpacity
-                      onPress={() => navigation.push('PrivateChats')}>
-                      <MessageIcon
-                        width={25}
-                        height={25}
-                        fill={COLORS.primary}
-                      />
+                    <Text style={Styles.heading}>Therapist</Text>
+                  </View>
+
+                  <View
+                    style={{
+                      paddingHorizontal: 10,
+                      display: 'flex',
+                      flexDirection: 'row',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      width: '100%',
+                    }}>
+                    <TouchableOpacity onPress={() => navigation.goBack()}>
+                      <BackBtn width={30} height={30} fill={COLORS.primary} />
                     </TouchableOpacity>
+                    {userData.userType === 'Therapist' ? (
+                      editMode ? (
+                        <View
+                          style={{
+                            display: 'flex',
+                            flexDirection: 'row',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                          }}>
+                          <TouchableOpacity onPress={handleSubmit}>
+                            <Text
+                              style={{
+                                color: COLORS.white,
+                                fontSize: 16,
+                                padding: 10,
+                                borderRadius: 10,
+                                backgroundColor: COLORS.orange,
+                                marginRight: 10,
+                              }}>
+                              Save changes
+                            </Text>
+                          </TouchableOpacity>
+                          <TouchableOpacity onPress={() => setEditMode(false)}>
+                            <Text
+                              style={{
+                                color: COLORS.white,
+                                fontSize: 16,
+                                padding: 10,
+                                borderRadius: 10,
+                                backgroundColor: COLORS.red,
+                                textAlign: 'center',
+                              }}>
+                              Close
+                            </Text>
+                          </TouchableOpacity>
+                        </View>
+                      ) : (
+                        <TouchableOpacity onPress={() => setEditMode(true)}>
+                          <EditIcon
+                            width={30}
+                            height={30}
+                            fill={COLORS.tertiary}
+                          />
+                        </TouchableOpacity>
+                      )
+                    ) : null}
+                  </View>
+                  {/* Therapist information */}
+                  <View style={styles.Therapist_information}>
+                    {/* top info section */}
+                    <View style={styles.card}>
+                      <View>
+                        <Image
+                          source={
+                            details.image ? {uri: details.image} : ProfileMale
+                          }
+                          style={{
+                            width: 80,
+                            height: 80,
+                            borderRadius: 50,
+                          }}
+                        />
+                      </View>
+                      <View
+                        style={{
+                          display: 'flex',
+                          justifyContent: 'center',
+                          alignItems: 'flex-end',
+                        }}>
+                        <View style={{position: 'relative'}}>
+                          <Text style={Styles.heading2}>
+                            {details.name ? details.name : 'Loading...'}
+                          </Text>
+                          <Text style={Styles.title2}>
+                            {details.title ? details.title : 'Loading...'}
+                          </Text>
+                          <Text style={Styles.text}>
+                            Language:
+                            {details.languageValue
+                              ? details.languageValue.map((lang, index) => {
+                                  return (
+                                    <Text key={index}>
+                                      {lang}
+                                      {index ===
+                                      details.languageValue.length - 1
+                                        ? ''
+                                        : ', '}
+                                    </Text>
+                                  );
+                                })
+                              : 'Loading...'}
+                          </Text>
+                        </View>
+                      </View>
+                      {userData.userType === 'Therapist' ? null : (
+                        <View
+                          style={{
+                            position: 'relative',
+                            right: 8,
+                            height: 'auto',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            justifyContent: 'space-around',
+                            alignItems: 'center',
+                            marginTop: 10,
+                          }}>
+                          <TouchableOpacity
+                            onPress={() => navigation.navigate('PrivateChats')}>
+                            <MessageIcon
+                              width={25}
+                              height={25}
+                              fill={COLORS.primary}
+                            />
+                          </TouchableOpacity>
+                          <View
+                            style={{
+                              position: 'relative',
+                              height: 2,
+                              backgroundColor: COLORS.black,
+                              width: 40,
+                              marginVertical: 15,
+                            }}
+                          />
+                          <TouchableOpacity>
+                            <CallIcon
+                              width={25}
+                              height={25}
+                              fill={COLORS.primary}
+                            />
+                          </TouchableOpacity>
+                        </View>
+                      )}
+                    </View>
+
+                    {/* About section */}
+                    <View style={styles.card}>
+                      <View style={{width: '100%'}}>
+                        <Text style={Styles.heading2}>About</Text>
+                        {editMode ? (
+                          <TextInput
+                            style={{
+                              marginBottom: 10,
+                              width: '100%',
+                              height: 'auto',
+                              borderWidth: 1,
+                              borderColor: COLORS.gray,
+                              borderRadius: 10,
+                              padding: 5,
+                            }}
+                            multiline={true}
+                            value={values.about}
+                            onBlur={handleBlur('about')}
+                            onChangeText={handleChange('about')}
+                          />
+                        ) : (
+                          <Text style={Styles.text}>
+                            {details.about ? details.about : 'Loading...'}
+                          </Text>
+                        )}
+                      </View>
+                    </View>
+
+                    {/* Availability section */}
+                    <View style={styles.card}>
+                      <View style={{flex: 1}}>
+                        <Text style={{paddingBottom: 10, ...Styles.heading2}}>
+                          Availability
+                        </Text>
+                        <View>
+                          {editMode ? (
+                            <View>
+                              {availabe.map((option, index) => (
+                                <View
+                                  key={index}
+                                  style={{
+                                    flexDirection: 'row',
+                                    alignItems: 'center',
+                                  }}>
+                                  <CheckBox
+                                    disabled={false}
+                                    value={option.checked}
+                                    onValueChange={() => handleCheck(index)}
+                                  />
+                                  <Text>{option.label}</Text>
+                                </View>
+                              ))}
+                              <Text
+                                style={{paddingVertical: 10, ...Styles.text}}>
+                                Availability Status
+                              </Text>
+                              <View
+                                style={{height: 'auto', position: 'relative'}}>
+                                <DropDownPicker
+                                  listMode="SCROLLVIEW"
+                                  showsVerticalScrollIndicator={false}
+                                  open={open}
+                                  setOpen={setOpen}
+                                  items={items}
+                                  setItems={setItems}
+                                  value={status}
+                                  setValue={setStatus}
+                                  onChangeItem={item => setStatus(item.value)}
+                                  placeholder="Select Status"
+                                  dropDownDirection="TOP"
+                                  dropDownContainerStyle={{
+                                    backgroundColor: COLORS.white,
+                                    borderRadius: 10,
+                                  }}
+                                />
+                              </View>
+                            </View>
+                          ) : (
+                            <View
+                              style={{
+                                width: 'auto',
+                                display: 'flex',
+                                flexDirection: 'row',
+                                justifyContent: 'space-between',
+                                alignItems: 'center',
+                              }}>
+                              <Text
+                                style={{paddingVertical: 10, ...Styles.text}}>
+                                {details.dayValue
+                                  ? details.dayValue.map((day, index) => {
+                                      return (
+                                        <Text key={index}>
+                                          {day}
+                                          {index === details.dayValue.length - 1
+                                            ? ''
+                                            : ', '}
+                                        </Text>
+                                      );
+                                    })
+                                  : 'Loading...'}
+                              </Text>
+                              <Text
+                                style={{
+                                  padding: 5,
+                                  backgroundColor:
+                                    details.value === 'active'
+                                      ? COLORS.primary
+                                      : details.value
+                                      ? COLORS.red
+                                      : null,
+                                  borderRadius: 8,
+                                  textAlign: 'center',
+                                  ...Styles.text3,
+                                }}>
+                                {details.value}
+                              </Text>
+                            </View>
+                          )}
+                        </View>
+                      </View>
+                    </View>
+
+                    {/* Schedule section */}
+                    {userData.userType === 'Therapist' ? (
+                      <View style={styles.card}>
+                        <View style={{flex: 1}}>
+                          <Text style={Styles.heading2}>Schedule</Text>
+                          {/* table */}
+                          <View style={{width: '100%', paddingVertical: 10}}>
+                            {schedule.length === 0 ? (
+                              <Text
+                                style={{...Styles.text, textAlign: 'center'}}>
+                                No schedule available
+                              </Text>
+                            ) : !Loading ? (
+                              <Table
+                                tableHead={TABLECONTENT.tableHead}
+                                tableData={TABLECONTENT.tableData}
+                                BorderColor={COLORS.primary}
+                                BorderWidth={1}
+                                tableDataColor={COLORS.black}
+                                HeaderTextColor={COLORS.white}
+                                HeaderBackgroundColor={COLORS.primary}
+                              />
+                            ) : (
+                              <Text
+                                style={{...Styles.text, textAlign: 'center'}}>
+                                Loading schedule...
+                              </Text>
+                            )}
+                          </View>
+                        </View>
+                      </View>
+                    ) : null}
+
+                    {/* Date picker */}
                     <View
                       style={{
-                        position: 'relative',
-                        height: 2,
-                        backgroundColor: COLORS.black,
-                        width: 40,
-                        marginVertical: 15,
-                      }}
-                    />
-                    <TouchableOpacity>
-                      <CallIcon width={25} height={25} fill={COLORS.primary} />
-                    </TouchableOpacity>
-                  </View>
-                </View>
-
-                {/* About section */}
-                <View style={styles.card}>
-                  <View style={{width: '100%'}}>
-                    <Text style={Styles.heading2}>About</Text>
-                    {editMode ? (
-                      <TextInput
-                        style={{
-                          marginBottom: 10,
-                          width: '100%',
-                          height: 'auto',
-                          borderWidth: 1,
-                          borderColor: COLORS.gray,
-                          borderRadius: 10,
-                          padding: 5,
-                        }}
-                        multiline={true}
-                        value={details.about}
-                        onChangeText={text => setAboutTherapist(text)}
-                      />
-                    ) : (
-                      <Text style={Styles.text}>
-                        {details.about ? details.about : 'Loading...'}
+                        ...styles.card2,
+                      }}>
+                      <Text style={{paddingVertical: 10, ...Styles.heading2}}>
+                        Select Appointment Date
                       </Text>
-                    )}
-                  </View>
-                </View>
+                      <Datepicker datachange={e => setDate(e)} />
+                    </View>
 
-                {/* Availability section */}
-                <View style={styles.card}>
-                  <View style={{flex: 1}}>
-                    <Text style={{paddingBottom: 10, ...Styles.heading2}}>
-                      Availability
-                    </Text>
-                    <View>
-                      {editMode ? (
-                        <View>
-                          {availabe.map((option, index) => (
+                    {/* Time picker */}
+                    <View style={styles.card}>
+                      <View>
+                        <Text style={Styles.heading2}>
+                          Select Appointment Time
+                        </Text>
+                        {editMode ? (
+                          appointments.map((option, index) => (
                             <View
                               key={index}
                               style={{
@@ -457,202 +615,82 @@ const Therapy = ({navigation, route}) => {
                               <CheckBox
                                 disabled={false}
                                 value={option.checked}
-                                onValueChange={() => handleCheck(index)}
+                                onValueChange={() => handleCheck2(index)}
                               />
-                              <Text>{option.label}</Text>
+                              <Text>{option.label + ' ' + 'Session'}</Text>
                             </View>
-                          ))}
-                          <Text style={{paddingVertical: 10, ...Styles.text}}>
-                            Availability Status
-                          </Text>
-                          <View style={{height: 'auto', position: 'relative'}}>
-                            <DropDownPicker
-                              listMode="SCROLLVIEW"
-                              showsVerticalScrollIndicator={false}
-                              open={open}
-                              setOpen={setOpen}
-                              items={items}
-                              setItems={setItems}
-                              value={status}
-                              setValue={setStatus}
-                              onChangeItem={item => setStatus(item.value)}
-                              placeholder="Select Status"
-                              dropDownDirection="TOP"
-                              dropDownContainerStyle={{
-                                backgroundColor: COLORS.white,
-                                borderRadius: 10,
-                              }}
-                            />
-                          </View>
-                        </View>
-                      ) : (
-                        <View
-                          style={{
-                            width: 'auto',
-                            display: 'flex',
-                            flexDirection: 'row',
-                            justifyContent: 'space-between',
-                            alignItems: 'center',
-                          }}>
-                          <Text style={{paddingVertical: 10, ...Styles.text}}>
-                            {details.dayValue
-                              ? details.dayValue.map((day, index) => {
-                                  return (
-                                    <Text key={index}>
-                                      {day}
-                                      {index === details.dayValue.length - 1
-                                        ? ''
-                                        : ', '}
-                                    </Text>
-                                  );
-                                })
-                              : 'Loading...'}
-                          </Text>
-                          <Text
-                            style={{
-                              padding: 5,
-                              backgroundColor:
-                                details.value === 'active'
-                                  ? COLORS.primary
-                                  : details.value
-                                  ? COLORS.red
-                                  : null,
-                              borderRadius: 8,
-                              textAlign: 'center',
-                              ...Styles.text3,
-                            }}>
-                            {details.value}
-                          </Text>
-                        </View>
-                      )}
-                    </View>
-                  </View>
-                </View>
-
-                {/* Schedule section */}
-                {userData.userType === 'Therapist' ? (
-                  <View style={styles.card}>
-                    <View style={{flex: 1}}>
-                      <Text style={Styles.heading2}>Schedule</Text>
-                      {/* table */}
-                      <View style={{width: '100%', paddingVertical: 10}}>
-                        {schedule.length === 0 ? (
-                          <Text style={{...Styles.text, textAlign: 'center'}}>
-                            No schedule available
-                          </Text>
-                        ) : !Loading ? (
-                          <Table
-                            tableHead={TABLECONTENT.tableHead}
-                            tableData={TABLECONTENT.tableData}
-                            BorderColor={COLORS.primary}
-                            BorderWidth={1}
-                            tableDataColor={COLORS.black}
-                            HeaderTextColor={COLORS.white}
-                            HeaderBackgroundColor={COLORS.primary}
-                          />
+                          ))
                         ) : (
-                          <Text style={{...Styles.text, textAlign: 'center'}}>
-                            Loading schedule...
-                          </Text>
+                          <View>
+                            <Text style={{paddingBottom: 10, ...Styles.text}}>
+                              select based on Therapists availability!
+                            </Text>
+                            <View
+                              style={{
+                                display: 'flex',
+                                justifyContent: 'center',
+                                alignItems: 'flex-start',
+                              }}>
+                              <RadioGroup
+                                radioButtons={radioButtons}
+                                onPress={time => {
+                                  setTime(time);
+                                }}
+                                value={time}
+                                selectedId={time}
+                                layout="column"
+                              />
+                            </View>
+                          </View>
                         )}
                       </View>
                     </View>
-                  </View>
-                ) : null}
 
-                {/* Date picker */}
-                <View
-                  style={{
-                    ...styles.card2,
-                  }}>
-                  <Text style={{paddingVertical: 10, ...Styles.heading2}}>
-                    Select Appointment Date
-                  </Text>
-                  <Datepicker datachange={e => setDate(e)} />
-                </View>
-
-                {/* Time picker */}
-                <View style={styles.card}>
-                  <View>
-                    <Text style={Styles.heading2}>Select Appointment Time</Text>
-                    {editMode ? (
-                      appointments.map((option, index) => (
-                        <View
-                          key={index}
-                          style={{flexDirection: 'row', alignItems: 'center'}}>
-                          <CheckBox
-                            disabled={false}
-                            value={option.checked}
-                            onValueChange={() => handleCheck2(index)}
-                          />
-                          <Text>{option.label + ' ' + 'Session'}</Text>
-                        </View>
-                      ))
-                    ) : (
+                    {/* payment method */}
+                    <View style={styles.card}>
                       <View>
-                        <Text style={{paddingBottom: 10, ...Styles.text}}>
-                          select based on Therapists availability!
+                        <Text style={Styles.heading2}>
+                          Select Payment Method
                         </Text>
                         <View
                           style={{
+                            width: '100%',
+                            height: 'auto',
                             display: 'flex',
-                            justifyContent: 'center',
-                            alignItems: 'flex-start',
+                            justifyContent: 'flex-start',
+                            paddingVertical: 10,
                           }}>
-                          <RadioGroup
-                            radioButtons={radioButtons}
-                            onPress={time => {
-                              setTime(time);
-                            }}
-                            value={time}
-                            selectedId={time}
-                            layout="column"
-                          />
+                          <Text
+                            style={{
+                              ...Styles.title2,
+                            }}>
+                            N/A
+                          </Text>
                         </View>
                       </View>
-                    )}
-                  </View>
-                </View>
-
-                {/* payment method */}
-                <View style={styles.card}>
-                  <View>
-                    <Text style={Styles.heading2}>Select Payment Method</Text>
-                    <View
-                      style={{
-                        width: '100%',
-                        height: 'auto',
-                        display: 'flex',
-                        justifyContent: 'flex-start',
-                        paddingVertical: 10,
-                      }}>
-                      <Text
-                        style={{
-                          ...Styles.title2,
-                        }}>
-                        N/A
-                      </Text>
                     </View>
                   </View>
-                </View>
-              </View>
 
-              {/* submit button */}
-              <View style={{paddingHorizontal: 10}}>
-                <CurvedButton
-                  text="Book Appointment"
-                  textColor={COLORS.black}
-                  style={{
-                    backgroundColor: COLORS.secondary,
-                    width: '100%',
-                    height: 50,
-                  }}
-                  onPress={anonymous ? null : bookAppointment}
-                />
-              </View>
+                  {/* submit button */}
+                  {userData.userType === 'Therapist' ? null : (
+                    <View style={{paddingHorizontal: 10}}>
+                      <CurvedButton
+                        text="Book Appointment"
+                        textColor={COLORS.black}
+                        style={{
+                          backgroundColor: COLORS.secondary,
+                          width: '100%',
+                          height: 50,
+                        }}
+                        onPress={anonymous ? null : bookAppointment}
+                      />
+                    </View>
+                  )}
+                </View>
+              </ScrollView>
             </View>
-          </ScrollView>
-        </View>
+          )}
+        </Formik>
       </View>
     </Screen>
   );
@@ -688,7 +726,7 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     display: 'flex',
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'space-around',
     alignItems: 'center',
     shadowColor: COLORS.black,
     padding: 10,

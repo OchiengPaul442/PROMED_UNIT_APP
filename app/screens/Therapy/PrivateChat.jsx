@@ -18,7 +18,7 @@ import Styles from '../../constants/Styles'; // custom styles for the app
 // components
 import {FocusedStatusBar, BackBtn, SendIcon} from '../../components'; // components for the status bar, buttons and icons
 
-const PrivateChat = () => {
+const PrivateChat = ({navigation}) => {
   // text input
   const [text, onChangeText] = React.useState('');
 
@@ -36,29 +36,31 @@ const PrivateChat = () => {
     });
   }, []);
 
-  // useFocusEffect hook
+  // code to hide the tab bar when the screen is focused
   useFocusEffect(
     React.useCallback(() => {
-      // Hide bottom navigator when this screen is focused
-      navigation.setOptions({
-        tabBarStyle: {
-          display: 'none',
-        },
+      navigation.addListener('focus', () => {
+        navigation.getParent()?.setOptions({
+          tabBarStyle: {
+            display: 'none',
+          },
+        });
       });
 
       return () => {
         // Show bottom navigator when this screen is unfocused
-        navigation.setOptions({
-          tabBarStyle: undefined,
+        navigation.getParent()?.setOptions({
+          tabBarStyle: styles.menuBar,
         });
       };
     }, [navigation]),
   );
+
   return (
     <SafeAreaView>
       {/* StatusBar */}
       <FocusedStatusBar backgroundColor={COLORS.primary} />
-      <View style={styles.Bot_Screen}>
+      <View style={styles.therapy_chat_Screen}>
         {/* Head */}
         <View
           style={{
@@ -70,7 +72,7 @@ const PrivateChat = () => {
             justifyContent: 'space-between',
             alignItems: 'flex-start',
           }}>
-          <TouchableOpacity onPress={() => navigation.goBack()}>
+          <TouchableOpacity onPress={() => navigation.navigate('Therapy')}>
             <BackBtn width={30} height={30} fill={COLORS.secondary} />
           </TouchableOpacity>
           <View>
@@ -115,8 +117,34 @@ export default PrivateChat;
 
 // Styles
 const styles = StyleSheet.create({
+  menuBar: {
+    position: 'absolute',
+    bottom: 3,
+    marginHorizontal: 3,
+    backgroundColor: COLORS.primary,
+    borderRadius: 20,
+    shadowColor: COLORS.black,
+    shadowOffset: {
+      width: 0,
+      height: 3,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: {width: 0, height: 10},
+        shadowOpacity: 0.5,
+        shadowRadius: 10,
+      },
+      android: {
+        elevation: 20,
+      },
+    }),
+  },
+
   // This is the main container that holds all the components
-  Bot_Screen: {
+  therapy_chat_Screen: {
     width: '100%',
     height: '100%',
     display: 'flex',

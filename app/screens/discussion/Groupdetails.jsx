@@ -93,20 +93,21 @@ const Groupdetails = ({route, navigation}) => {
     }
   };
 
-  // useFocusEffect hook
+  // code to hide the tab bar when the screen is focused
   useFocusEffect(
     React.useCallback(() => {
-      // Hide bottom navigator when this screen is focused
-      navigation.getParent()?.setOptions({
-        tabBarStyle: {
-          display: 'none',
-        },
+      navigation.addListener('focus', () => {
+        navigation.getParent()?.setOptions({
+          tabBarStyle: {
+            display: 'none',
+          },
+        });
       });
 
       return () => {
         // Show bottom navigator when this screen is unfocused
         navigation.getParent()?.setOptions({
-          tabBarStyle: styles.menuBar,
+          tabBarStyle: undefined,
         });
       };
     }, [navigation]),

@@ -516,15 +516,13 @@ export async function editTherapistDetailsInFirestore(
   setLoading,
   setErrorStatus,
   setError,
-  aboutTherapist,
+  values,
   status,
   availability,
   appointmentTime,
 ) {
   // get current logged in user id
   const uid = auth().currentUser.uid;
-
-  console.log(aboutTherapist);
 
   try {
     // set loading to true while uploading therapist details
@@ -539,7 +537,7 @@ export async function editTherapistDetailsInFirestore(
           .collection('Therapists')
           .doc(uid)
           .update({
-            about: aboutTherapist,
+            about: values.about,
             value: status,
             dayValue: [...availability],
             appointmentValue: [...appointmentTime],
