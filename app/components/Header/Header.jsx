@@ -8,15 +8,25 @@ import {AuthContext} from '../../navigations/Context/AuthContext';
 // constants
 import {COLORS, ProfileMale} from '../../constants';
 
+// components
+import {DotBeconAnimation} from '../animations/animations';
+
 // icons
 import {Bell} from '../icons/Icons';
 
 const Header = () => {
   // use the useContext hook to get the user data value
-  const {userData, anonymous} = useContext(AuthContext);
+  const {userData, anonymous, notificationCount, setNotificationCount} =
+    useContext(AuthContext);
 
   // navigation
   const navigation = useNavigation();
+
+  // handle press notification icon
+  const handlePressNotification = () => {
+    setNotificationCount(0);
+    navigation.navigate('Notification');
+  };
 
   // get current date in the formate of 11 April 2023
   const date = new Date();
@@ -45,9 +55,19 @@ const Header = () => {
           <Text style={styles.dateText}>{currentDate}</Text>
         </View>
         <TouchableOpacity
-          onPress={() => navigation.navigate('Notification')}
+          onPress={handlePressNotification}
           style={styles.iconCon}>
           <Bell width={30} height={30} fill={COLORS.white} />
+          {notificationCount > 0 && (
+            <View
+              style={{
+                position: 'absolute',
+                top: 8,
+                right: 8,
+              }}>
+              <DotBeconAnimation width={20} height={20} />
+            </View>
+          )}
         </TouchableOpacity>
       </View>
     </View>

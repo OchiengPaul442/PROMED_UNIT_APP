@@ -7,6 +7,7 @@ import {
   Image,
   ScrollView,
   TextInput,
+  KeyboardAvoidingView,
   FlatList,
 } from 'react-native';
 import React, {useContext, Suspense} from 'react';
@@ -54,6 +55,7 @@ import {
   checkIfTherapistDetailsExists,
   fetchUserAppointments,
   fetchUserDiscussionBoards,
+  getUpdatedUserData,
 } from '../../../fireStore';
 
 // min 8 characters, 1 upper case letter, 1 lower case letter, 1 numeric digit.
@@ -108,6 +110,9 @@ const Profile = ({navigation}) => {
 
   // edit mode
   const [editMode, setEditMode] = React.useState(false);
+
+  // upload status
+  const [uploadStatus, setUploadStatus] = React.useState(false);
 
   // Get the user appointments
   const [userAppointments, setUserAppointments] = React.useState(0);
@@ -252,7 +257,11 @@ const Profile = ({navigation}) => {
         dayValue,
         appointmentValue,
         languageValue,
+        setUploadStatus,
       );
+
+      // set therapist details exists to true
+      setTherapistDetailsExists(true);
     }
   };
 
@@ -416,8 +425,8 @@ const Profile = ({navigation}) => {
                             }}>
                             {anonymous
                               ? 'N/A'
-                              : userData.displayName
-                              ? userData.displayName
+                              : userData.userName
+                              ? userData.userName
                               : 'Loading...'}
                           </Text>
                         </View>
@@ -484,84 +493,90 @@ const Profile = ({navigation}) => {
                           errors,
                           touched,
                         }) => (
-                          <View style={{width: '100%'}}>
-                            <Text style={Styles.title}>
-                              Edit Personal details
-                            </Text>
-                            <View
-                              style={{
-                                width: '100%',
-                                position: 'relative',
-                              }}>
-                              <View style={Styles.Qgroup}>
-                                <Text style={Styles.Qlabel}>Username</Text>
-                                <TextInput
-                                  style={{marginBottom: 10, ...Styles.Qinput}}
-                                  placeholder=""
-                                  onBlur={handleBlur('username')}
-                                  value={values.username}
-                                  onChangeText={handleChange('username')}
-                                />
-                                {errors.username && touched.username && (
-                                  <Text style={Styles.error}>
-                                    {errors.username}
-                                  </Text>
-                                )}
-                              </View>
-                              <View style={Styles.Qgroup}>
-                                <Text style={Styles.Qlabel}>Email Address</Text>
-                                <TextInput
-                                  style={{marginBottom: 10, ...Styles.Qinput}}
-                                  placeholder=""
-                                  onBlur={handleBlur('email')}
-                                  value={values.email}
-                                  onChangeText={handleChange('email')}
-                                />
-                                {errors.email && touched.email && (
-                                  <Text style={Styles.error}>
-                                    {errors.email}
-                                  </Text>
-                                )}
-                              </View>
-                              <View style={Styles.Qgroup}>
-                                <Text style={Styles.Qlabel}>Phone Number</Text>
-                                <TextInput
-                                  style={{marginBottom: 10, ...Styles.Qinput}}
-                                  placeholder=""
-                                  onBlur={handleBlur('phone')}
-                                  value={values.phone}
-                                  onChangeText={handleChange('phone')}
-                                />
-                                {errors.phone && touched.phone && (
-                                  <Text style={Styles.error}>
-                                    {errors.phone}
-                                  </Text>
-                                )}
-                              </View>
+                          <KeyboardAvoidingView>
+                            <View style={{width: '100%'}}>
+                              <Text style={Styles.title}>
+                                Edit Personal details
+                              </Text>
                               <View
                                 style={{
                                   width: '100%',
-                                  flexDirection: 'row',
-                                  justifyContent: 'flex-start',
-                                  alignItems: 'center',
+                                  position: 'relative',
                                 }}>
-                                <RecButton
-                                  onPress={anonymous ? null : handleSubmit}
-                                  w={100}
-                                  text={anonymous ? 'N/A' : 'Edit'}
-                                  bgColor={COLORS.primary}
-                                  textColor={COLORS.white}
-                                />
-                                <RecButton
-                                  onPress={() => setEditMode(false)}
-                                  w={100}
-                                  text="Close"
-                                  bgColor={COLORS.tertiary}
-                                  textColor={COLORS.white}
-                                />
+                                <View style={Styles.Qgroup}>
+                                  <Text style={Styles.Qlabel}>Username</Text>
+                                  <TextInput
+                                    style={{marginBottom: 10, ...Styles.Qinput}}
+                                    placeholder=""
+                                    onBlur={handleBlur('username')}
+                                    value={values.username}
+                                    onChangeText={handleChange('username')}
+                                  />
+                                  {errors.username && touched.username && (
+                                    <Text style={Styles.error}>
+                                      {errors.username}
+                                    </Text>
+                                  )}
+                                </View>
+                                <View style={Styles.Qgroup}>
+                                  <Text style={Styles.Qlabel}>
+                                    Email Address
+                                  </Text>
+                                  <TextInput
+                                    style={{marginBottom: 10, ...Styles.Qinput}}
+                                    placeholder=""
+                                    onBlur={handleBlur('email')}
+                                    value={values.email}
+                                    onChangeText={handleChange('email')}
+                                  />
+                                  {errors.email && touched.email && (
+                                    <Text style={Styles.error}>
+                                      {errors.email}
+                                    </Text>
+                                  )}
+                                </View>
+                                <View style={Styles.Qgroup}>
+                                  <Text style={Styles.Qlabel}>
+                                    Phone Number
+                                  </Text>
+                                  <TextInput
+                                    style={{marginBottom: 10, ...Styles.Qinput}}
+                                    placeholder=""
+                                    onBlur={handleBlur('phone')}
+                                    value={values.phone}
+                                    onChangeText={handleChange('phone')}
+                                  />
+                                  {errors.phone && touched.phone && (
+                                    <Text style={Styles.error}>
+                                      {errors.phone}
+                                    </Text>
+                                  )}
+                                </View>
+                                <View
+                                  style={{
+                                    width: '100%',
+                                    flexDirection: 'row',
+                                    justifyContent: 'flex-start',
+                                    alignItems: 'center',
+                                  }}>
+                                  <RecButton
+                                    onPress={anonymous ? null : handleSubmit}
+                                    w={100}
+                                    text={anonymous ? 'N/A' : 'Edit'}
+                                    bgColor={COLORS.primary}
+                                    textColor={COLORS.white}
+                                  />
+                                  <RecButton
+                                    onPress={() => setEditMode(false)}
+                                    w={100}
+                                    text="Close"
+                                    bgColor={COLORS.tertiary}
+                                    textColor={COLORS.white}
+                                  />
+                                </View>
                               </View>
                             </View>
-                          </View>
+                          </KeyboardAvoidingView>
                         )}
                       </Formik>
                     )}
@@ -742,8 +757,8 @@ const Profile = ({navigation}) => {
                             You have already filled in your therapist details.
                           </Text>
                         </View>
-                      ) : (
-                        <View>
+                      ) : !uploadStatus ? (
+                        <KeyboardAvoidingView>
                           <View style={{width: '100%', ...Styles.Qgroup}}>
                             <Text style={Styles.Qlabel}>Doctors Name</Text>
                             <TextInput
@@ -884,6 +899,21 @@ const Profile = ({navigation}) => {
                               bgColor={COLORS.secondary}
                             />
                           </View>
+                        </KeyboardAvoidingView>
+                      ) : (
+                        <View
+                          style={{
+                            width: '100%',
+                          }}>
+                          <Text
+                            style={{
+                              textAlign: 'center',
+                              width: '100%',
+                              marginBottom: 10,
+                              ...Styles.text,
+                            }}>
+                            Your details have been Uploaded
+                          </Text>
                         </View>
                       )}
                     </View>

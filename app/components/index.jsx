@@ -25,6 +25,7 @@ export {
   UnHappyAnimation,
   WellAnimation,
   RoundLoadingAnimation,
+  DotBeconAnimation,
 } from './animations/animations';
 
 // icons

@@ -1,22 +1,26 @@
+// imports
 import React from 'react';
 import {StyleSheet, Text} from 'react-native';
+
 // firebase imports
-import auth from '@react-native-firebase/auth';
-import firestore from '@react-native-firebase/firestore';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import auth from '@react-native-firebase/auth'; // a module for the firebase authentication
+import firestore from '@react-native-firebase/firestore'; // a module for the firebase firestore
+import AsyncStorage from '@react-native-async-storage/async-storage'; // a module for the async storage
 
 // NetInfo
-import NetInfo from '@react-native-community/netinfo';
+import NetInfo from '@react-native-community/netinfo'; // a module for the network information
 
 // navigation
-import {createStackNavigator} from '@react-navigation/stack';
-import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
-import {createDrawerNavigator} from '@react-navigation/drawer';
+import {createStackNavigator} from '@react-navigation/stack'; // a module for the stack navigation
+import {createBottomTabNavigator} from '@react-navigation/bottom-tabs'; // a module for the bottom tab navigation
+import {createDrawerNavigator} from '@react-navigation/drawer'; // a module for the drawer navigation
 
 // constants
-import {COLORS} from '../constants';
-import Styles from '../constants/Styles';
-import {Loader, ErrorHandle} from '../components';
+import {COLORS} from '../constants'; // predefined colors for the app
+import Styles from '../constants/Styles'; // custom styles for the app
+
+// components
+import {Loader, ErrorHandle} from '../components'; // components for the loader and the error handle
 
 // icons
 import {
@@ -27,34 +31,68 @@ import {
   Therapist,
   Boticon,
   LogoutIcon,
-} from '../components';
+} from '../components'; // components for the icons
 
 // screens
 import {
   WelcomeScreen,
   AccessScreen,
-  LoginScreen,
-  RegistrationScreen,
-  PasswordRecovery,
-  SuccessScreen,
-  HomeScreen,
-  Therapy,
-  Groups,
-  Bot,
-  Terms,
-  Test,
-  TestResult,
-  TherapistScreen,
-  ConfirmationScreen,
-  Notifications,
-  Groupchat,
-  Profile,
-  Groupdetails,
-  Splash,
+  // LoginScreen,
+  // RegistrationScreen,
+  // PasswordRecovery,
+  // SuccessScreen,
+  // HomeScreen,
+  // Therapy,
+  // Groups,
+  // Bot,
+  // Terms,
+  // Test,
+  // TestResult,
+  // TherapistScreen,
+  // ConfirmationScreen,
+  // Notifications,
+  // Groupchat,
+  // Profile,
+  // Groupdetails,
+  // Splash,
 } from '../screens';
+// use React.lazy to create lazy-loaded screens
+const LoginScreen = React.lazy(() => import('../screens/Auth/LoginScreen'));
+const RegistrationScreen = React.lazy(() =>
+  import('../screens/Auth/RegistrationScreen'),
+);
+const PasswordRecovery = React.lazy(() =>
+  import('../screens/Auth/PasswordRecovery'),
+);
+const SuccessScreen = React.lazy(() => import('../screens/Auth/SuccessScreen'));
+const HomeScreen = React.lazy(() => import('../screens/Home/HomeScreen'));
+const Therapy = React.lazy(() => import('../screens/Therapy/Therapy'));
+const Groups = React.lazy(() => import('../screens/discussion/Groups'));
+const Bot = React.lazy(() => import('../screens/Bot/Bot'));
+const Terms = React.lazy(() => import('../screens/Therapy/Terms'));
+const Test = React.lazy(() => import('../screens/Therapy/Test'));
+const TestResult = React.lazy(() => import('../screens/Therapy/TestResult'));
+const TherapistScreen = React.lazy(() =>
+  import('../screens/Therapy/Therapist'),
+);
+const ConfirmationScreen = React.lazy(() =>
+  import('../screens/Therapy/ConfirmationScreen'),
+);
+const Notifications = React.lazy(() =>
+  import('../screens/notifications/Notifications'),
+);
+const Groupchat = React.lazy(() => import('../screens/discussion/Groupchat'));
+const Profile = React.lazy(() => import('../screens/profile/Profile'));
+const Groupdetails = React.lazy(() =>
+  import('../screens/discussion/Groupdetails'),
+);
+const PrivateChat = React.lazy(() => import('../screens/Therapy/PrivateChat'));
 
 // context
 import {AuthContext} from './Context/AuthContext';
+
+// fetch functions
+import {getUserData} from '../../fireStore';
 
 // stacks
 const AuthStack = createStackNavigator();
@@ -185,6 +223,7 @@ const TherapyStackScreen = () => {
       <TherapyStack.Screen name="TestResults" component={TestResult} />
       <TherapyStack.Screen name="Therapist" component={TherapistScreen} />
       <TherapyStack.Screen name="Confirmation" component={ConfirmationScreen} />
+      <TherapyStack.Screen name="PrivateChats" component={PrivateChat} />
     </TherapyStack.Navigator>
   );
 };
@@ -250,41 +289,15 @@ const AppNavigations = () => {
   const [anonymous, setAnonymous] = React.useState(false);
   const [userToken, setUserToken] = React.useState('');
   const [userData, setUserData] = React.useState('');
+  const [notificationCount, setNotificationCount] = React.useState(0);
 
-  // get current user UID
+  // get current user and user doc reference
   const user = auth().currentUser;
 
   // if usertoken is set, get stream of user data for the current user from firestore
   React.useEffect(() => {
     if (userToken) {
-      // get current user UID
-      const user = auth().currentUser;
-
-      // get display name and photo url from auth
-      const {displayName, photoURL} = user;
-
-      // get user data from firestore
-      firestore()
-        .collection('Users')
-        .doc(user.uid)
-        .onSnapshot(documentSnapshot => {
-          // if connection is established successfully set user data
-          if (documentSnapshot.exists) {
-            // set userData state
-            setUserData({
-              ...documentSnapshot.data(),
-              displayName,
-              photoURL,
-            });
-          } else {
-            // if connection is not established successfully
-            setUserData('');
-            // set error status to true
-            setErrorStatus(true);
-            // set error message
-            setError('Error connecting to server');
-          }
-        });
+      getUserData(setUserData, setError, user);
     }
 
     // if app is not connected to internet
@@ -303,9 +316,30 @@ const AppNavigations = () => {
     });
   }, [userToken]);
 
+  React.useEffect(() => {
+    // if user is signed in
+    if (user) {
+      const notificationRef = firestore()
+        .collection('Users')
+        .doc(user.uid)
+        .collection('Notifications');
+      notificationRef.onSnapshot(querySnapshot => {
+        let count = 0;
+        querySnapshot.forEach(documentSnapshot => {
+          if (!documentSnapshot.data().read) {
+            count++;
+          }
+        });
+        setNotificationCount(count);
+      });
+    }
+  }, []);
+
   return (
     <AuthContext.Provider
       value={{
+        notificationCount,
+        setNotificationCount,
         user,
         userToken,
         setUserToken,

@@ -1,24 +1,22 @@
+// imports
+import React, {useContext} from 'react';
 import {
   StyleSheet,
   Text,
   View,
   SafeAreaView,
   TouchableOpacity,
-  TouchableWithoutFeedback,
   ScrollView,
   Image,
-  TextInput,
-  Keyboard,
   FlatList,
 } from 'react-native';
-import React, {useContext} from 'react';
 import {useFocusEffect} from '@react-navigation/native';
 
 // context
-import {AuthContext} from '../../navigations/Context/AuthContext';
+import {AuthContext} from '../../navigations/Context/AuthContext'; // a context for the authentication state
 
 // constants
-import {COLORS} from '../../constants';
+import {COLORS} from '../../constants'; // predefined colors for the app
 
 // components
 import {
@@ -28,15 +26,13 @@ import {
   LogoutIcon,
   DeleteIcon,
   RoundLoadingAnimation,
-} from '../../components';
-import Styles from '../../constants/Styles';
+} from '../../components'; // components for the status bar, buttons, icons and loading animation
 
 // firebase
-import auth from '@react-native-firebase/auth';
-import firestore from '@react-native-firebase/firestore';
+import firestore from '@react-native-firebase/firestore'; // a module for the firebase firestore
 
 // fetch
-import {fetchMembers, fetchAllMembers, deleteGroup} from '../../../fireStore';
+import {fetchMembers, fetchAllMembers, deleteGroup} from '../../../fireStore'; // functions to interact with the group members in firestore
 
 const Groupdetails = ({route, navigation}) => {
   // get params

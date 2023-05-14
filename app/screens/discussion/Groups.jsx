@@ -1,3 +1,5 @@
+// imports
+import React, {useContext, Suspense, useReducer} from 'react';
 import {
   View,
   Text,
@@ -8,34 +10,33 @@ import {
   TouchableOpacity,
   FlatList,
 } from 'react-native';
-import React, {useContext, Suspense, useReducer} from 'react';
 
 //context
-import {AuthContext} from '../../navigations/Context/AuthContext';
+import {AuthContext} from '../../navigations/Context/AuthContext'; // a context for the authentication state
 
 //General styles
-import Styles from '../../constants/Styles';
+import Styles from '../../constants/Styles'; // custom styles for the app
 
 // constants
-import {COLORS} from '../../constants';
+import {COLORS} from '../../constants'; // predefined colors for the app
 import {
   Menu,
   Plus,
   Card,
   RecButton,
   RoundLoadingAnimation,
-} from '../../components';
+} from '../../components'; // components for the menu, icons, cards, buttons and loading animation
 
 // lazy loading
 const BottomModal = React.lazy(() =>
   import('../../components/Modals/BottomModal'),
-);
+); // a component for the bottom modal
 const CenterHalf = React.lazy(() =>
   import('../../components/Modals/CenterHalf'),
-);
+); // a component for the center half modal
 
 // screen layout
-import Screen from '../../layout/Screen';
+import Screen from '../../layout/Screen'; // a component for the screen layout
 
 // fetch functions
 import {
@@ -45,10 +46,10 @@ import {
   leaveGroup,
   joinGroup,
   checkIfMember,
-} from '../../../fireStore';
+} from '../../../fireStore'; // functions to interact with the discussion board in firestore
 
 // firebase
-import auth from '@react-native-firebase/auth';
+import auth from '@react-native-firebase/auth'; // a module for the firebase authentication
 
 const Groups = ({navigation}) => {
   // context

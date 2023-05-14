@@ -1,3 +1,5 @@
+// imports
+import React from 'react';
 import {
   StyleSheet,
   Text,
@@ -5,16 +7,16 @@ import {
   ScrollView,
   TouchableOpacity,
 } from 'react-native';
-import React from 'react';
+
 //General styles
-import Styles from '../../constants/Styles';
+import Styles from '../../constants/Styles'; // custom styles for the app
 
 // constants
-import {COLORS, SIZES} from '../../constants';
-import {BackBtn} from '../../components';
+import {COLORS, SIZES} from '../../constants'; // predefined colors and sizes for the app
+import {BackBtn} from '../../components'; // a component for the back button
 
 // screen
-import Screen from '../../layout/Screen';
+import Screen from '../../layout/Screen'; // a component for the screen layout
 
 const TestResult = ({route, navigation}) => {
   // get params

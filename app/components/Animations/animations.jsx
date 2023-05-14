@@ -84,3 +84,15 @@ export const RoundLoadingAnimation = props => {
     />
   );
 };
+
+// dot becon animation
+export const DotBeconAnimation = props => {
+  return (
+    <Lottie
+      style={{width: props.width, height: props.height}}
+      source={require('../../assets/animations/dotBecon.json')}
+      autoPlay
+      loop={true}
+    />
+  );
+};

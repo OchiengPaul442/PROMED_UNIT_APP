@@ -1,3 +1,5 @@
+// imports
+import React, {useContext} from 'react';
 import {
   View,
   Text,
@@ -7,24 +9,16 @@ import {
   TouchableOpacity,
   Image,
 } from 'react-native';
-import React, {useContext} from 'react';
-// moment
 import moment from 'moment';
-
-// context
-import {AuthContext} from '../../navigations/Context/AuthContext';
-
-// radio button
 import RadioGroup from 'react-native-radio-buttons-group';
-
-//General styles
-import Styles from '../../constants/Styles';
-
-// screens
-import Screen from '../../layout/Screen';
+import CheckBox from '@react-native-community/checkbox';
+import DropDownPicker from 'react-native-dropdown-picker';
 
 // constants
 import {COLORS, ProfileMale} from '../../constants';
+import Styles from '../../constants/Styles';
+
+// components
 import {
   BackBtn,
   MessageIcon,
@@ -33,18 +27,10 @@ import {
   EditIcon,
   DeleteIcon,
 } from '../../components';
+import Screen from '../../layout/Screen';
 
-// Lazy load the Table and Datepicker components
-const Table = React.lazy(() => import('../../components/table/Table'));
-const Datepicker = React.lazy(() =>
-  import('../../components/date&timepicker/Datepicker'),
-);
-
-// checkbox
-import CheckBox from '@react-native-community/checkbox';
-
-// dropdown
-import DropDownPicker from 'react-native-dropdown-picker';
+// context
+import {AuthContext} from '../../navigations/Context/AuthContext';
 
 // fetch functions
 import {
@@ -52,6 +38,12 @@ import {
   editTherapistDetailsInFirestore,
   fetchSelectedTherapist,
 } from '../../../fireStore';
+
+// lazy loading
+const Table = React.lazy(() => import('../../components/table/Table'));
+const Datepicker = React.lazy(() =>
+  import('../../components/date&timepicker/Datepicker'),
+);
 
 const Therapy = ({navigation, route}) => {
   // context
@@ -64,7 +56,7 @@ const Therapy = ({navigation, route}) => {
   // set loading state
   const [Loading, setLoading] = React.useState(true);
 
-  // items
+  // therapist details
   const [details, setDetails] = React.useState([]);
 
   // time and date
@@ -77,8 +69,8 @@ const Therapy = ({navigation, route}) => {
   // set edit mode
   const [editMode, setEditMode] = React.useState(false);
 
-  // about
-  const [about, setAbout] = React.useState(details.about);
+  // about therapist
+  const [aboutTherapist, setAboutTherapist] = React.useState();
 
   // dropdown
   const [open, setOpen] = React.useState(false);
@@ -165,7 +157,7 @@ const Therapy = ({navigation, route}) => {
           // navigate to confirmation screen
           navigation.push('Confirmation', {
             name: details.name,
-            therapistId: details.key,
+            therapistId: item.key,
             title: details.title,
             image: details.image,
             date: date,
@@ -186,7 +178,7 @@ const Therapy = ({navigation, route}) => {
       setLoading,
       setErrorStatus,
       setError,
-      about,
+      aboutTherapist,
       status,
       availability,
       appointmentTime,
@@ -283,6 +275,7 @@ const Therapy = ({navigation, route}) => {
                 }}>
                 <Text style={Styles.heading}>Therapist</Text>
               </View>
+
               <View
                 style={{
                   paddingHorizontal: 10,
@@ -297,18 +290,40 @@ const Therapy = ({navigation, route}) => {
                 </TouchableOpacity>
                 {userData.userType === 'Therapist' ? (
                   editMode ? (
-                    <TouchableOpacity onPress={editTherapistDetails}>
-                      <Text
-                        style={{
-                          color: COLORS.white,
-                          fontSize: 16,
-                          padding: 10,
-                          borderRadius: 10,
-                          backgroundColor: COLORS.orange,
-                        }}>
-                        Save changes
-                      </Text>
-                    </TouchableOpacity>
+                    <View
+                      style={{
+                        display: 'flex',
+                        flexDirection: 'row',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                      }}>
+                      <TouchableOpacity onPress={editTherapistDetails}>
+                        <Text
+                          style={{
+                            color: COLORS.white,
+                            fontSize: 16,
+                            padding: 10,
+                            borderRadius: 10,
+                            backgroundColor: COLORS.orange,
+                            marginRight: 10,
+                          }}>
+                          Save changes
+                        </Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity onPress={() => setEditMode(false)}>
+                        <Text
+                          style={{
+                            color: COLORS.white,
+                            fontSize: 16,
+                            padding: 10,
+                            borderRadius: 10,
+                            backgroundColor: COLORS.red,
+                            textAlign: 'center',
+                          }}>
+                          Close
+                        </Text>
+                      </TouchableOpacity>
+                    </View>
                   ) : (
                     <TouchableOpacity onPress={() => setEditMode(true)}>
                       <EditIcon width={30} height={30} fill={COLORS.tertiary} />
@@ -373,7 +388,8 @@ const Therapy = ({navigation, route}) => {
                       alignItems: 'center',
                       marginTop: 10,
                     }}>
-                    <TouchableOpacity>
+                    <TouchableOpacity
+                      onPress={() => navigation.push('PrivateChats')}>
                       <MessageIcon
                         width={25}
                         height={25}
@@ -401,23 +417,19 @@ const Therapy = ({navigation, route}) => {
                     <Text style={Styles.heading2}>About</Text>
                     {editMode ? (
                       <TextInput
-                        multiline={true}
-                        cursorColor={
-                          Platform.OS === 'ios' ? COLORS.primary : COLORS.black
-                        }
                         style={{
-                          flex: 1,
-                          borderWidth: 1,
+                          marginBottom: 10,
                           width: '100%',
-                          height: 100,
-                          backgroundColor: COLORS.white,
+                          height: 'auto',
+                          borderWidth: 1,
+                          borderColor: COLORS.gray,
                           borderRadius: 10,
-                          padding: 10,
-                          marginTop: 10,
-                          ...Styles.text,
+                          padding: 5,
                         }}
-                        onChangeText={text => setAbout(text)}
-                        value={about}></TextInput>
+                        multiline={true}
+                        value={details.about}
+                        onChangeText={text => setAboutTherapist(text)}
+                      />
                     ) : (
                       <Text style={Styles.text}>
                         {details.about ? details.about : 'Loading...'}

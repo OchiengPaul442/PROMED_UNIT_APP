@@ -1,4 +1,3 @@
-// imports
 import React from 'react';
 import {
   View,
@@ -19,7 +18,7 @@ import Styles from '../../constants/Styles'; // custom styles for the app
 // components
 import {FocusedStatusBar, BackBtn, SendIcon} from '../../components'; // components for the status bar, buttons and icons
 
-const Bot = ({navigation}) => {
+const PrivateChat = () => {
   // text input
   const [text, onChangeText] = React.useState('');
 
@@ -55,7 +54,6 @@ const Bot = ({navigation}) => {
       };
     }, [navigation]),
   );
-
   return (
     <SafeAreaView>
       {/* StatusBar */}
@@ -82,7 +80,7 @@ const Bot = ({navigation}) => {
                 fontWeight: 'bold',
                 color: COLORS.white,
               }}>
-              ChatBot
+              Private Chat
             </Text>
           </View>
         </View>
@@ -112,6 +110,8 @@ const Bot = ({navigation}) => {
     </SafeAreaView>
   );
 };
+
+export default PrivateChat;
 
 // Styles
 const styles = StyleSheet.create({
@@ -155,5 +155,3 @@ const styles = StyleSheet.create({
     color: COLORS.primary,
   },
 });
-
-export default Bot;

@@ -1,3 +1,5 @@
+// imports
+import React, {useContext} from 'react';
 import {
   StyleSheet,
   Text,
@@ -9,15 +11,15 @@ import {
   Keyboard,
   FlatList,
 } from 'react-native';
-import React, {useContext} from 'react';
 import {useFocusEffect} from '@react-navigation/native';
 import moment from 'moment';
 
 // context
-import {AuthContext} from '../../navigations/Context/AuthContext';
+import {AuthContext} from '../../navigations/Context/AuthContext'; // a context for the authentication state
 
 // constants
-import {COLORS} from '../../constants';
+import {COLORS} from '../../constants'; // predefined colors for the app
+import Styles from '../../constants/Styles'; // custom styles for the app
 
 // components
 import {
@@ -26,16 +28,13 @@ import {
   Menu,
   SendIcon,
   RoundLoadingAnimation,
-} from '../../components';
-import Styles from '../../constants/Styles';
+} from '../../components'; // components for the status bar, buttons, icons and loading animation
 
 // fetch function
-import {sendLiveChatMessage, fetchLiveChatMessages} from '../../../fireStore';
+import {sendLiveChatMessage, fetchLiveChatMessages} from '../../../fireStore'; // functions to interact with the live chat messages in firestore
 
 // firebase
-import auth from '@react-native-firebase/auth';
-import firestore from '@react-native-firebase/firestore';
-import Groupdetails from './Groupdetails';
+import auth from '@react-native-firebase/auth'; // a module for the firebase authentication
 
 const Groupchat = ({route, navigation}) => {
   // get params
@@ -98,22 +97,7 @@ const Groupchat = ({route, navigation}) => {
     );
   };
 
-  // function to delete all messages
-  // const deleteAllMessages = () => {
-  //   firestore()
-  //     .collection('Groups')
-  //     .doc(groupdata.key)
-  //     .collection('Messages')
-  //     .get()
-  //     .then(querySnapshot => {
-  //       querySnapshot.forEach(documentSnapshot => {
-  //         documentSnapshot.ref.delete();
-  //       });
-  //     });
-  // };
-
   React.useEffect(() => {
-    // deleteAllMessages();
     // fetch messages
     fetchLiveChatMessages(setLoading, setPastMessages, groupdata);
   }, []);
@@ -186,7 +170,7 @@ const Groupchat = ({route, navigation}) => {
                   data={pastMessages}
                   scrollEnabled={false}
                   inverted={true}
-                  keyExtractor={item => item.id}
+                  keyExtractor={item => item.key}
                   extraData={pastMessages}
                   renderItem={({item}) => (
                     <View key={item.key}>

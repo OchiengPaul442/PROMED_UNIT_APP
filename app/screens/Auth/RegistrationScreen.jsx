@@ -119,6 +119,7 @@ const RegistrationScreen = ({navigation}) => {
                   .collection('Users')
                   .doc(uid)
                   .set({
+                    userName: username,
                     email: email,
                     phoneNumber: phone,
                     gender: gender,
