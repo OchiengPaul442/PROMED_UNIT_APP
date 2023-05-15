@@ -32,8 +32,6 @@ const ChatScreen = ({
   // Height of the keyboard
   const [keyboardHeight, setKeyboardHeight] = React.useState(0);
 
-  const isFocused = useIsFocused();
-
   // Keyboard event
   React.useEffect(() => {
     Keyboard.addListener('keyboardDidShow', e => {
@@ -43,10 +41,6 @@ const ChatScreen = ({
     Keyboard.addListener('keyboardDidHide', () => {
       setKeyboardHeight(0);
     });
-
-    {
-      isFocused ? 'focused' : 'unfocused';
-    }
   }, []);
 
   // useFocusEffect hook
@@ -98,23 +92,23 @@ const ChatScreen = ({
             </ScrollView>
           </View>
           {/* message input */}
-          {isFocused === 'focused' ? null : (
-            <View
-              style={{
-                bottom: keyboardHeight ? 18 : 2,
-                ...Styles.inputfield_con,
-              }}>
-              <TextInput
-                onChangeText={setMess}
-                value={text}
-                placeholder="Message..."
-                style={Styles.inputfield}
-              />
-              <TouchableOpacity onPress={submit}>
-                <SendIcon width={50} height={50} fill={COLORS.tertiary} />
-              </TouchableOpacity>
-            </View>
-          )}
+          {/* {isFocused === 'focused' ? null : ( */}
+          <View
+            style={{
+              bottom: keyboardHeight ? 18 : 2,
+              ...Styles.inputfield_con,
+            }}>
+            <TextInput
+              onChangeText={setMess}
+              value={text}
+              placeholder="Message..."
+              style={Styles.inputfield}
+            />
+            <TouchableOpacity onPress={submit}>
+              <SendIcon width={50} height={50} fill={COLORS.tertiary} />
+            </TouchableOpacity>
+          </View>
+          {/* )} */}
         </View>
       </View>
     </SafeAreaView>
