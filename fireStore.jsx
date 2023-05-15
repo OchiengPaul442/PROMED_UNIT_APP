@@ -1021,7 +1021,7 @@ export async function fetchLiveChatMessages(
 }
 
 // function to fetch only 5 members of the group from database
-export async function fetchMembers(setLoading, setGroupMembers, groupdata) {
+export async function fetchMembers(setLoading, setGroupMembers, data) {
   try {
     // set loading to true
     setLoading(true);
@@ -1029,7 +1029,7 @@ export async function fetchMembers(setLoading, setGroupMembers, groupdata) {
     // get the number of members field from the group document
     const numberOfMembers = await firestore()
       .collection('Groups')
-      .doc(groupdata.key)
+      .doc(data.key)
       .get()
       .then(snapshot => snapshot.get('Number_of_Members'));
 

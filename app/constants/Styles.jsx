@@ -106,7 +106,6 @@ export default Style = StyleSheet.create({
     height: '92%',
     borderTopRightRadius: 30,
     borderTopLeftRadius: 30,
-    padding: 10,
   },
 
   inputfield_con: {
@@ -251,5 +250,32 @@ export default Style = StyleSheet.create({
   lottie: {
     width: 150,
     height: 150,
+  },
+
+  // BOTTOM MENU BAR STYLES //
+  menuBar: {
+    position: 'absolute',
+    bottom: 3,
+    marginHorizontal: 3,
+    backgroundColor: COLORS.primary,
+    borderRadius: 20,
+    shadowColor: COLORS.black,
+    shadowOffset: {
+      width: 0,
+      height: 3,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: {width: 0, height: 10},
+        shadowOpacity: 0.5,
+        shadowRadius: 10,
+      },
+      android: {
+        elevation: 20,
+      },
+    }),
   },
 });

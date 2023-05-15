@@ -30,6 +30,7 @@ export {
 
 // icons
 export {
+  DetailsIcon,
   BackBtn,
   Bell,
   Group,

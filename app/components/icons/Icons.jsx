@@ -475,3 +475,23 @@ export const DeleteIcon = props => {
     </Svg>
   );
 };
+
+// details icon
+export const DetailsIcon = props => {
+  return (
+    <Svg
+      viewBox="0 0 512 512"
+      xmlns="http://www.w3.org/2000/svg"
+      width={props.width}
+      height={props.height}>
+      <Path
+        d="M384 64v320H64V64h320zm-42.667 42.667H106.667v234.666h234.666V106.667zM320 0v42.667l-277.334-.001V320H0V0h320zm-21.333 234.667v42.666H149.333v-42.666h149.334zm0-85.334V192H149.333v-42.667h149.334z"
+        transform="translate(64 64)"
+        fill={props.fill}
+        stroke="none"
+        strokeWidth={1}
+        fillRule="evenodd"
+      />
+    </Svg>
+  );
+};
