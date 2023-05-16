@@ -703,18 +703,21 @@ export async function deleteUserAccount(
   const userDocRef = firestore().collection('Users').doc(uid);
 
   try {
+    // delete user account from authentication
+    await auth().currentUser.delete();
+
     // delete user document from firestore collection
     await userDocRef.delete();
 
-    // delete user account from authentication
-    await auth().currentUser.delete();
+    // if user is a therapist, delete therapist document from firestore collection
+    await firestore().collection('Therapists').doc(uid).delete();
 
     // set loading to false after deleting user account
     setLoading(false);
     // close modal
     toggleModal2();
     // clear user token
-    setUserToken('');
+    setUserToken(null);
     // update error status
     setErrorStatus('success');
     // set error message

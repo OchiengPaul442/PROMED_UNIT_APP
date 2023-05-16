@@ -45,6 +45,8 @@ const HomeScreen = ({navigation, route}) => {
 
   // model
   const [open, setOpen] = React.useState(false);
+
+  // selected tip
   const [selectedTip, setSelectedTip] = React.useState('');
 
   // Get the greeting based on the time of the day
@@ -57,7 +59,9 @@ const HomeScreen = ({navigation, route}) => {
   const [userAppointments, setUserAppointments] = React.useState(0);
 
   const toggleModal = () => {
-    setOpen(!open);
+    setTimeout(() => {
+      setOpen(!open);
+    }, 500);
   };
 
   // greetings function

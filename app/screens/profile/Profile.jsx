@@ -392,7 +392,7 @@ const Profile = ({navigation}) => {
                     <View style={styles.card_container}>
                       <View style={{width: 100, ...styles.card}}>
                         <Text style={{textAlign: 'center', ...Styles.heading2}}>
-                          {anonymous ? 'N/A' : '2'}
+                          {anonymous ? 'N/A' : '0%'}
                         </Text>
                       </View>
                       <Text style={Styles.text2}>Recent Test score</Text>

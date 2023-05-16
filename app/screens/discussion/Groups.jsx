@@ -53,7 +53,7 @@ import auth from '@react-native-firebase/auth'; // a module for the firebase aut
 
 const Groups = ({navigation}) => {
   // context
-  const {setError, setErrorStatus} = useContext(AuthContext);
+  const {setError, setErrorStatus, anonymous} = useContext(AuthContext);
 
   // current user
   const currentUser = auth().currentUser;
@@ -216,9 +216,13 @@ const Groups = ({navigation}) => {
                                 item => item.userId,
                               ).includes(currentUser.uid)
                             ) {
-                              navigation.push('Groupchat', {
-                                groupdata: item,
-                              });
+                              anonymous
+                                ? setError(
+                                    'Please login to view the group chat',
+                                  )
+                                : navigation.push('Groupchat', {
+                                    groupdata: item,
+                                  });
                             } else {
                               setError('Please join to view the group');
                               setErrorStatus('error');
@@ -286,7 +290,13 @@ const Groups = ({navigation}) => {
               {selectedGroup.name}
             </Text>
             <TouchableOpacity
-              onPress={status ? handleLeaveGroup : handleJoinGroup}
+              onPress={() => {
+                anonymous
+                  ? setError('Please login to view the group chat')
+                  : status
+                  ? handleLeaveGroup()
+                  : handleJoinGroup();
+              }}
               style={{paddingVertical: 10}}>
               <Text style={Styles.title}>
                 {status ? 'Leave group' : 'Join group'}
@@ -317,7 +327,11 @@ const Groups = ({navigation}) => {
             onChangeText={text => setCreateGroup(text)}
           />
           <RecButton
-            onPress={handleCreateGroup}
+            onPress={() =>
+              anonymous
+                ? setError('Please login to create a group')
+                : handleCreateGroup()
+            }
             text={
               loading2 ? (
                 <RoundLoadingAnimation width={50} height={50} />

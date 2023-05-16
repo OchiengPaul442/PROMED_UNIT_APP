@@ -17,32 +17,9 @@ import {COLORS} from '../constants'; // predefined colors for the app
 import Styles from '../constants/Styles'; // custom styles for the app
 
 // components
-import {FocusedStatusBar, BackBtn, DetailsIcon, SendIcon} from '../components'; // components for the status bar, buttons, icons and loading animation
+import {FocusedStatusBar, BackBtn, DetailsIcon} from '../components'; // components for the status bar, buttons, icons and loading animation
 
-const ChatScreen = ({
-  nav,
-  title,
-  data,
-  nav_route,
-  children,
-  setMess,
-  text,
-  submit,
-}) => {
-  // Height of the keyboard
-  const [keyboardHeight, setKeyboardHeight] = React.useState(0);
-
-  // Keyboard event
-  React.useEffect(() => {
-    Keyboard.addListener('keyboardDidShow', e => {
-      setKeyboardHeight(e.endCoordinates.height);
-    });
-
-    Keyboard.addListener('keyboardDidHide', () => {
-      setKeyboardHeight(0);
-    });
-  }, []);
-
+const Screen2 = ({nav, title, data, nav_route, children}) => {
   // useFocusEffect hook
   useFocusEffect(
     React.useCallback(() => {
@@ -68,19 +45,19 @@ const ChatScreen = ({
       {/* StatusBar */}
       <FocusedStatusBar backgroundColor={COLORS.primary} />
 
-      <View style={styles.chat_screen}>
+      <View style={styles.Screen2}>
         {/* Head */}
         <View style={styles.nav}>
           <TouchableOpacity style={{padding: 10}} onPress={() => nav.goBack()}>
             <BackBtn width={30} height={30} fill={COLORS.secondary} />
           </TouchableOpacity>
           <View>
-            <Text style={styles.chatName}>{title}</Text>
+            <Text style={styles.title}>{title}</Text>
           </View>
           <TouchableOpacity
             style={{padding: 10}}
             onPress={() =>
-              nav_route && data ? nav.navigate(nav_route, {data}) : null
+              nav && data && nav_route ? nav.navigate(nav_route, {data}) : null
             }>
             <DetailsIcon width={30} height={30} fill={COLORS.secondary} />
           </TouchableOpacity>
@@ -93,34 +70,17 @@ const ChatScreen = ({
               {children}
             </ScrollView>
           </View>
-          {/* message input */}
-          <View
-            style={{
-              display: 'flex',
-              bottom: keyboardHeight ? 18 : 2,
-              ...Styles.inputfield_con,
-            }}>
-            <TextInput
-              onChangeText={setMess}
-              value={text}
-              placeholder="Message..."
-              style={Styles.inputfield}
-            />
-            <TouchableOpacity onPress={submit}>
-              <SendIcon width={50} height={50} fill={COLORS.tertiary} />
-            </TouchableOpacity>
-          </View>
         </View>
       </View>
     </SafeAreaView>
   );
 };
 
-export default ChatScreen;
+export default Screen2;
 
 const styles = StyleSheet.create({
   // This is the main container that holds all the components
-  chat_screen: {
+  Screen2: {
     width: '100%',
     height: '100%',
     display: 'flex',
@@ -143,7 +103,7 @@ const styles = StyleSheet.create({
   },
 
   // chat name
-  chatName: {
+  title: {
     fontSize: 20,
     fontWeight: 'bold',
     color: COLORS.white,

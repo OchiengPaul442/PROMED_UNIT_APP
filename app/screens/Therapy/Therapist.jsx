@@ -405,7 +405,11 @@ const Therapy = ({navigation, route}) => {
                             marginTop: 10,
                           }}>
                           <TouchableOpacity
-                            onPress={() => navigation.navigate('PrivateChats')}>
+                            onPress={() =>
+                              anonymous
+                                ? setError('You an account to access this!!')
+                                : navigation.navigate('PrivateChats')
+                            }>
                             <MessageIcon
                               width={25}
                               height={25}
@@ -421,7 +425,12 @@ const Therapy = ({navigation, route}) => {
                               marginVertical: 15,
                             }}
                           />
-                          <TouchableOpacity>
+                          <TouchableOpacity
+                            onPress={() =>
+                              anonymous
+                                ? setError('You an account to access this!!')
+                                : null
+                            }>
                             <CallIcon
                               width={25}
                               height={25}
@@ -600,7 +609,14 @@ const Therapy = ({navigation, route}) => {
 
                     {/* Time picker */}
                     <View style={styles.card}>
-                      <View>
+                      <View
+                        style={{
+                          width: '100%',
+                          height: 'auto',
+                          display: 'flex',
+                          justifyContent: 'flex-start',
+                          paddingVertical: 10,
+                        }}>
                         <Text style={Styles.heading2}>
                           Select Appointment Time
                         </Text>
@@ -627,9 +643,7 @@ const Therapy = ({navigation, route}) => {
                             </Text>
                             <View
                               style={{
-                                display: 'flex',
-                                justifyContent: 'center',
-                                alignItems: 'flex-start',
+                                position: 'relative',
                               }}>
                               <RadioGroup
                                 radioButtons={radioButtons}
@@ -639,6 +653,13 @@ const Therapy = ({navigation, route}) => {
                                 value={time}
                                 selectedId={time}
                                 layout="column"
+                                containerStyle={{
+                                  height: 'auto',
+                                  width: '100%',
+                                  position: 'relative',
+                                  justifyContent: 'flex-start',
+                                  alignItems: 'flex-start',
+                                }}
                               />
                             </View>
                           </View>
@@ -648,7 +669,14 @@ const Therapy = ({navigation, route}) => {
 
                     {/* payment method */}
                     <View style={styles.card}>
-                      <View>
+                      <View
+                        style={{
+                          width: '100%',
+                          height: 'auto',
+                          display: 'flex',
+                          justifyContent: 'flex-start',
+                          paddingVertical: 10,
+                        }}>
                         <Text style={Styles.heading2}>
                           Select Payment Method
                         </Text>
@@ -682,7 +710,13 @@ const Therapy = ({navigation, route}) => {
                           width: '100%',
                           height: 50,
                         }}
-                        onPress={anonymous ? null : bookAppointment}
+                        onPress={() =>
+                          anonymous
+                            ? setError(
+                                'You need an account to book a an appointment!!',
+                              )
+                            : bookAppointment
+                        }
                       />
                     </View>
                   )}

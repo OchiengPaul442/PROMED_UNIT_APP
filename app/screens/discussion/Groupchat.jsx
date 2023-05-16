@@ -63,54 +63,52 @@ const Groupchat = ({route, navigation}) => {
       setMess={setMessage}
       text={message}
       nav_route="Groupdetails"
-      submit={handleSendMessage}
-      Children={
-        loading ? (
-          <View
-            style={{
-              flex: 1,
-              justifyContent: 'center',
-              alignItems: 'center',
-              paddingVertical: 20,
-            }}>
-            <RoundLoadingAnimation width={80} height={80} />
-          </View>
-        ) : pastMessages.length === 0 ? (
-          <View
-            style={{
-              flex: 1,
-              justifyContent: 'center',
-              alignItems: 'center',
-              paddingVertical: 20,
-            }}>
-            <Text style={{color: COLORS.black}}>No messages yet...</Text>
-          </View>
-        ) : (
-          <FlatList
-            data={pastMessages}
-            scrollEnabled={false}
-            inverted={true}
-            keyExtractor={item => item.key}
-            extraData={pastMessages}
-            renderItem={({item}) => (
-              <View key={item.key}>
-                <Text
-                  style={
-                    item.userId === currentUser.uid
-                      ? Styles.rightChat
-                      : Styles.leftChat
-                  }>
-                  {item.message + ' '}
-                  <Text style={Styles.timestamp}>
-                    {moment(item.createdAt).format('h:mm a')}
-                  </Text>
+      submit={handleSendMessage}>
+      {loading ? (
+        <View
+          style={{
+            flex: 1,
+            justifyContent: 'center',
+            alignItems: 'center',
+            paddingVertical: 20,
+          }}>
+          <RoundLoadingAnimation width={80} height={80} />
+        </View>
+      ) : pastMessages.length === 0 ? (
+        <View
+          style={{
+            flex: 1,
+            justifyContent: 'center',
+            alignItems: 'center',
+            paddingVertical: 20,
+          }}>
+          <Text style={{color: COLORS.black}}>No messages yet...</Text>
+        </View>
+      ) : (
+        <FlatList
+          data={pastMessages}
+          scrollEnabled={false}
+          inverted={true}
+          keyExtractor={item => item.key}
+          extraData={pastMessages}
+          renderItem={({item}) => (
+            <View key={item.key}>
+              <Text
+                style={
+                  item.userId === currentUser.uid
+                    ? Styles.rightChat
+                    : Styles.leftChat
+                }>
+                {item.message + ' '}
+                <Text style={Styles.timestamp}>
+                  {moment(item.createdAt).format('h:mm a')}
                 </Text>
-              </View>
-            )}
-          />
-        )
-      }
-    />
+              </Text>
+            </View>
+          )}
+        />
+      )}
+    </ChatScreen>
   );
 };
 

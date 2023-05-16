@@ -302,7 +302,7 @@ const AppNavigations = () => {
         setNotificationCount(count);
       });
     }
-  }, []);
+  }, [user]);
 
   return (
     <AuthContext.Provider
@@ -324,8 +324,8 @@ const AppNavigations = () => {
         setErrorStatus,
       }}>
       {/* Display */}
-      {/* {userToken ? <DrawerStackScreen /> : <AuthNavigation />} */}
-      <DrawerStackScreen />
+      {userToken ? <DrawerStackScreen /> : <AuthNavigation />}
+      {/* <DrawerStackScreen /> */}
 
       {/* Loader */}
       <Loader loading={loading} />

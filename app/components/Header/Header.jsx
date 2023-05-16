@@ -16,7 +16,7 @@ import {Bell} from '../icons/Icons';
 
 const Header = () => {
   // use the useContext hook to get the user data value
-  const {userData, anonymous, notificationCount, setNotificationCount} =
+  const {userData, notificationCount, setNotificationCount} =
     useContext(AuthContext);
 
   // navigation
@@ -58,7 +58,7 @@ const Header = () => {
           onPress={handlePressNotification}
           style={styles.iconCon}>
           <Bell width={30} height={30} fill={COLORS.white} />
-          {notificationCount > 0 && (
+          {notificationCount > 0 ? (
             <View
               style={{
                 position: 'absolute',
@@ -67,7 +67,7 @@ const Header = () => {
               }}>
               <DotBeconAnimation width={20} height={20} />
             </View>
-          )}
+          ) : null}
         </TouchableOpacity>
       </View>
     </View>
