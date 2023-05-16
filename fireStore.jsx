@@ -8,9 +8,6 @@ import NetInfo from '@react-native-community/netinfo';
 
 import React from 'react';
 
-// navigation
-import {useNavigation} from '@react-navigation/native';
-
 //-------------------------------------------------------------------------//
 // GENERAL FUNCTIONS
 //-------------------------------------------------------------------------//
@@ -42,6 +39,34 @@ export async function fetchUserDiscussionBoards() {
 
   // return the number of discussion boards
   return count.size;
+}
+
+// use async-await to handle promises
+export async function getUserData(setUserData, setError, user) {
+  const userDocRef = firestore().collection('Users').doc(user.uid);
+
+  try {
+    // get display name and photo url from auth using onAuthStateChanged() method
+    auth().onAuthStateChanged(user => {
+      if (user) {
+        const {displayName, photoURL} = user;
+
+        // get user data from firestore using onSnapshot() method
+        userDocRef.onSnapshot(documentSnapshot => {
+          // check if document exists
+          // set userData state
+          setUserData({
+            ...documentSnapshot.data(),
+            displayName,
+            photoURL,
+          });
+        });
+      }
+    });
+  } catch (error) {
+    // set error status and message
+    setError(error.message);
+  }
 }
 
 //-------------------------------------------------------------------------//
@@ -141,21 +166,38 @@ export async function fetchNotifications(setLoading) {
     .doc(currentUser.uid)
     .collection('Notifications')
     .orderBy('createdAt', 'desc')
-    .get()
-    .then(querySnapshot => {
+    .onSnapshot(querySnapshot => {
+      // clear the notifications list
+      notifications.length = 0;
+      // loop through the documents and add them to the list
       querySnapshot.forEach(documentSnapshot => {
         notifications.push({
           ...documentSnapshot.data(),
           key: documentSnapshot.id,
         });
       });
+      // set loading to false
+      setLoading(false);
     });
-
-  // set loading to false
-  setLoading(false);
 
   // return notifications
   return notifications;
+}
+
+// function to update notification read status for a particular notification once user clicks on it
+export async function updateNotificationReadStatus(notificationId) {
+  // get current user data
+  const currentUser = auth().currentUser;
+
+  // update notification read status
+  await firestore()
+    .collection('Users')
+    .doc(currentUser.uid)
+    .collection('Notifications')
+    .doc(notificationId)
+    .update({
+      read: true,
+    });
 }
 
 //-------------------------------------------------------------------------//
@@ -301,6 +343,9 @@ export async function confirmUserBooking(
     // send notification to user
     sendNotification(name, date, time);
 
+    // send notification to therapist
+    sendNotificationToTherapist(therapistId, name, date, time);
+
     // Update therapist schedule in firestore
     const scheduleRef = await firestore()
       .collection('Therapists')
@@ -322,7 +367,7 @@ export async function confirmUserBooking(
     // navigate to home screen after a delay
     setTimeout(() => {
       navigation.navigate('Therapy');
-    }, 1000);
+    }, 900);
   } catch (error) {
     // set error status
     setErrorStatus('error');
@@ -360,6 +405,41 @@ export async function sendNotification(name, date, time) {
             title: 'Appointment Booked',
             body: `Your appointment with ${name} has been booked for ${date} at ${time}`,
             createdAt: firestore.FieldValue.serverTimestamp(),
+            read: false,
+          });
+      }
+    });
+}
+
+// send notification to therapist after user booking a session
+export async function sendNotificationToTherapist(
+  therapistId,
+  name,
+  date,
+  time,
+) {
+  // get therapist data from firestore
+  await firestore()
+    .collection('Therapists')
+    .doc(therapistId)
+    .get()
+    .then(documentSnapshot => {
+      // check if document exists
+      if (documentSnapshot.exists) {
+        // get therapist data
+        const therapistData = documentSnapshot.data();
+
+        // send notification to therapist (create collection of notification under Therapists collection)
+        firestore()
+          .collection('Therapists')
+          .doc(therapistId)
+          .collection('Notifications')
+          .add({
+            therapistId: therapistId,
+            title: 'Appointment Booked',
+            body: `You have a new appointment with ${name} on ${date} at ${time}`,
+            createdAt: firestore.FieldValue.serverTimestamp(),
+            read: false,
           });
       }
     });
@@ -379,6 +459,7 @@ export async function uploadTherapistDetailsToFirestore(
   dayValue,
   appointmentValue,
   languageValue,
+  setUploadStatus,
 ) {
   // set loading to true while uploading therapist details
   setLoading(true);
@@ -407,6 +488,9 @@ export async function uploadTherapistDetailsToFirestore(
         createdAt: firestore.FieldValue.serverTimestamp(),
       });
 
+    // set upload status to true
+    setUploadStatus(true);
+
     // set loading to false after uploading therapist details
     setLoading(false);
 
@@ -432,7 +516,7 @@ export async function editTherapistDetailsInFirestore(
   setLoading,
   setErrorStatus,
   setError,
-  about,
+  values,
   status,
   availability,
   appointmentTime,
@@ -445,10 +529,7 @@ export async function editTherapistDetailsInFirestore(
     setLoading(true);
 
     // check that input fields are not empty
-    about === '' ||
-    status === '' ||
-    availability === '' ||
-    appointmentTime === ''
+    status === '' || availability === '' || appointmentTime === ''
       ? // set error status and message if any field is empty
         (setErrorStatus('error'), setError('Please fill in all fields!'))
       : // upload therapist details to firestore if all fields are filled
@@ -456,8 +537,7 @@ export async function editTherapistDetailsInFirestore(
           .collection('Therapists')
           .doc(uid)
           .update({
-            // use object shorthand notation
-            about,
+            about: values.about,
             value: status,
             dayValue: [...availability],
             appointmentValue: [...appointmentTime],
@@ -529,38 +609,32 @@ export async function editUserProfile(
   values,
   resetForm,
 ) {
-  // set loading to true while updating user profile
-  setLoading(true);
-
-  // get current logged in user id
-  const uid = auth().currentUser.uid;
-
   try {
-    //update display name
-    await auth().currentUser.updateProfile({
-      displayName: values.name,
-    });
-
-    // update user profile
-    await firestore().collection('Users').doc(uid).update({
+    // set loading to true
+    setLoading(true);
+    // get current user and user doc reference
+    const user = auth().currentUser;
+    const userDocRef = firestore().collection('Users').doc(user.uid);
+    // update display name, email and phone number in user doc
+    await userDocRef.update({
+      userName: values.username,
       email: values.email,
       phoneNumber: values.phone,
     });
-    // set loading to false after updating user profile
-    setLoading(false);
-    // reset form
+
+    // update display name and email in auth
+    await user.updateProfile({
+      displayName: values.username,
+      email: values.email,
+    });
+    // reset form and set loading to false
     resetForm();
-    // update error status
-    setErrorStatus('success');
-    // set error message
-    setError('Profile updated!');
-  } catch (error) {
-    // set loading to false after updating user profile
     setLoading(false);
-    // update error status
-    setErrorStatus('error');
-    // set error message
-    setError('Something went wrong!');
+  } catch (error) {
+    // set error status and message
+    setErrorStatus(true);
+    setError(error.message);
+    console.log(error);
   }
 }
 
@@ -629,18 +703,21 @@ export async function deleteUserAccount(
   const userDocRef = firestore().collection('Users').doc(uid);
 
   try {
+    // delete user account from authentication
+    await auth().currentUser.delete();
+
     // delete user document from firestore collection
     await userDocRef.delete();
 
-    // delete user account from authentication
-    await auth().currentUser.delete();
+    // if user is a therapist, delete therapist document from firestore collection
+    await firestore().collection('Therapists').doc(uid).delete();
 
     // set loading to false after deleting user account
     setLoading(false);
     // close modal
     toggleModal2();
     // clear user token
-    setUserToken('');
+    setUserToken(null);
     // update error status
     setErrorStatus('success');
     // set error message
@@ -815,6 +892,7 @@ export async function createDiscussionBoard(
                 createGroup.charAt(0).toUpperCase() + createGroup.slice(1)
               }. Created on ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}`,
               createdAt: firestore.FieldValue.serverTimestamp(),
+              read: false,
             };
 
             // add the notification to the Users collection
@@ -946,7 +1024,7 @@ export async function fetchLiveChatMessages(
 }
 
 // function to fetch only 5 members of the group from database
-export async function fetchMembers(setLoading, setGroupMembers, groupdata) {
+export async function fetchMembers(setLoading, setGroupMembers, data) {
   try {
     // set loading to true
     setLoading(true);
@@ -954,7 +1032,7 @@ export async function fetchMembers(setLoading, setGroupMembers, groupdata) {
     // get the number of members field from the group document
     const numberOfMembers = await firestore()
       .collection('Groups')
-      .doc(groupdata.key)
+      .doc(data.key)
       .get()
       .then(snapshot => snapshot.get('Number_of_Members'));
 
@@ -999,6 +1077,8 @@ export async function fetchAllMembers(
 
 // function to delete the group
 export async function deleteGroup(groupdata, navigation) {
+  // get current user data
+  const currentUser = auth().currentUser;
   try {
     // delete group document from the Groups collection
     await firestore().collection('Groups').doc(groupdata.key).delete();
@@ -1006,15 +1086,24 @@ export async function deleteGroup(groupdata, navigation) {
     // navigate to home screen
     navigation.navigate('Groups');
 
-    // create a notification object with title, body and group id
+    // send notification to user
+    // create a notification object with current user id, title, body and timestamp
     const notification = {
-      title: 'Group Deleted',
-      body: 'The group ' + groupdata.name + ' has been deleted',
-      createdAt: new Date().getTime(),
+      userId: currentUser.uid,
+      title: 'Discussion Board Deleted',
+      body: `You have deleted the group. ${
+        groupdata.name
+      }. Deleted on ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}`,
+      createdAt: firestore.FieldValue.serverTimestamp(),
+      read: false,
     };
 
-    // send notification to all members of the group
-    await sendNotification(notification);
+    // add the notification to the Users collection
+    await firestore()
+      .collection('Users')
+      .doc(currentUser.uid)
+      .collection('Notifications')
+      .add(notification);
   } catch (error) {
     // set error status
     setErrorStatus('error');
@@ -1085,6 +1174,7 @@ export async function joinGroup(
           groupdata.name
         }. Joined on ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}`,
         createdAt: firestore.FieldValue.serverTimestamp(),
+        read: false,
       };
 
       // add the notification to the Users collection
@@ -1177,6 +1267,7 @@ export async function leaveGroup(
           groupdata.name
         }. Left on ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}`,
         createdAt: firestore.FieldValue.serverTimestamp(),
+        read: false,
       };
 
       // add the notification to the Users collection

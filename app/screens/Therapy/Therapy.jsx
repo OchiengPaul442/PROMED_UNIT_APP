@@ -1,3 +1,5 @@
+// imports
+import React, {useContext, Suspense} from 'react';
 import {
   View,
   Text,
@@ -7,22 +9,19 @@ import {
   Image,
   FlatList,
 } from 'react-native';
-import React, {useContext, Suspense} from 'react';
+
+// constants
+import {COLORS} from '../../constants';
+import Styles from '../../constants/Styles';
+
+// components
+import {Menu, Card, RoundLoadingAnimation} from '../../components';
+import Screen from '../../layout/Screen';
 
 // context
 import {AuthContext} from '../../navigations/Context/AuthContext';
 
-//General styles
-import Styles from '../../constants/Styles';
-
-// constants
-import {COLORS} from '../../constants';
-import {Menu, Card, RoundLoadingAnimation} from '../../components';
-
-// layout
-import Screen from '../../layout/Screen';
-
-// Lazy load the DiagnosisTools and BottomModal components
+// lazy loading
 const DiagnosisTools = React.lazy(() =>
   import('../../services/diagnosisTool/DiagnosisTools'),
 );
@@ -31,11 +30,7 @@ const BottomModal = React.lazy(() =>
 );
 
 // fetch functions
-import {
-  fetchTherapist,
-  fetchMoreTherapist,
-  fetchTherapistDetailsV1,
-} from '../../../fireStore';
+import {fetchTherapist, fetchMoreTherapist} from '../../../fireStore';
 
 const Therapy = ({navigation}) => {
   // context

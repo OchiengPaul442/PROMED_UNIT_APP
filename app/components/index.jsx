@@ -25,10 +25,12 @@ export {
   UnHappyAnimation,
   WellAnimation,
   RoundLoadingAnimation,
+  DotBeconAnimation,
 } from './animations/animations';
 
 // icons
 export {
+  DetailsIcon,
   BackBtn,
   Bell,
   Group,

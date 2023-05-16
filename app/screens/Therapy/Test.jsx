@@ -1,3 +1,5 @@
+// imports
+import React from 'react';
 import {
   StyleSheet,
   Text,
@@ -6,16 +8,16 @@ import {
   TextInput,
   TouchableOpacity,
 } from 'react-native';
-import React from 'react';
+
 //General styles
-import Styles from '../../constants/Styles';
+import Styles from '../../constants/Styles'; // custom styles for the app
 
 // screen
-import Screen from '../../layout/Screen';
+import Screen from '../../layout/Screen'; // a component for the screen layout
 
 // constants
-import {COLORS, SIZES} from '../../constants';
-import {BackBtn, CurvedButton} from '../../components';
+import {COLORS, SIZES} from '../../constants'; // predefined colors and sizes for the app
+import {BackBtn, CurvedButton} from '../../components'; // components for the back button and the curved button
 
 const Test = ({route, navigation}) => {
   // handle password

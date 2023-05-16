@@ -1,3 +1,5 @@
+// imports
+import React, {useContext} from 'react';
 import {
   StyleSheet,
   Text,
@@ -6,12 +8,10 @@ import {
   TouchableOpacity,
   SafeAreaView,
 } from 'react-native';
-import React, {useContext} from 'react';
-// context
-import {AuthContext} from '../../navigations/Context/AuthContext';
 
 // constants
 import {COLORS} from '../../constants';
+import Styles from '../../constants/Styles';
 
 // components
 import {
@@ -19,18 +19,22 @@ import {
   FocusedStatusBar,
   Card,
   RoundLoadingAnimation,
+  DotBeconAnimation,
 } from '../../components';
 
-// lazy loading for center half modal
-import CenterHalf from '../../components/Modals/CenterHalf';
-
-//General styles
-import Styles from '../../constants/Styles';
+// context
+import {AuthContext} from '../../navigations/Context/AuthContext';
 
 // fetch functions
-import {fetchNotifications} from '../../../fireStore';
-import firestore from '@react-native-firebase/firestore';
-import auth from '@react-native-firebase/auth';
+import {
+  fetchNotifications,
+  updateNotificationReadStatus,
+} from '../../../fireStore';
+
+// lazy loading for center half modal
+const CenterHalf = React.lazy(() =>
+  import('../../components/Modals/CenterHalf'),
+);
 
 const Notifications = ({navigation}) => {
   // context
@@ -47,29 +51,6 @@ const Notifications = ({navigation}) => {
 
   // set notifications state
   const [notifications, setNotifications] = React.useState([]);
-
-  // function to delete all notifications
-  // const deleteAllNotifications = () => {
-  //   setLoading(true);
-  //   firestore()
-  //     .collection('Users')
-  //     .doc(auth().currentUser.uid)
-  //     .collection('Notifications')
-  //     .get()
-  //     .then(querySnapshot => {
-  //       querySnapshot.forEach(documentSnapshot => {
-  //         documentSnapshot.ref.delete();
-  //       });
-  //     })
-  //     .then(() => {
-  //       setLoading(false);
-  //       setNotifications([]);
-  //     })
-  //     .catch(error => {
-  //       setLoading(false);
-  //       setError(error.message);
-  //     });
-  // };
 
   const toggleModal = () => {
     setOpen(!open);
@@ -93,7 +74,6 @@ const Notifications = ({navigation}) => {
   };
 
   React.useEffect(() => {
-    // deleteAllNotifications();
     // if route is focused
     const unsubscribe = navigation.addListener('focus', () => {
       // get notifications
@@ -178,6 +158,7 @@ const Notifications = ({navigation}) => {
                   <Card
                     Press={() => {
                       setSelectedNotification(item);
+                      updateNotificationReadStatus(item.key);
                       toggleModal();
                     }}
                     bgColor={COLORS.lightGray}
@@ -197,6 +178,16 @@ const Notifications = ({navigation}) => {
                         {item.body}
                       </Text>
                     </View>
+                    {item.read === false && (
+                      <View
+                        style={{
+                          position: 'absolute',
+                          top: 8,
+                          right: 8,
+                        }}>
+                        <DotBeconAnimation width={20} height={20} />
+                      </View>
+                    )}
                   </Card>
                 </View>
               ))

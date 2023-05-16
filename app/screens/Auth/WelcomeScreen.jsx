@@ -1,16 +1,11 @@
 import {StyleSheet, View, Text, SafeAreaView, Image} from 'react-native';
-import React, {useContext} from 'react';
-// context
-import {AuthContext} from '../../navigations/Context/AuthContext';
-
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import React from 'react';
 
 // components
 import {FocusedStatusBar, CurvedButton} from '../../components';
 
 // Constants
 import {COLORS, SIZES, RightPam, LeftPam} from '../../constants';
-import Styles from '../../constants/Styles';
 
 const WelcomeScreen = ({navigation}) => {
   return (

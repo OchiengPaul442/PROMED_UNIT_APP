@@ -1,32 +1,27 @@
-import {StyleSheet, Text, View, TouchableOpacity, Image} from 'react-native';
+// imports
 import React, {useContext} from 'react';
-//  moment
-import moment from 'moment';
+import {StyleSheet, Text, View, TouchableOpacity, Image} from 'react-native';
 
 // context
-import {AuthContext} from '../../navigations/Context/AuthContext';
-
-// firebase imports
-import auth from '@react-native-firebase/auth';
-import firestore from '@react-native-firebase/firestore';
+import {AuthContext} from '../../navigations/Context/AuthContext'; // a context for the authentication state
 
 // screens
-import Screen from '../../layout/Screen';
+import Screen from '../../layout/Screen'; // a component for the screen layout
 
 //General styles
-import Styles from '../../constants/Styles';
+import Styles from '../../constants/Styles'; // custom styles for the app
 
 // constants
-import {COLORS} from '../../constants';
+import {COLORS} from '../../constants'; // predefined colors for the app
 import {
   ConfirmIcon,
   EditIcon,
   CurvedButton,
   RoundLoadingAnimation,
-} from '../../components';
+} from '../../components'; // components for the icons, buttons and loading animation
 
 // fetch function
-import {confirmUserBooking} from '../../../fireStore';
+import {confirmUserBooking} from '../../../fireStore'; // a function to confirm the user booking in firestore
 
 const ConfirmationScreen = ({route, navigation}) => {
   // context

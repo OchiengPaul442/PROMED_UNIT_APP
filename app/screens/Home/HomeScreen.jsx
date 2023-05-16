@@ -1,3 +1,5 @@
+// imports
+import React, {useContext, Suspense} from 'react';
 import {
   View,
   Text,
@@ -6,19 +8,24 @@ import {
   FlatList,
   TouchableOpacity,
 } from 'react-native';
-import React, {useContext, Suspense} from 'react';
-// context
-import {AuthContext} from '../../navigations/Context/AuthContext';
-
-//General styles
-import Styles from '../../constants/Styles';
 
 // constants
 import {COLORS, SIZES} from '../../constants';
-import {Card, RoundLoadingAnimation} from '../../components';
+import Styles from '../../constants/Styles';
 
-// screen layout
+// components
+import {Card, RoundLoadingAnimation} from '../../components';
 import Screen from '../../layout/Screen';
+
+// context
+import {AuthContext} from '../../navigations/Context/AuthContext';
+
+// fetch functions
+import {
+  fetchUserAppointments,
+  fetchDailyMentalHealthTips,
+  fetchMoreDailyMentalHealthTips,
+} from '../../../fireStore';
 
 // lazy loading
 const MoodTracker = React.lazy(() =>
@@ -27,13 +34,6 @@ const MoodTracker = React.lazy(() =>
 const CenterHalf = React.lazy(() =>
   import('../../components/Modals/CenterHalf'),
 );
-
-// fetch functions
-import {
-  fetchUserAppointments,
-  fetchDailyMentalHealthTips,
-  fetchMoreDailyMentalHealthTips,
-} from '../../../fireStore';
 
 const HomeScreen = ({navigation, route}) => {
   // use the useContext hook to get the user data value
@@ -45,6 +45,8 @@ const HomeScreen = ({navigation, route}) => {
 
   // model
   const [open, setOpen] = React.useState(false);
+
+  // selected tip
   const [selectedTip, setSelectedTip] = React.useState('');
 
   // Get the greeting based on the time of the day
@@ -57,7 +59,9 @@ const HomeScreen = ({navigation, route}) => {
   const [userAppointments, setUserAppointments] = React.useState(0);
 
   const toggleModal = () => {
-    setOpen(!open);
+    setTimeout(() => {
+      setOpen(!open);
+    }, 500);
   };
 
   // greetings function
@@ -135,8 +139,8 @@ const HomeScreen = ({navigation, route}) => {
           <Text style={styles.username}>
             {anonymous ? (
               'guest user'
-            ) : userData ? (
-              userData.displayName
+            ) : userData.userName ? (
+              userData.userName
             ) : (
               <Text style={Styles.text3}>loading...</Text>
             )}

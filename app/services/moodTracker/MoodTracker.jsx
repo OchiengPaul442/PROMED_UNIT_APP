@@ -1,5 +1,11 @@
 // constants
-import {StyleSheet, Text, View, TouchableOpacity} from 'react-native';
+import {
+  StyleSheet,
+  Text,
+  View,
+  TouchableOpacity,
+  TextInput,
+} from 'react-native';
 import {COLORS} from '../../constants';
 import {
   BadAnimation,
@@ -7,6 +13,7 @@ import {
   WellAnimation,
   HappyAnimation,
   RoundLoadingAnimation,
+  RecButton,
 } from '../../components';
 import React, {useContext} from 'react';
 import Styles from '../../constants/Styles';
@@ -18,16 +25,28 @@ import firebase from '@react-native-firebase/app';
 // context
 import {AuthContext} from '../../navigations/Context/AuthContext';
 
+const CenterHalf = React.lazy(() =>
+  import('../../components/Modals/CenterHalf'),
+);
+
 // mood tracker function
 const MoodTracker = () => {
   // use the useContext hook to get the user data value
-  const {setError, error, anonymous, setErrorStatus} = useContext(AuthContext);
+  const {setError, anonymous, setErrorStatus} = useContext(AuthContext);
 
   // mood
   const [mood, setMood] = React.useState('');
 
   // loading
   const [loading, setLoading] = React.useState(false);
+
+  // open modal
+  const [open, setOpen] = React.useState(false);
+
+  // toggle modal
+  const moodModalForm = set => {
+    setOpen(set);
+  };
 
   // Function to track the user's mood
   const trackMood = mood => {
@@ -87,6 +106,10 @@ const MoodTracker = () => {
                     setLoading(false);
                     setError('Mood recorded successfully');
                     setErrorStatus('success');
+                    // capture why the user is feeling that way
+                    setTimeout(() => {
+                      moodModalForm(true);
+                    }, 1500);
                   });
               } else if (hours >= 12 && hours <= 17) {
                 // save the user's mood to the database
@@ -107,6 +130,10 @@ const MoodTracker = () => {
                     setLoading(false);
                     setError('Mood recorded successfully');
                     setErrorStatus('success');
+                    // capture why the user is feeling that way
+                    setTimeout(() => {
+                      moodModalForm(true);
+                    }, 1500);
                   });
               } else {
                 // save the user's mood to the database
@@ -127,6 +154,10 @@ const MoodTracker = () => {
                     setLoading(false);
                     setError('Mood recorded successfully');
                     setErrorStatus('success');
+                    // capture why the user is feeling that way
+                    setTimeout(() => {
+                      moodModalForm(true);
+                    }, 1500);
                   });
               }
             }
@@ -139,72 +170,92 @@ const MoodTracker = () => {
     }
   };
 
+  // Array of moods
+  const moods = [
+    {
+      mood: 'Angry',
+      animation: <BadAnimation />,
+    },
+    {
+      mood: 'Sad',
+      animation: <UnHappyAnimation />,
+    },
+    {
+      mood: 'Well',
+      animation: <WellAnimation />,
+    },
+    {
+      mood: 'Happy',
+      animation: <HappyAnimation />,
+    },
+  ];
+
   return (
-    <View style={styles.feeling}>
-      <View style={styles.feelingCon}>
-        <TouchableOpacity
-          style={styles.feelingsBtn}
-          onPress={() => {
-            let mood = 'Angry';
-            trackMood(mood);
-          }}>
-          {/* This is the animation for the angry mood */}
-          {loading && mood == 'Angry' ? (
-            <RoundLoadingAnimation width={40} height={40} />
-          ) : (
-            <BadAnimation />
-          )}
-        </TouchableOpacity>
-        <Text style={Styles.text}>Angry</Text>
+    <View>
+      <View style={styles.feeling}>
+        {moods.map((item, index) => (
+          <View key={index} style={styles.feelingCon}>
+            <TouchableOpacity
+              style={styles.feelingsBtn}
+              onPress={() => {
+                let mood = item.mood;
+                trackMood(mood);
+              }}>
+              {/* This is the animation for the sad mood */}
+              {loading && mood == item.mood ? (
+                <RoundLoadingAnimation width={40} height={40} />
+              ) : (
+                item.animation
+              )}
+            </TouchableOpacity>
+            <Text style={Styles.text}>{item.mood}</Text>
+          </View>
+        ))}
       </View>
-      <View style={styles.feelingCon}>
-        <TouchableOpacity
-          style={styles.feelingsBtn}
-          onPress={() => {
-            let mood = 'Sad';
-            trackMood(mood);
-          }}>
-          {/* This is the animation for the sad mood */}
-          {loading && mood == 'Sad' ? (
-            <RoundLoadingAnimation width={40} height={40} />
-          ) : (
-            <UnHappyAnimation />
-          )}
+      {/* why they selected that mood */}
+      <CenterHalf Visibility={open} hide={() => moodModalForm(false)}>
+        {/* title */}
+        <Text style={{paddingVertical: 10, ...Styles.heading2}}>
+          Follow up Questions
+        </Text>
+        <View style={Styles.Qgroup}>
+          <Text style={Styles.Qlabel}>
+            How do you feel about your mood today? What factors influenced it?
+          </Text>
+          <TextInput
+            style={Styles.Qinput}
+            placeholder="Enter your answer here"
+          />
+        </View>
+        <View style={Styles.Qgroup}>
+          <Text style={Styles.Qlabel}>
+            What are some goals or habits that you want to work on to support
+            your mental health?
+          </Text>
+          <TextInput
+            style={Styles.Qinput}
+            placeholder="Enter your answer here"
+          />
+        </View>
+        {/* submit button */}
+        <View style={{paddingTop: 15}}>
+          <RecButton
+            text="Submit Response"
+            textColor={COLORS.black}
+            bgColor={COLORS.secondary}
+            onPress={() => moodModalForm(false)}
+          />
+        </View>
+        <TouchableOpacity onPress={() => moodModalForm(false)}>
+          <Text
+            style={{
+              paddingVertical: 10,
+              color: COLORS.red,
+            }}>
+            Close
+          </Text>
         </TouchableOpacity>
-        <Text style={Styles.text}>Sad</Text>
-      </View>
-      <View style={styles.feelingCon}>
-        <TouchableOpacity
-          style={styles.feelingsBtn}
-          onPress={() => {
-            let mood = 'Well';
-            trackMood(mood);
-          }}>
-          {/* This is the animation for the well mood */}
-          {loading && mood == 'Well' ? (
-            <RoundLoadingAnimation width={40} height={40} />
-          ) : (
-            <WellAnimation />
-          )}
-        </TouchableOpacity>
-        <Text style={Styles.text}>Well</Text>
-      </View>
-      <View style={styles.feelingCon}>
-        <TouchableOpacity
-          style={styles.feelingsBtn}
-          onPress={() => {
-            let mood = 'Happy';
-            trackMood(mood);
-          }}>
-          {/* This is the animation for the happy mood */}
-          {loading && mood == 'Happy' ? (
-            <RoundLoadingAnimation width={40} height={40} />
-          ) : (
-            <HappyAnimation />
-          )}
-        </TouchableOpacity>
-        <Text style={Styles.text}>Happy</Text>
-      </View>
+      </CenterHalf>
     </View>
   );
 };
