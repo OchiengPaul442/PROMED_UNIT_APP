@@ -181,7 +181,7 @@ const TherapistProfile = ({navigation}) => {
 
     // call the fetch function
     fetchTherapistData();
-  }, []);
+  }, [currentUser.uid]);
 
   // radio buttons Options for time using iteration for appointmentValue array
   const radioButtons = React.useMemo(() => {
@@ -214,7 +214,7 @@ const TherapistProfile = ({navigation}) => {
     }
 
     return options;
-  }, []);
+  }, [details.appointmentValue]);
 
   // table content
   const TABLECONTENT = {
@@ -313,17 +313,6 @@ const TherapistProfile = ({navigation}) => {
                           style={{marginHorizontal: 20}}
                           onPress={() => setEditMode(true)}>
                           <EditIcon
-                            width={30}
-                            height={30}
-                            fill={COLORS.tertiary}
-                          />
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                          style={{marginRight: 10}}
-                          onPress={() =>
-                            navigation.navigate('PrivateChatsList')
-                          }>
-                          <MessageIcon
                             width={30}
                             height={30}
                             fill={COLORS.tertiary}

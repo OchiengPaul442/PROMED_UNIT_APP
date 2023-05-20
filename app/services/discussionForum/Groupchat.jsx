@@ -1,5 +1,5 @@
 // imports
-import React, {useContext} from 'react';
+import React, {useContext, useRef} from 'react';
 import {Text, View, FlatList} from 'react-native';
 import moment from 'moment';
 
@@ -24,6 +24,9 @@ import firestore from '@react-native-firebase/firestore'; // a module for the fi
 import ChatScreen from '../../layout/ChatScreen';
 
 const Groupchat = ({route, navigation}) => {
+  // SCROLL TO BOTTOM
+  const scrollRef = useRef();
+
   // get params
   const {groupdata} = route.params;
 
@@ -88,6 +91,9 @@ const Groupchat = ({route, navigation}) => {
 
               // set loading to false
               setLoading(false);
+
+              // scroll to bottom
+              scrollRef.current.scrollToEnd({animated: true});
             },
             error => {
               // handle error here
@@ -120,6 +126,7 @@ const Groupchat = ({route, navigation}) => {
 
   return (
     <ChatScreen
+      scrollBottom={scrollRef}
       nav={navigation}
       title={groupdata.name}
       data={groupdata}

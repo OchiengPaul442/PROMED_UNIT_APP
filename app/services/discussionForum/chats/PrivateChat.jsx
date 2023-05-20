@@ -1,25 +1,25 @@
-import React, {Context} from 'react';
+import React, {useRef} from 'react';
 import {View, Text, FlatList} from 'react-native';
 import moment from 'moment';
 
 // context
-import {AuthContext} from '../../navigations/Context/AuthContext'; // a context for the authentication state
+import {AuthContext} from '../../../navigations/Context/AuthContext'; // a context for the authentication state
 
 // constants
-import {COLORS} from '../../constants'; // predefined colors for the app
-import Styles from '../../constants/Styles'; // custom styles for the app
+import {COLORS} from '../../../constants'; // predefined colors for the app
+import Styles from '../../../constants/Styles'; // custom styles for the app
 
 // components
-import {RoundLoadingAnimation} from '../../components'; // components for the status bar, buttons, icons and loading animation
+import {RoundLoadingAnimation} from '../../../components'; // components for the status bar, buttons, icons and loading animation
 
 //layout
-import ChatScreen from '../../layout/ChatScreen';
+import ChatScreen from '../../../layout/ChatScreen';
 
 // firebase
 import auth from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
 
-import {sendPrivateMessage} from '../../../fireStore';
+import {sendPrivateMessage} from '../../../../fireStore';
 
 const PrivateChat = ({navigation, route}) => {
   // context
@@ -37,6 +37,8 @@ const PrivateChat = ({navigation, route}) => {
     userName,
     userImage,
   } = route.params;
+  // SCROLL TO BOTTOM
+  const scrollRef = useRef();
 
   // text input
   const [text, onChangeText] = React.useState('');
@@ -67,6 +69,9 @@ const PrivateChat = ({navigation, route}) => {
 
         // update the state variable with the sorted messages array
         setMessage(sortedMessages);
+
+        // scroll to bottom
+        scrollRef.current.scrollToEnd({animated: true});
       }
     });
 
@@ -94,6 +99,7 @@ const PrivateChat = ({navigation, route}) => {
 
   return (
     <ChatScreen
+      scrollBottom={scrollRef}
       title="Private Chat"
       nav={navigation}
       text={text}

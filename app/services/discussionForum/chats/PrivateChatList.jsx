@@ -1,30 +1,46 @@
 import {StyleSheet, Text, View, Image, TouchableOpacity} from 'react-native';
-import React from 'react';
+import React, {Context} from 'react';
+
+// context
+import {AuthContext} from '../../../navigations/Context/AuthContext';
 
 import moment from 'moment';
 
 // styles
-import Styles from '../../constants/Styles';
+import Styles from '../../../constants/Styles';
 
 // layout
-import Screen2 from '../../layout/Screen2';
-import {COLORS} from '../../constants';
+import Screen2 from '../../../layout/Screen2';
+import {COLORS} from '../../../constants';
 
 // fetch functions
-import {fetchPrivateChats} from '../../../fireStore';
+import {fetchPrivateChats, fetchUserPrivateChats} from '../../../../fireStore';
+
+// firebase
+import auth from '@react-native-firebase/auth';
 
 // components
-import {RoundLoadingAnimation} from '../../components'; // components for the status bar, buttons, icons and loading animation
+import {RoundLoadingAnimation} from '../../../components'; // components for the status bar, buttons, icons and loading animation
 
 const PrivateChatList = ({navigation}) => {
+  // get user from context
+  const {userData} = React.useContext(AuthContext);
+
   // fetch private chats
   const [privateChats, setPrivateChats] = React.useState([]);
+
+  // current user
+  const currentUser = auth().currentUser;
 
   // set loading animation
   const [loading, setLoading] = React.useState(false);
 
   React.useEffect(() => {
-    fetchPrivateChats(setPrivateChats, setLoading);
+    if (userData.userType !== 'Therapist') {
+      fetchUserPrivateChats(setPrivateChats, setLoading);
+    } else {
+      fetchPrivateChats(setPrivateChats, setLoading);
+    }
   }, []);
 
   return (
@@ -55,16 +71,37 @@ const PrivateChatList = ({navigation}) => {
                   therapistId: chat.therapistId,
                   therapistName: chat.therapistName,
                   therapistImage: chat.therapistImage,
-                  userUid: chat.userId,
-                  userName: chat.userName,
-                  userImage: chat.userImage,
+                  userUid:
+                    userData.userType !== 'Therapist'
+                      ? currentUser.uid
+                      : chat.userId,
+                  userName:
+                    userData.userType !== 'Therapist'
+                      ? userData.userName
+                      : chat.userName,
+                  userImage:
+                    userData.userType !== 'Therapist'
+                      ? userData.photoURL
+                      : chat.userImage,
                 })
               }>
               <View style={styles.img}>
-                <Image style={styles.userImg} source={{uri: chat.userImage}} />
+                <Image
+                  style={styles.userImg}
+                  source={{
+                    uri:
+                      userData.userType !== 'Therapist'
+                        ? chat.therapistImage
+                        : chat.userImage,
+                  }}
+                />
               </View>
               <View style={{flex: 1, ...styles.details}}>
-                <Text style={Styles.title2}>{chat.userName}</Text>
+                <Text style={Styles.title2}>
+                  {userData.userType !== 'Therapist'
+                    ? chat.therapistName
+                    : chat.userName}
+                </Text>
                 <Text style={Styles.text}>
                   {chat.lastMessage.substring(0, 35) + '...'}
                 </Text>
@@ -92,6 +129,8 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingHorizontal: 10,
+    height: '100%',
+    width: '100%',
   },
 
   card: {

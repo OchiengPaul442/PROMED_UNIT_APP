@@ -723,6 +723,40 @@ export async function fetchPrivateChats(setPrivateChats, setLoading) {
   }
 }
 
+// function to fetch the list of private chats for user to view
+export async function fetchUserPrivateChats(setPrivateChats, setLoading) {
+  // use try-catch to handle errors
+  try {
+    setLoading(true);
+    // get current logged in user id
+    const uid = auth().currentUser.uid;
+
+    // fetch list of private chats
+    // use a variable to store the query
+    const query = firestore()
+      .collection('Users')
+      .doc(uid)
+      .collection('Conversations')
+      .orderBy('lastMessageTime', 'desc');
+
+    // use await instead of onSnapshot to get the data once
+    const querySnapshot = await query.get();
+
+    // use map instead of forEach to create a new array
+    const chats = querySnapshot.docs.map(doc => ({
+      ...doc.data(),
+      key: doc.id,
+    }));
+
+    setPrivateChats(chats);
+  } catch (error) {
+    // handle error here
+    console.error(error);
+  } finally {
+    setLoading(false);
+  }
+}
+
 //-------------------------------------------------------------------------//
 // PROFILE SCREEN FUNCTIONS
 //-------------------------------------------------------------------------//

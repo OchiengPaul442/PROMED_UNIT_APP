@@ -26,6 +26,7 @@ import {Loader, ErrorHandle, DetailsIcon} from '../components'; // components fo
 import {
   Group,
   ProfileIcon,
+  ChatIcon,
   Bell,
   Home,
   Therapist,
@@ -57,7 +58,6 @@ import {
   PrivateChat,
   PrivateChatList,
   TherapistProfile,
-  PrivateChats,
   // Splash,
 } from '../screens';
 
@@ -74,6 +74,7 @@ const TherapyStack = createStackNavigator();
 const GroupStack = createStackNavigator();
 const DrawerStack = createDrawerNavigator();
 const ProfileStack = createStackNavigator();
+const ChatStack = createStackNavigator();
 
 // Auth stack
 const AuthNavigation = () => {
@@ -107,14 +108,14 @@ const DrawerStackScreen = () => {
       component: ProfileStackScreen,
       icon: ProfileIcon,
     },
-    // use a ternary operator to conditionally add the therapist profile item
+    {
+      name: 'Chat_root',
+      label: 'Private Chats',
+      component: ChatStackScreen,
+      icon: ChatIcon,
+    },
     userData.userType !== 'Therapist'
-      ? {
-          name: 'ClientChats',
-          label: 'Private Chats',
-          component: PrivateChatList,
-          icon: DetailsIcon,
-        }
+      ? null
       : {
           name: 'Therapist_profile',
           label: 'Therapist Profile',
@@ -158,6 +159,20 @@ const DrawerStackScreen = () => {
           ),
       )}
     </DrawerStack.Navigator>
+  );
+};
+
+// Chat stack
+const ChatStackScreen = () => {
+  return (
+    <ChatStack.Navigator
+      initialRouteName="PrivateChatList"
+      screenOptions={{
+        headerShown: false,
+      }}>
+      <ChatStack.Screen name="PrivateChatList" component={PrivateChatList} />
+      <ChatStack.Screen name="PrivateChats" component={PrivateChat} />
+    </ChatStack.Navigator>
   );
 };
 

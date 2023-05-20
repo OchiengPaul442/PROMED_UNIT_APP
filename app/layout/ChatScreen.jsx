@@ -28,9 +28,16 @@ const ChatScreen = ({
   setMess,
   text,
   submit,
+  scrollBottom,
 }) => {
   // Height of the keyboard
   const [keyboardHeight, setKeyboardHeight] = React.useState(0);
+
+  // send private message
+  const sendPrivateMessage = () => {
+    // submit message
+    submit();
+  };
 
   // Keyboard event
   React.useEffect(() => {
@@ -89,7 +96,7 @@ const ChatScreen = ({
         {/* Content */}
         <View style={styles.Content}>
           <View style={Styles.chats}>
-            <ScrollView showsVerticalScrollIndicator={false}>
+            <ScrollView ref={scrollBottom} showsVerticalScrollIndicator={false}>
               {children}
             </ScrollView>
           </View>
@@ -106,7 +113,10 @@ const ChatScreen = ({
               placeholder="Message..."
               style={Styles.inputfield}
             />
-            <TouchableOpacity onPress={submit}>
+            <TouchableOpacity
+              onPress={() => {
+                sendPrivateMessage();
+              }}>
               <SendIcon width={50} height={50} fill={COLORS.tertiary} />
             </TouchableOpacity>
           </View>
