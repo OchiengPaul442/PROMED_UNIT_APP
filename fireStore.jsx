@@ -5,6 +5,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // NetInfo
 import NetInfo from '@react-native-community/netinfo';
+import {useNetInfo} from '@react-native-community/netinfo';
 
 import React from 'react';
 

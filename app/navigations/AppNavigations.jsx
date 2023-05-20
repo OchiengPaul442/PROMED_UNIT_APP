@@ -200,12 +200,13 @@ const BottomTabs = () => {
           name={tab.name}
           component={tab.component}
           options={{
+            tabBarIconStyle: {
+              width: 30,
+              height: 30,
+              position: 'relative',
+            },
             tabBarIcon: ({focused}) => (
-              <tab.icon
-                fill={focused ? COLORS.secondary : COLORS.white}
-                width="30px"
-                height="30px"
-              />
+              <tab.icon fill={focused ? COLORS.secondary : COLORS.white} />
             ),
           }}
         />
