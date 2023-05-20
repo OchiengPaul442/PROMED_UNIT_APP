@@ -21,42 +21,28 @@ import {COLORS, ProfileMale} from '../../constants';
 import Styles from '../../constants/Styles';
 
 // components
-import {
-  BackBtn,
-  MessageIcon,
-  CallIcon,
-  CurvedButton,
-  EditIcon,
-  DeleteIcon,
-} from '../../components';
+import {BackBtn, MessageIcon, EditIcon} from '../../components';
 import Screen from '../../layout/Screen';
 
 // context
 import {AuthContext} from '../../navigations/Context/AuthContext';
 
 // fetch functions
-import {
-  fetchTherapistSchedule,
-  editTherapistDetailsInFirestore,
-  fetchSelectedTherapist,
-} from '../../../fireStore';
+import {editTherapistDetailsInFirestore} from '../../../fireStore';
 
 // firebase
 import auth from '@react-native-firebase/auth';
+import firestore from '@react-native-firebase/firestore';
 
 // lazy loading
 const Table = React.lazy(() => import('../../components/table/Table'));
 const Datepicker = React.lazy(() =>
   import('../../components/date&timepicker/Datepicker'),
 );
-
-const Therapy = ({navigation, route}) => {
+const TherapistProfile = ({navigation}) => {
   // context
   const {anonymous, setError, setErrorStatus, userData} =
     useContext(AuthContext);
-
-  // get params
-  const {item} = route.params;
 
   // set loading state
   const [Loading, setLoading] = React.useState(true);
@@ -66,6 +52,7 @@ const Therapy = ({navigation, route}) => {
 
   // current user id
   const userUid = auth().currentUser.uid;
+  const currentUser = auth().currentUser;
 
   // time and date
   const [date, setDate] = React.useState('');
@@ -139,44 +126,6 @@ const Therapy = ({navigation, route}) => {
     setAppointmentTime(appointmentValue);
   };
 
-  // function to BookAppointment
-  const bookAppointment = () => {
-    try {
-      // check if date and time is selected
-      if (date === '' || time === '') {
-        // set error message
-        setError('Please select a date and time');
-        return;
-      } else {
-        // before booking check if that day and time is available
-        const check = schedule.filter(
-          items => items.date === date && items.time === time,
-        );
-
-        // if check is not empty
-        if (check.length !== 0) {
-          // set error message
-          setError('This time slot is not available');
-          return;
-        } else {
-          // navigate to confirmation screen
-          navigation.push('Confirmation', {
-            name: details.name,
-            therapistId: item.key,
-            title: details.title,
-            image: details.image,
-            date: date,
-            time: time,
-            token: Math.random().toString(36).substring(2),
-          });
-        }
-      }
-    } catch (error) {
-      // set error message
-      setError(error.message);
-    }
-  };
-
   // function to edit therapist details
   const editTherapistDetails = values => {
     editTherapistDetailsInFirestore(
@@ -191,56 +140,47 @@ const Therapy = ({navigation, route}) => {
 
     // set edit mode to false
     setEditMode(false);
-
-    // call fetchSelectedTherapist function
-    fetchSelectedTherapist(item).then(res => {
-      setDetails(res);
-    });
-  };
-
-  // handle message icon
-  const handleMessage = () => {
-    // if user is anonymous
-    if (anonymous) {
-      // set error message
-      setError('You need to login to send message');
-      return;
-    } else {
-      const therapistId = item.key;
-      const therapistName = details.name;
-      const therapistImage = details.image;
-      const userName = userData.userName;
-      const userImage = userData.photoURL;
-
-      navigation.navigate('PrivateChats', {
-        therapistId,
-        therapistName,
-        therapistImage,
-        userUid,
-        userName,
-        userImage,
-      });
-    }
   };
 
   React.useEffect(() => {
-    // fetch data if screen is focused
-    const unsubscribe = navigation.addListener('focus', () => {
-      // fetch therapist details
-      fetchSelectedTherapist(item).then(res => {
-        setDetails(res);
-      });
+    // use async-await to handle promises
+    async function fetchTherapistData() {
+      try {
+        // get the therapist document reference
+        const therapistRef = firestore()
+          .collection('Therapists')
+          .doc(currentUser.uid);
 
-      // fetchSchedule
-      fetchTherapistSchedule(setLoading, item)
-        .then(res => {
-          setSchedule(res);
-        })
-        .catch(err => {
-          setError(err.message);
-        });
-    });
-    return unsubscribe;
+        // use onSnapshot to listen for changes in the therapist details
+        const unsubscribe = therapistRef.onSnapshot(
+          doc => {
+            // set the details state with the updated document data
+            setDetails(doc.data());
+          },
+          error => {
+            // handle error here
+            console.error(error);
+          },
+        );
+
+        therapistRef.collection('Schedule').onSnapshot(
+          querySnapshot => {
+            // set the schedule state with an array of updated document data
+            setSchedule(querySnapshot.docs.map(doc => doc.data()));
+          },
+          error => {
+            // handle error here
+            console.error(error);
+          },
+        );
+      } catch (error) {
+        // handle error here
+        console.error(error);
+      }
+    }
+
+    // call the fetch function
+    fetchTherapistData();
   }, []);
 
   // radio buttons Options for time using iteration for appointmentValue array
@@ -274,7 +214,7 @@ const Therapy = ({navigation, route}) => {
     }
 
     return options;
-  }, [details.appointmentValue]);
+  }, []);
 
   // table content
   const TABLECONTENT = {
@@ -292,7 +232,7 @@ const Therapy = ({navigation, route}) => {
         {/* Content */}
         <Formik
           initialValues={{
-            about: item.about,
+            about: details.about,
           }}
           onSubmit={values => {
             editTherapistDetails(values);
@@ -326,73 +266,71 @@ const Therapy = ({navigation, route}) => {
                     <TouchableOpacity onPress={() => navigation.goBack()}>
                       <BackBtn width={30} height={30} fill={COLORS.primary} />
                     </TouchableOpacity>
-                    {userData.userType === 'Therapist' &&
-                    item.key === userUid ? (
-                      editMode ? (
-                        <View
-                          style={{
-                            display: 'flex',
-                            flexDirection: 'row',
-                            justifyContent: 'space-between',
-                            alignItems: 'center',
-                          }}>
-                          <TouchableOpacity onPress={handleSubmit}>
-                            <Text
-                              style={{
-                                color: COLORS.white,
-                                fontSize: 16,
-                                padding: 10,
-                                borderRadius: 10,
-                                backgroundColor: COLORS.orange,
-                                marginRight: 10,
-                              }}>
-                              Save changes
-                            </Text>
-                          </TouchableOpacity>
-                          <TouchableOpacity onPress={() => setEditMode(false)}>
-                            <Text
-                              style={{
-                                color: COLORS.white,
-                                fontSize: 16,
-                                padding: 10,
-                                borderRadius: 10,
-                                backgroundColor: COLORS.red,
-                                textAlign: 'center',
-                              }}>
-                              Close
-                            </Text>
-                          </TouchableOpacity>
-                        </View>
-                      ) : (
-                        <View
-                          style={{
-                            display: 'flex',
-                            flexDirection: 'row',
-                            justifyContent: 'space-between',
-                            alignItems: 'center',
-                          }}>
-                          <TouchableOpacity
-                            style={{marginHorizontal: 20}}
-                            onPress={() => setEditMode(true)}>
-                            <EditIcon
-                              width={30}
-                              height={30}
-                              fill={COLORS.tertiary}
-                            />
-                          </TouchableOpacity>
-                          <TouchableOpacity
-                            onPress={() =>
-                              navigation.navigate('PrivateChatsList')
-                            }>
-                            <MessageIcon
-                              width={30}
-                              height={30}
-                              fill={COLORS.tertiary}
-                            />
-                          </TouchableOpacity>
-                        </View>
-                      )
-                    ) : null}
+                    {editMode ? (
+                      <View
+                        style={{
+                          display: 'flex',
+                          flexDirection: 'row',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                        }}>
+                        <TouchableOpacity onPress={handleSubmit}>
+                          <Text
+                            style={{
+                              color: COLORS.white,
+                              fontSize: 16,
+                              padding: 10,
+                              borderRadius: 10,
+                              backgroundColor: COLORS.orange,
+                              marginRight: 10,
+                            }}>
+                            Save changes
+                          </Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity onPress={() => setEditMode(false)}>
+                          <Text
+                            style={{
+                              color: COLORS.white,
+                              fontSize: 16,
+                              padding: 10,
+                              borderRadius: 10,
+                              backgroundColor: COLORS.red,
+                              textAlign: 'center',
+                            }}>
+                            Close
+                          </Text>
+                        </TouchableOpacity>
+                      </View>
+                    ) : (
+                      <View
+                        style={{
+                          display: 'flex',
+                          flexDirection: 'row',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                        }}>
+                        <TouchableOpacity
+                          style={{marginHorizontal: 20}}
+                          onPress={() => setEditMode(true)}>
+                          <EditIcon
+                            width={30}
+                            height={30}
+                            fill={COLORS.tertiary}
+                          />
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                          style={{marginRight: 10}}
+                          onPress={() =>
+                            navigation.navigate('PrivateChatsList')
+                          }>
+                          <MessageIcon
+                            width={30}
+                            height={30}
+                            fill={COLORS.tertiary}
+                          />
+                        </TouchableOpacity>
+                      </View>
+                    )}
                   </View>
                   {/* Therapist information */}
                   <View style={styles.Therapist_information}>
@@ -441,48 +379,6 @@ const Therapy = ({navigation, route}) => {
                           </Text>
                         </View>
                       </View>
-                      {userData.userType === 'Therapist' ? null : (
-                        <View
-                          style={{
-                            position: 'relative',
-                            right: 8,
-                            height: 'auto',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            justifyContent: 'space-around',
-                            alignItems: 'center',
-                            marginTop: 10,
-                          }}>
-                          <TouchableOpacity onPress={() => handleMessage()}>
-                            <MessageIcon
-                              width={25}
-                              height={25}
-                              fill={COLORS.primary}
-                            />
-                          </TouchableOpacity>
-                          <View
-                            style={{
-                              position: 'relative',
-                              height: 2,
-                              backgroundColor: COLORS.black,
-                              width: 40,
-                              marginVertical: 15,
-                            }}
-                          />
-                          <TouchableOpacity
-                            onPress={() =>
-                              anonymous
-                                ? setError('You an account to access this!!')
-                                : null
-                            }>
-                            <CallIcon
-                              width={25}
-                              height={25}
-                              fill={COLORS.primary}
-                            />
-                          </TouchableOpacity>
-                        </View>
-                      )}
                     </View>
 
                     {/* About section */}
@@ -608,8 +504,7 @@ const Therapy = ({navigation, route}) => {
                     </View>
 
                     {/* Schedule section */}
-                    {userData.userType === 'Therapist' &&
-                    userData.id === userUid ? (
+                    {userData.userType === 'Therapist' ? (
                       <View style={styles.card}>
                         <View style={{flex: 1}}>
                           <Text style={Styles.heading2}>Schedule</Text>
@@ -711,60 +606,7 @@ const Therapy = ({navigation, route}) => {
                         )}
                       </View>
                     </View>
-
-                    {/* payment method */}
-                    <View style={styles.card}>
-                      <View
-                        style={{
-                          width: '100%',
-                          height: 'auto',
-                          display: 'flex',
-                          justifyContent: 'flex-start',
-                          paddingVertical: 10,
-                        }}>
-                        <Text style={Styles.heading2}>
-                          Select Payment Method
-                        </Text>
-                        <View
-                          style={{
-                            width: '100%',
-                            height: 'auto',
-                            display: 'flex',
-                            justifyContent: 'flex-start',
-                            paddingVertical: 10,
-                          }}>
-                          <Text
-                            style={{
-                              ...Styles.title2,
-                            }}>
-                            N/A
-                          </Text>
-                        </View>
-                      </View>
-                    </View>
                   </View>
-
-                  {/* submit button */}
-                  {userData.userType === 'Therapist' ? null : (
-                    <View style={{paddingHorizontal: 10}}>
-                      <CurvedButton
-                        text="Book Appointment"
-                        textColor={COLORS.black}
-                        style={{
-                          backgroundColor: COLORS.secondary,
-                          width: '100%',
-                          height: 50,
-                        }}
-                        onPress={() =>
-                          anonymous
-                            ? setError(
-                                'You need an account to book a an appointment!!',
-                              )
-                            : bookAppointment()
-                        }
-                      />
-                    </View>
-                  )}
                 </View>
               </ScrollView>
             </View>
@@ -774,6 +616,8 @@ const Therapy = ({navigation, route}) => {
     </Screen>
   );
 };
+
+export default TherapistProfile;
 
 // Styles
 const styles = StyleSheet.create({
@@ -844,5 +688,3 @@ const styles = StyleSheet.create({
   container: {flex: 1, padding: 16, paddingTop: 30, backgroundColor: '#fff'},
   head: {height: 40, backgroundColor: '#f1f8ff'},
 });
-
-export default Therapy;

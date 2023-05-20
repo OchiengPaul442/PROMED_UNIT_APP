@@ -29,15 +29,21 @@ const BottomModal = React.lazy(() =>
   import('../../components/Modals/BottomModal'),
 );
 
+// firebase
+import auth from '@react-native-firebase/auth';
+
 // fetch functions
 import {fetchTherapist, fetchMoreTherapist} from '../../../fireStore';
 
 const Therapy = ({navigation}) => {
   // context
-  const {setError} = useContext(AuthContext);
+  const {setError, userData} = useContext(AuthContext);
 
   // set therapist list to state
   const [therapist, setTherapist] = React.useState([]);
+
+  // current user
+  const currentUser = auth().currentUser;
 
   // set loading state
   const [Loading, setLoading] = React.useState(true);
@@ -66,6 +72,8 @@ const Therapy = ({navigation}) => {
   const toggleModal = () => {
     setModalVisible(!isModalVisible);
   };
+
+  console.log(therapist.map(item => item.key));
 
   return (
     <Screen>
@@ -118,57 +126,61 @@ const Therapy = ({navigation}) => {
                       scrollEnabled={false}
                       data={therapist}
                       keyExtractor={(item, index) => index.toString()}
-                      renderItem={({item, index}) => (
-                        <View style={{paddingHorizontal: 10}}>
-                          <Card
-                            Press={() =>
-                              navigation.navigate('Therapist', {
-                                item,
-                              })
-                            }
-                            bgColor={COLORS.lightGray}
-                            height={90}
-                            key={index}>
-                            <View
-                              style={{
-                                width: '20%',
-                                height: '100%',
-                                ...styles.image_container,
-                              }}>
-                              <Image
-                                source={{uri: item.image}}
-                                style={styles.Therapist_img}
-                              />
-                            </View>
-                            <View style={styles.Therapist_information}>
+                      renderItem={({item, index}) =>
+                        item.key === currentUser.uid ? null : (
+                          <View style={{paddingHorizontal: 10}}>
+                            <Card
+                              Press={() =>
+                                navigation.navigate('Therapist', {
+                                  item,
+                                })
+                              }
+                              bgColor={COLORS.lightGray}
+                              height={90}
+                              key={index}>
                               <View
                                 style={{
-                                  position: 'relative',
-                                  width: '100%',
-                                  height: '80%',
-                                  display: 'flex',
-                                  justifyContent: 'space-between',
+                                  width: '20%',
+                                  height: '100%',
+                                  ...styles.image_container,
                                 }}>
-                                <Text style={Styles.title}>{item.name}</Text>
-                                <Text style={Styles.text}>{item.Location}</Text>
-                                <Text style={Styles.text}>{item.title}</Text>
+                                <Image
+                                  source={{uri: item.image}}
+                                  style={styles.Therapist_img}
+                                />
                               </View>
-                            </View>
-                            <TouchableOpacity
-                              onPress={() => {
-                                setSelectedTherapist(item);
-                                toggleModal();
-                              }}
-                              style={styles.Therapist_btn}>
-                              <Menu
-                                width={30}
-                                height={30}
-                                fill={COLORS.black}
-                              />
-                            </TouchableOpacity>
-                          </Card>
-                        </View>
-                      )}
+                              <View style={styles.Therapist_information}>
+                                <View
+                                  style={{
+                                    position: 'relative',
+                                    width: '100%',
+                                    height: '80%',
+                                    display: 'flex',
+                                    justifyContent: 'space-between',
+                                  }}>
+                                  <Text style={Styles.title}>{item.name}</Text>
+                                  <Text style={Styles.text}>
+                                    {item.Location}
+                                  </Text>
+                                  <Text style={Styles.text}>{item.title}</Text>
+                                </View>
+                              </View>
+                              <TouchableOpacity
+                                onPress={() => {
+                                  setSelectedTherapist(item);
+                                  toggleModal();
+                                }}
+                                style={styles.Therapist_btn}>
+                                <Menu
+                                  width={30}
+                                  height={30}
+                                  fill={COLORS.black}
+                                />
+                              </TouchableOpacity>
+                            </Card>
+                          </View>
+                        )
+                      }
                     />
                     {Loading2 ? (
                       <View

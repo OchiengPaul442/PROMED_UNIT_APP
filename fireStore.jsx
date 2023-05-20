@@ -279,33 +279,37 @@ export async function fetchMoreTherapist(
 
 // fetch therapist schedule for the week
 export async function fetchTherapistSchedule(setLoading, item) {
-  // set loading to true
-  setLoading(true);
+  // use try-catch to handle errors
+  try {
+    // set loading to true
+    setLoading(true);
 
-  // list to hold therapist schedule
-  const therapistSchedule = [];
+    // get therapist schedule from firestore
+    // use a variable to store the query
+    const query = firestore()
+      .collection('Therapists')
+      .doc(item.key)
+      .collection('Schedule')
+      .orderBy('createdAt', 'desc');
 
-  // get therapist schedule from firestore
-  await firestore()
-    .collection('Therapists')
-    .doc(item.key)
-    .collection('Schedule')
-    .orderBy('createdAt', 'desc')
-    .get()
-    .then(querySnapshot => {
-      querySnapshot.forEach(documentSnapshot => {
-        therapistSchedule.push({
-          ...documentSnapshot.data(),
-          key: documentSnapshot.id,
-        });
-      });
-    });
+    // use await instead of then to get the data
+    const querySnapshot = await query.get();
 
-  // set loading to false
-  setLoading(false);
+    // use map instead of forEach to create a new array
+    const therapistSchedule = querySnapshot.docs.map(doc => ({
+      ...doc.data(),
+      key: doc.id,
+    }));
 
-  // return therapist schedule
-  return therapistSchedule;
+    // return therapist schedule
+    return therapistSchedule;
+  } catch (error) {
+    // handle error here
+    console.error(error);
+  } finally {
+    // set loading to false
+    setLoading(false);
+  }
 }
 
 // Confirm User Booking
@@ -596,6 +600,127 @@ export async function checkIfTherapistDetailsExists(setTherapistDetailsExists) {
         setTherapistDetailsExists(false);
       }
     });
+}
+
+// function to send a private message to therapist
+export async function sendPrivateMessage(
+  setErrorStatus,
+  setError,
+  text,
+  therapistId,
+  therapistName,
+  therapistImage,
+  userName,
+  userImage,
+  userUid,
+) {
+  // get current logged in user id
+  const uid = auth().currentUser.uid;
+
+  try {
+    // send message to firestore
+    const RefDoc = firestore()
+      .collection('Therapists')
+      .doc(therapistId)
+      .collection('PrivateMessages')
+      .doc(`${userUid}-${therapistId}`);
+
+    // check if document exists
+    const doc = await RefDoc.get();
+
+    // if document exists, update the document
+    if (doc.exists) {
+      // update document
+      await RefDoc.update({
+        messages: firestore.FieldValue.arrayUnion({
+          message: text,
+          createdAt: new Date().getTime(),
+          user: {
+            _id: uid,
+            name: userName,
+            avatar: userImage,
+          },
+        }),
+        lastMessage: text, // denormalize last message for easy access
+        lastMessageTime: new Date().getTime(), // denormalize last message time for sorting
+      });
+    } else {
+      // create document
+      await RefDoc.set({
+        messages: firestore.FieldValue.arrayUnion({
+          message: text,
+          createdAt: new Date().getTime(),
+          user: {
+            _id: uid,
+            name: userName,
+            avatar: userImage,
+          },
+        }),
+        lastMessage: text, // denormalize last message for easy access
+        lastMessageTime: new Date().getTime(), // denormalize last message time for sorting
+        therapistId: therapistId,
+        therapistName: therapistName,
+        therapistImage: therapistImage,
+        userId: userUid,
+        userName: userName,
+        userImage: userImage,
+        createdAt: new Date().getTime(),
+      });
+    }
+
+    // update user's conversations collection with therapist info
+    await firestore()
+      .collection('Users')
+      .doc(userUid)
+      .collection('Conversations')
+      .doc(therapistId)
+      .set({
+        therapistId: therapistId,
+        therapistName: therapistName,
+        therapistImage: therapistImage,
+        lastMessage: text, // denormalize last message for easy access
+        lastMessageTime: new Date().getTime(), // denormalize last message time for sorting
+      });
+  } catch (error) {
+    // set error status and message if upload fails
+    setErrorStatus('error');
+    setError(error.message);
+    console.log(error.message);
+  }
+}
+
+// funtion to fetch the list of private chats for therapist to view
+export async function fetchPrivateChats(setPrivateChats, setLoading) {
+  // use try-catch to handle errors
+  try {
+    setLoading(true);
+    // get current logged in user id
+    const uid = auth().currentUser.uid;
+
+    // fetch list of private chats
+    // use a variable to store the query
+    const query = firestore()
+      .collection('Therapists')
+      .doc(uid)
+      .collection('PrivateMessages')
+      .orderBy('lastMessageTime', 'desc');
+
+    // use await instead of onSnapshot to get the data once
+    const querySnapshot = await query.get();
+
+    // use map instead of forEach to create a new array
+    const chats = querySnapshot.docs.map(doc => ({
+      ...doc.data(),
+      key: doc.id,
+    }));
+
+    setPrivateChats(chats);
+  } catch (error) {
+    // handle error here
+    console.error(error);
+  } finally {
+    setLoading(false);
+  }
 }
 
 //-------------------------------------------------------------------------//
@@ -968,58 +1093,6 @@ export async function sendLiveChatMessage(
 
     // set error
     setError(error.message);
-  }
-}
-
-// function to fetch live chat messages
-export async function fetchLiveChatMessages(
-  setLoading,
-  setPastMessages,
-  groupdata,
-) {
-  try {
-    // Set loading to true
-    setLoading(true);
-
-    // Get current user id
-    const currentUserId = auth().currentUser.uid;
-
-    // Get the group document reference
-    const groupRef = firestore().collection('Groups').doc(groupdata.key);
-
-    // Get the number of members field from the group document
-    const numberOfMembers = await groupRef
-      .get()
-      .then(snapshot => snapshot.get('Number_of_Members'));
-
-    // Check if the current user id is in the number of members array
-    const isMember = numberOfMembers.some(
-      member => member.userId === currentUserId,
-    );
-
-    // If the current user is a member of the group, then fetch messages
-    if (isMember) {
-      // Get the messages collection reference
-      const messagesRef = groupRef.collection('Messages');
-
-      // Subscribe to the messages snapshot
-      messagesRef.orderBy('createdAt', 'desc').onSnapshot(snapshot => {
-        // Map the snapshot documents to an array of messages with key and data
-        const messages = snapshot.docs.map(doc => ({
-          key: doc.id,
-          ...doc.data(),
-        }));
-
-        // Set messages state
-        setPastMessages(messages);
-      });
-    }
-  } catch (error) {
-    // Handle error
-    console.error(error);
-  } finally {
-    // Set loading to false
-    setLoading(false);
   }
 }
 

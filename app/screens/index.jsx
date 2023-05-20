@@ -21,3 +21,6 @@ export {default as Groupchat} from './discussion/Groupchat';
 export {default as Splash} from '../components/splash/Splash';
 export {default as Groupdetails} from './discussion/Groupdetails';
 export {default as PrivateChat} from './Therapy/PrivateChat';
+export {default as PrivateChatList} from './Therapy/PrivateChatList';
+export {default as TherapistProfile} from './profile/TherapistProfile';
+export {default as PrivateChats} from './chats/PrivateChats';

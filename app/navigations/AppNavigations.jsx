@@ -20,7 +20,7 @@ import {COLORS} from '../constants'; // predefined colors for the app
 import Styles from '../constants/Styles'; // custom styles for the app
 
 // components
-import {Loader, ErrorHandle} from '../components'; // components for the loader and the error handle
+import {Loader, ErrorHandle, DetailsIcon} from '../components'; // components for the loader and the error handle
 
 // icons
 import {
@@ -55,6 +55,9 @@ import {
   Profile,
   Groupdetails,
   PrivateChat,
+  PrivateChatList,
+  TherapistProfile,
+  PrivateChats,
   // Splash,
 } from '../screens';
 
@@ -104,6 +107,20 @@ const DrawerStackScreen = () => {
       component: ProfileStackScreen,
       icon: ProfileIcon,
     },
+    // use a ternary operator to conditionally add the therapist profile item
+    userData.userType !== 'Therapist'
+      ? {
+          name: 'ClientChats',
+          label: 'Private Chats',
+          component: PrivateChatList,
+          icon: DetailsIcon,
+        }
+      : {
+          name: 'Therapist_profile',
+          label: 'Therapist Profile',
+          component: TherapistProfile,
+          icon: DetailsIcon,
+        },
     {
       name: 'Notification',
       label: 'Notification',
@@ -120,22 +137,26 @@ const DrawerStackScreen = () => {
 
   return (
     <DrawerStack.Navigator>
-      {drawers.map(drawer => (
-        <DrawerStack.Screen
-          key={drawer.name}
-          options={{
-            headerShown: false,
-            drawerLabel: () => (
-              <Text style={Styles.title2}>{drawer.label}</Text>
-            ),
-            drawerIcon: () => (
-              <drawer.icon fill={COLORS.black} width="20px" height="20px" />
-            ),
-          }}
-          name={drawer.name}
-          component={drawer.component}
-        />
-      ))}
+      {drawers.map(
+        drawer =>
+          // use a short-circuit evaluation to skip the null item
+          drawer && (
+            <DrawerStack.Screen
+              key={drawer.name}
+              options={{
+                headerShown: false,
+                drawerLabel: () => (
+                  <Text style={Styles.title2}>{drawer.label}</Text>
+                ),
+                drawerIcon: () => (
+                  <drawer.icon fill={COLORS.black} width="20px" height="20px" />
+                ),
+              }}
+              name={drawer.name}
+              component={drawer.component}
+            />
+          ),
+      )}
     </DrawerStack.Navigator>
   );
 };
@@ -193,6 +214,10 @@ const TherapyStackScreen = () => {
       <TherapyStack.Screen name="Therapist" component={TherapistScreen} />
       <TherapyStack.Screen name="Confirmation" component={ConfirmationScreen} />
       <TherapyStack.Screen name="PrivateChats" component={PrivateChat} />
+      <TherapyStack.Screen
+        name="PrivateChatsList"
+        component={PrivateChatList}
+      />
     </TherapyStack.Navigator>
   );
 };

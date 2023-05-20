@@ -2,7 +2,7 @@ import {StyleSheet} from 'react-native';
 import {COLORS, SIZES} from './';
 
 // General styles for all screens
-export default Style = StyleSheet.create({
+export default Styles = StyleSheet.create({
   // This is the main container that holds all the components
   Container: {
     width: '100%',
