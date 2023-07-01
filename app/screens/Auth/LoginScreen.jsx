@@ -17,7 +17,13 @@ import {object, string} from 'yup';
 import {Formik} from 'formik';
 
 // components
-import {RecButton, Checkbox, ViewIconeye, CloseIconeye} from '../../components';
+import {
+  RecButton,
+  Checkbox,
+  ViewIconeye,
+  CloseIconeye,
+  RoundLoadingAnimation,
+} from '../../components';
 
 // constants
 import {COLORS} from '../../constants';
@@ -38,7 +44,10 @@ let LoginValidationSchema = object({
 
 const LoginScreen = ({navigation}) => {
   // use the useContext hook to get the user data value
-  const {setUserToken, setLoading, setError} = useContext(AuthContext);
+  const {setUserToken, setError} = useContext(AuthContext);
+
+  // loading state
+  const [loading, setLoading] = React.useState(false);
 
   // inputs
   const [email, setEmail] = React.useState('');
@@ -190,13 +199,18 @@ const LoginScreen = ({navigation}) => {
 
               {/* Buttons */}
               <View style={Styles.recButton}>
-                <RecButton
-                  text="Login"
-                  bgColor={COLORS.secondary}
-                  textColor={COLORS.primary}
-                  onPress={handleSubmit}
-                  w="100%"
-                />
+                {loading ? (
+                  <RoundLoadingAnimation width={54} height={54} />
+                ) : (
+                  <RecButton
+                    text="Sign In"
+                    bgColor={COLORS.secondary}
+                    textColor={COLORS.primary}
+                    onPress={handleSubmit}
+                    w="100%"
+                  />
+                )}
+
                 <View style={Styles.separatorWrapper}>
                   <View style={Styles.separator}></View>
                   <Text style={Styles.separatorText}>OR</Text>

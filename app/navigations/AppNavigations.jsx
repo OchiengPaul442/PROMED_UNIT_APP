@@ -20,12 +20,13 @@ import {COLORS} from '../constants'; // predefined colors for the app
 import Styles from '../constants/Styles'; // custom styles for the app
 
 // components
-import {Loader, ErrorHandle} from '../components'; // components for the loader and the error handle
+import {Loader, ErrorHandle, DetailsIcon} from '../components'; // components for the loader and the error handle
 
 // icons
 import {
   Group,
   ProfileIcon,
+  ChatIcon,
   Bell,
   Home,
   Therapist,
@@ -55,6 +56,8 @@ import {
   Profile,
   Groupdetails,
   PrivateChat,
+  PrivateChatList,
+  TherapistProfile,
   // Splash,
 } from '../screens';
 
@@ -71,6 +74,7 @@ const TherapyStack = createStackNavigator();
 const GroupStack = createStackNavigator();
 const DrawerStack = createDrawerNavigator();
 const ProfileStack = createStackNavigator();
+const ChatStack = createStackNavigator();
 
 // Auth stack
 const AuthNavigation = () => {
@@ -105,6 +109,20 @@ const DrawerStackScreen = () => {
       icon: ProfileIcon,
     },
     {
+      name: 'Chat_root',
+      label: 'Private Chats',
+      component: ChatStackScreen,
+      icon: ChatIcon,
+    },
+    userData.userType !== 'Therapist'
+      ? null
+      : {
+          name: 'Therapist_profile',
+          label: 'Therapist Profile',
+          component: TherapistProfile,
+          icon: DetailsIcon,
+        },
+    {
       name: 'Notification',
       label: 'Notification',
       component: Notifications,
@@ -120,23 +138,41 @@ const DrawerStackScreen = () => {
 
   return (
     <DrawerStack.Navigator>
-      {drawers.map(drawer => (
-        <DrawerStack.Screen
-          key={drawer.name}
-          options={{
-            headerShown: false,
-            drawerLabel: () => (
-              <Text style={Styles.title2}>{drawer.label}</Text>
-            ),
-            drawerIcon: () => (
-              <drawer.icon fill={COLORS.black} width="20px" height="20px" />
-            ),
-          }}
-          name={drawer.name}
-          component={drawer.component}
-        />
-      ))}
+      {drawers.map(
+        drawer =>
+          // use a short-circuit evaluation to skip the null item
+          drawer && (
+            <DrawerStack.Screen
+              key={drawer.name}
+              options={{
+                headerShown: false,
+                drawerLabel: () => (
+                  <Text style={Styles.title2}>{drawer.label}</Text>
+                ),
+                drawerIcon: () => (
+                  <drawer.icon fill={COLORS.black} width="20px" height="20px" />
+                ),
+              }}
+              name={drawer.name}
+              component={drawer.component}
+            />
+          ),
+      )}
     </DrawerStack.Navigator>
+  );
+};
+
+// Chat stack
+const ChatStackScreen = () => {
+  return (
+    <ChatStack.Navigator
+      initialRouteName="PrivateChatList"
+      screenOptions={{
+        headerShown: false,
+      }}>
+      <ChatStack.Screen name="PrivateChatList" component={PrivateChatList} />
+      <ChatStack.Screen name="PrivateChats" component={PrivateChat} />
+    </ChatStack.Navigator>
   );
 };
 
@@ -164,12 +200,13 @@ const BottomTabs = () => {
           name={tab.name}
           component={tab.component}
           options={{
+            tabBarIconStyle: {
+              width: 30,
+              height: 30,
+              position: 'relative',
+            },
             tabBarIcon: ({focused}) => (
-              <tab.icon
-                fill={focused ? COLORS.secondary : COLORS.white}
-                width="30px"
-                height="30px"
-              />
+              <tab.icon fill={focused ? COLORS.secondary : COLORS.white} />
             ),
           }}
         />
@@ -193,6 +230,10 @@ const TherapyStackScreen = () => {
       <TherapyStack.Screen name="Therapist" component={TherapistScreen} />
       <TherapyStack.Screen name="Confirmation" component={ConfirmationScreen} />
       <TherapyStack.Screen name="PrivateChats" component={PrivateChat} />
+      <TherapyStack.Screen
+        name="PrivateChatsList"
+        component={PrivateChatList}
+      />
     </TherapyStack.Navigator>
   );
 };

@@ -1,5 +1,5 @@
 // imports
-import React, {useContext} from 'react';
+import React, {useContext, useRef} from 'react';
 import {Text, View, FlatList} from 'react-native';
 import moment from 'moment';
 
@@ -18,11 +18,15 @@ import {sendLiveChatMessage, fetchLiveChatMessages} from '../../../fireStore'; /
 
 // firebase
 import auth from '@react-native-firebase/auth'; // a module for the firebase authentication
+import firestore from '@react-native-firebase/firestore'; // a module for the firestore database
 
 // layout
 import ChatScreen from '../../layout/ChatScreen';
 
 const Groupchat = ({route, navigation}) => {
+  // SCROLL TO BOTTOM
+  const scrollRef = useRef();
+
   // get params
   const {groupdata} = route.params;
 
@@ -33,7 +37,7 @@ const Groupchat = ({route, navigation}) => {
   const currentUser = auth().currentUser;
 
   // set loading
-  const [loading, setLoading] = React.useState(false);
+  const [loading, setLoading] = React.useState(true);
 
   // text input
   const [message, setMessage] = React.useState(''); // message
@@ -51,12 +55,78 @@ const Groupchat = ({route, navigation}) => {
   };
 
   React.useEffect(() => {
-    // fetch messages
-    fetchLiveChatMessages(setLoading, setPastMessages, groupdata);
+    // get the current user id
+    const uid = auth().currentUser.uid;
+
+    // get the group document reference
+    const groupRef = firestore().collection('Groups').doc(groupdata.key);
+
+    // get the messages collection reference
+    const messagesRef = groupRef
+      .collection('Messages')
+      .orderBy('createdAt', 'desc');
+
+    // use onSnapshot to listen for changes in the group document
+    const unsubscribeGroup = groupRef.onSnapshot(
+      doc => {
+        // get the members array from the document data
+        const members = doc.data().Number_of_Members;
+
+        // get userId from members array
+        const isMember = members.some(member => member.userId === uid);
+
+        // check if the user is a member of the group
+        if (isMember) {
+          // use onSnapshot to listen for changes in the messages collection
+          const unsubscribeMessages = messagesRef.onSnapshot(
+            querySnapshot => {
+              const messages = [];
+              querySnapshot.forEach(documentSnapshot => {
+                messages.push({
+                  ...documentSnapshot.data(),
+                  key: documentSnapshot.id,
+                });
+              });
+              setPastMessages(messages);
+
+              // set loading to false
+              setLoading(false);
+
+              // scroll to bottom
+              scrollRef.current.scrollToEnd({animated: true});
+            },
+            error => {
+              // handle error here
+              console.error(error);
+            },
+          );
+
+          // detach the messages listener
+          return () => unsubscribeMessages();
+        } else {
+          // clear the past messages state if user is not a member
+          setPastMessages([]);
+
+          // set loading to false
+          setLoading(false);
+        }
+      },
+      error => {
+        // handle error here
+        console.error(error);
+
+        // set loading to false
+        setLoading(false);
+      },
+    );
+
+    // detach the group listener
+    return () => unsubscribeGroup();
   }, []);
 
   return (
     <ChatScreen
+      scrollBottom={scrollRef}
       nav={navigation}
       title={groupdata.name}
       data={groupdata}

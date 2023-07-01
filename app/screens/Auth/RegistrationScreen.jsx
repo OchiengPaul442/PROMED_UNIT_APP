@@ -23,7 +23,7 @@ import {
   Checkbox,
   ViewIconeye,
   CloseIconeye,
-  Loader,
+  RoundLoadingAnimation,
 } from '../../components';
 
 // dropdown import
@@ -62,7 +62,10 @@ let registrationValidationSchema = object({
 
 const RegistrationScreen = ({navigation}) => {
   // use the useContext hook to get the user data value
-  const {setError, setLoading} = useContext(AuthContext);
+  const {setError} = useContext(AuthContext);
+
+  // loading state
+  const [loading, setLoading] = React.useState(false);
 
   // show password
   const [showPassword, setShowPassword] = React.useState(true);
@@ -297,13 +300,17 @@ const RegistrationScreen = ({navigation}) => {
 
               {/* buttons */}
               <View style={Styles.recButton}>
-                <RecButton
-                  text="Sign Up"
-                  bgColor={isValid && agree ? COLORS.primary : COLORS.gray}
-                  textColor={COLORS.white}
-                  onPress={handleSubmit}
-                  w="100%"
-                />
+                {loading ? (
+                  <RoundLoadingAnimation width={54} height={54} />
+                ) : (
+                  <RecButton
+                    text="Sign Up"
+                    bgColor={isValid && agree ? COLORS.primary : COLORS.gray}
+                    textColor={COLORS.white}
+                    onPress={handleSubmit}
+                    w="100%"
+                  />
+                )}
                 <View style={Styles.separatorWrapper}>
                   <View style={Styles.separator}></View>
                   <Text style={Styles.separatorText}>OR</Text>

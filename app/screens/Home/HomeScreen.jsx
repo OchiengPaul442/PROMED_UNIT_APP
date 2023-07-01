@@ -226,7 +226,7 @@ const HomeScreen = ({navigation, route}) => {
                               {item.title.substring(0, 30)}
                             </Text>
                             <Text style={Styles.text}>
-                              {item.description.substring(0, 85) + '...'}
+                              {item.description.substring(0, 85, +'...')}
                             </Text>
                           </View>
                         </Card>

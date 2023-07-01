@@ -11,7 +11,7 @@ import {object, string} from 'yup';
 import {Formik} from 'formik';
 
 // components
-import {RecButton, Loader} from '../../components';
+import {RecButton, RoundLoadingAnimation} from '../../components';
 
 // constants
 import {COLORS} from '../../constants';
@@ -29,7 +29,10 @@ let passwordRecoveryValidationSchema = object({
 
 const PasswordRecovery = ({navigation}) => {
   // use the useContext hook to get the user data value
-  const {setError, setLoading} = useContext(AuthContext);
+  const {setError} = useContext(AuthContext);
+
+  // loading state
+  const [loading, setLoading] = React.useState(false);
 
   // password recovery function
   const handleRecovery = email => {
@@ -103,13 +106,17 @@ const PasswordRecovery = ({navigation}) => {
 
               {/* Buttons */}
               <View style={Styles.recButton}>
-                <RecButton
-                  text="Submit Request"
-                  bgColor={COLORS.secondary}
-                  textColor={COLORS.primary}
-                  onPress={handleSubmit}
-                  w="100%"
-                />
+                {loading ? (
+                  <RoundLoadingAnimation width={54} height={54} />
+                ) : (
+                  <RecButton
+                    text="Submit Request"
+                    bgColor={COLORS.secondary}
+                    textColor={COLORS.primary}
+                    onPress={handleSubmit}
+                    w="100%"
+                  />
+                )}
                 <View style={Styles.separatorWrapper}>
                   <View style={Styles.separator}></View>
                   <Text style={Styles.separatorText}>OR</Text>

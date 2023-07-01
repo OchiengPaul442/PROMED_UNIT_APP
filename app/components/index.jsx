@@ -55,6 +55,7 @@ export {
   TickIcon,
   CloseIcon,
   DeleteIcon,
+  ChatIcon,
 } from './icons/Icons';
 
 export {FocusedStatusBar, Checkbox};
