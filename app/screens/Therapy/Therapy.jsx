@@ -22,9 +22,6 @@ import Screen from '../../layout/Screen';
 import {AuthContext} from '../../navigations/Context/AuthContext';
 
 // lazy loading
-const DiagnosisTools = React.lazy(() =>
-  import('../../services/diagnosisTool/DiagnosisTools'),
-);
 const BottomModal = React.lazy(() =>
   import('../../components/Modals/BottomModal'),
 );
@@ -81,15 +78,6 @@ const Therapy = ({navigation}) => {
         {/* Content */}
         <View style={Styles.Content}>
           <ScrollView showsVerticalScrollIndicator={false}>
-            {/* Diagnosis Tools */}
-            <View style={styles.Heading_container}>
-              <Text style={Styles.heading}>Self Diagnosis</Text>
-              <Suspense
-                fallback={<RoundLoadingAnimation width={80} height={80} />}>
-                <DiagnosisTools />
-              </Suspense>
-            </View>
-
             {/* Therapist list */}
             <View style={styles.Therapist_Container}>
               <Text style={{paddingHorizontal: 10, ...Styles.heading}}>
@@ -192,7 +180,7 @@ const Therapy = ({navigation}) => {
                         }}>
                         <RoundLoadingAnimation width={80} height={80} />
                       </View>
-                    ) : therapist.length < 4 ? null : (
+                    ) : therapist.length < 6 ? null : (
                       <TouchableOpacity
                         onPress={() => {
                           fetchMoreTherapist(

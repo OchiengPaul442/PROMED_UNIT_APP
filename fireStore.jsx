@@ -216,7 +216,7 @@ export async function fetchTherapist(setLoading) {
   await firestore()
     .collection('Therapists')
     .orderBy('createdAt', 'desc')
-    .limit(4)
+    .limit(6)
     .get()
     .then(querySnapshot => {
       querySnapshot.forEach(documentSnapshot => {

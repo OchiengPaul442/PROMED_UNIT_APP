@@ -30,6 +30,7 @@ export {
 
 // icons
 export {
+  RetryIcon,
   DetailsIcon,
   BackBtn,
   Bell,

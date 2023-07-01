@@ -73,6 +73,7 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 'auto',
     marginTop: 10,
+    marginBottom: 180,
     display: 'flex',
     flexWrap: 'wrap',
     flexDirection: 'row',
@@ -83,8 +84,8 @@ const styles = StyleSheet.create({
   // This is the body header title
   diagnosis: {
     position: 'relative',
-    width: '48%',
-    height: 100,
+    width: '100%',
+    height: 150,
     borderRadius: 10,
     padding: 10,
     marginTop: 10,

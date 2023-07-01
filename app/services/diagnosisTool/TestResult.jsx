@@ -65,7 +65,7 @@ const TestResult = ({route, navigation}) => {
                 paddingLeft: 15,
                 paddingVertical: 15,
               }}>
-              <TouchableOpacity onPress={() => navigation.push('Therapy')}>
+              <TouchableOpacity onPress={() => navigation.push('HomeScreen')}>
                 <BackBtn width={30} height={30} fill={COLORS.primary} />
               </TouchableOpacity>
             </View>

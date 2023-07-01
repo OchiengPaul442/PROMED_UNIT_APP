@@ -4,11 +4,11 @@ import {Text, View, FlatList} from 'react-native';
 import moment from 'moment';
 
 // context
-import {AuthContext} from '../../navigations/Context/AuthContext'; // a context for the authentication state
+import {AuthContext} from '../../navigations/Context/AuthContext';
 
 // constants
-import {COLORS} from '../../constants'; // predefined colors for the app
-import Styles from '../../constants/Styles'; // custom styles for the app
+import {COLORS} from '../../constants';
+import Styles from '../../constants/Styles';
 
 // components
 import {RoundLoadingAnimation} from '../../components'; // components for the status bar, buttons, icons and loading animation
@@ -24,9 +24,6 @@ import firestore from '@react-native-firebase/firestore'; // a module for the fi
 import ChatScreen from '../../layout/ChatScreen';
 
 const Groupchat = ({route, navigation}) => {
-  // SCROLL TO BOTTOM
-  const scrollRef = useRef();
-
   // get params
   const {groupdata} = route.params;
 
@@ -78,32 +75,65 @@ const Groupchat = ({route, navigation}) => {
         // check if the user is a member of the group
         if (isMember) {
           // use onSnapshot to listen for changes in the messages collection
-          const unsubscribeMessages = messagesRef.onSnapshot(
-            querySnapshot => {
-              const messages = [];
-              querySnapshot.forEach(documentSnapshot => {
-                messages.push({
-                  ...documentSnapshot.data(),
-                  key: documentSnapshot.id,
-                });
+          const unsubscribeMessages = messagesRef.onSnapshot(querySnapshot => {
+            const messages = [];
+            querySnapshot.forEach(documentSnapshot => {
+              messages.push({
+                ...documentSnapshot.data(),
+                key: documentSnapshot.id,
               });
-              setPastMessages(messages);
+            });
+            setPastMessages(messages);
 
-              // set loading to false
-              setLoading(false);
-
-              // scroll to bottom
-              scrollRef.current.scrollToEnd({animated: true});
-            },
-            error => {
-              // handle error here
-              console.error(error);
-            },
-          );
+            // set loading to false
+            setLoading(false);
+          });
 
           // detach the messages listener
           return () => unsubscribeMessages();
         } else {
+          // use a function to unsubscribe from the group snapshot
+          const unsubscribeGroup = () => {
+            // get the members array from the document data
+            const {Number_of_Members: members} = groupRef.data();
+
+            // check if the user is a member of the group
+            const isMember = members.some(member => member.userId === uid);
+
+            // use a variable to store the messages unsubscribe function
+            let unsubscribeMessages;
+
+            // use a try-catch block to handle errors
+            try {
+              // use onSnapshot to listen for changes in the messages collection
+              unsubscribeMessages = messagesRef.onSnapshot(querySnapshot => {
+                // use map to create an array of messages with key and data
+                const messages = querySnapshot.docs.map(doc => ({
+                  ...doc.data(),
+                  key: doc.id,
+                }));
+                setPastMessages(messages);
+              });
+            } catch (error) {
+              // handle error here
+              console.error(error);
+            } finally {
+              // set loading to false
+              setLoading(false);
+            }
+
+            // return a function that detaches both listeners
+            return () => {
+              unsubscribeGroup();
+              if (isMember) {
+                unsubscribeMessages();
+              } else {
+                // clear the past messages state if user is not a member
+                setPastMessages([]);
+              }
+            };
+          };
+
           // clear the past messages state if user is not a member
           setPastMessages([]);
 
@@ -126,7 +156,6 @@ const Groupchat = ({route, navigation}) => {
 
   return (
     <ChatScreen
-      scrollBottom={scrollRef}
       nav={navigation}
       title={groupdata.name}
       data={groupdata}

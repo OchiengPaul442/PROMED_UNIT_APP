@@ -19,6 +19,9 @@ import Screen from '../../layout/Screen'; // a component for the screen layout
 import {COLORS, SIZES} from '../../constants'; // predefined colors and sizes for the app
 import {BackBtn, CurvedButton} from '../../components'; // components for the back button and the curved button
 
+import {Formik} from 'formik';
+import {object, string} from 'yup';
+
 const Test = ({route, navigation}) => {
   // handle password
   const [input1, setInput1] = React.useState('');

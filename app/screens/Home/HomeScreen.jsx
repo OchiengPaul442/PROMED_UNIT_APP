@@ -35,9 +35,14 @@ const CenterHalf = React.lazy(() =>
   import('../../components/Modals/CenterHalf'),
 );
 
+const DiagnosisTools = React.lazy(() =>
+  import('../../services/diagnosisTool/DiagnosisTools'),
+);
+
 const HomeScreen = ({navigation, route}) => {
   // use the useContext hook to get the user data value
-  const {userData, anonymous, setError} = useContext(AuthContext);
+  const {userData, anonymous, setError, takeTest, setTakeTest} =
+    useContext(AuthContext);
 
   // loading
   const [Loading, setLoading] = React.useState(false);
@@ -130,6 +135,8 @@ const HomeScreen = ({navigation, route}) => {
     return unsubscribe;
   }, []);
 
+  console.log('health tips', takeTest);
+
   return (
     <Screen>
       <View style={Styles.Container}>
@@ -155,117 +162,151 @@ const HomeScreen = ({navigation, route}) => {
         {/* Body */}
         <View style={Styles.Content}>
           <ScrollView showsVerticalScrollIndicator={false}>
-            <View style={styles.Heading_container}>
-              <Text style={Styles.heading}>How do you feel today?</Text>
-              <Text style={Styles.text2}>
-                Track Your Mood to get customized daily health tips
-              </Text>
-              {/* mood tracker */}
-              <Suspense
-                fallback={<RoundLoadingAnimation width={80} height={80} />}>
-                <MoodTracker />
-              </Suspense>
-            </View>
+            {!takeTest ? (
+              <View>
+                <View style={styles.Heading_container}>
+                  <Text style={Styles.heading}>Your Mood today</Text>
+                  {/* mood tracker */}
+                  <Suspense
+                    fallback={<RoundLoadingAnimation width={80} height={80} />}>
+                    <MoodTracker />
+                  </Suspense>
+                </View>
 
-            {/* Health tips */}
-            <View style={styles.Health_tips}>
-              <Text style={{paddingHorizontal: 10, ...Styles.heading}}>
-                Daily Mental Health Tips
-              </Text>
-              {Loading ? (
-                <View
-                  style={{
-                    width: '100%',
-                    height: 300,
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                  }}>
-                  <RoundLoadingAnimation width={100} height={100} />
-                </View>
-              ) : healthTips.length === 0 ? (
-                <View
-                  style={{
-                    width: '100%',
-                    height: 300,
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                  }}>
-                  <Text style={Styles.title2}>
-                    No health tips available at the moment
+                {/* Health tips */}
+                <View style={styles.Health_tips}>
+                  <Text style={{paddingHorizontal: 10, ...Styles.heading}}>
+                    Daily Mental Health Tips
                   </Text>
-                </View>
-              ) : (
-                <View>
-                  <FlatList
-                    style={{marginTop: 15}}
-                    scrollEnabled={false}
-                    data={healthTips}
-                    keyExtractor={(item, index) => index.toString()}
-                    renderItem={({item, index}) => (
-                      <View key={item.id} style={{paddingHorizontal: 10}}>
-                        <Card
-                          Press={() => {
-                            setSelectedTip(item);
-                            toggleModal();
-                          }}
-                          bgColor={COLORS.lightGray}
-                          height={90}>
-                          <View
-                            style={{
-                              backgroundColor: randomColor(),
-                              width: 50,
-                              height: 50,
-                              borderRadius: 50,
-                              justifyContent: 'center',
-                              alignItems: 'center',
-                            }}>
-                            <Text style={styles.Tip_Number}>{index + 1}</Text>
-                          </View>
-                          <View style={styles.Tip_Container}>
-                            <Text style={Styles.title}>
-                              {item.title.substring(0, 30)}
-                            </Text>
-                            <Text style={Styles.text}>
-                              {item.description.substring(0, 85, +'...')}
-                            </Text>
-                          </View>
-                        </Card>
-                      </View>
-                    )}
-                  />
-                  {Loading2 ? (
+                  {Loading ? (
                     <View
                       style={{
                         width: '100%',
-                        height: 'auto',
+                        height: 300,
                         justifyContent: 'center',
                         alignItems: 'center',
                       }}>
                       <RoundLoadingAnimation width={100} height={100} />
                     </View>
+                  ) : healthTips.length === 0 ? (
+                    <View
+                      style={{
+                        width: '100%',
+                        height: 300,
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                      }}>
+                      <Text style={Styles.title2}>
+                        No health tips available at the moment
+                      </Text>
+                    </View>
                   ) : (
+                    <View>
+                      <FlatList
+                        style={{marginTop: 15}}
+                        scrollEnabled={false}
+                        data={healthTips}
+                        keyExtractor={(item, index) => index.toString()}
+                        renderItem={({item, index}) => (
+                          <View key={item.id} style={{paddingHorizontal: 10}}>
+                            <Card
+                              Press={() => {
+                                setSelectedTip(item);
+                                toggleModal();
+                              }}
+                              bgColor={COLORS.lightGray}
+                              height={90}>
+                              <View
+                                style={{
+                                  backgroundColor: randomColor(),
+                                  width: 50,
+                                  height: 50,
+                                  borderRadius: 50,
+                                  justifyContent: 'center',
+                                  alignItems: 'center',
+                                }}>
+                                <Text style={styles.Tip_Number}>
+                                  {index + 1}
+                                </Text>
+                              </View>
+                              <View style={styles.Tip_Container}>
+                                <Text style={Styles.title}>
+                                  {item.title.substring(0, 30)}
+                                </Text>
+                                <Text style={Styles.text}>
+                                  {item.description.substring(0, 85, +'...')}
+                                </Text>
+                              </View>
+                            </Card>
+                          </View>
+                        )}
+                      />
+                      {Loading2 ? (
+                        <View
+                          style={{
+                            width: '100%',
+                            height: 'auto',
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                          }}>
+                          <RoundLoadingAnimation width={100} height={100} />
+                        </View>
+                      ) : (
+                        <TouchableOpacity
+                          onPress={() => {
+                            fetchMoreDailyMentalHealthTips(
+                              setLoading2,
+                              setHealthTips,
+                              healthTips,
+                              setError,
+                            );
+                          }}>
+                          <Text
+                            style={{
+                              textAlign: 'center',
+                              paddingVertical: 10,
+                              color: COLORS.red,
+                            }}>
+                            Load More
+                          </Text>
+                        </TouchableOpacity>
+                      )}
+                    </View>
+                  )}
+                </View>
+              </View>
+            ) : (
+              <View style={styles.Heading_container}>
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                  }}>
+                  <View>
+                    <Text style={Styles.heading2}>Self Diagnosis</Text>
+                  </View>
+                  <View>
                     <TouchableOpacity
                       onPress={() => {
-                        fetchMoreDailyMentalHealthTips(
-                          setLoading2,
-                          setHealthTips,
-                          healthTips,
-                          setError,
-                        );
+                        setTakeTest(false);
                       }}>
                       <Text
                         style={{
-                          textAlign: 'center',
-                          paddingVertical: 10,
                           color: COLORS.red,
+                          fontSize: 16,
                         }}>
-                        Load More
+                        Close Test
                       </Text>
                     </TouchableOpacity>
-                  )}
+                  </View>
                 </View>
-              )}
-            </View>
+                <Suspense
+                  fallback={<RoundLoadingAnimation width={80} height={80} />}>
+                  <DiagnosisTools />
+                </Suspense>
+              </View>
+            )}
           </ScrollView>
         </View>
       </View>

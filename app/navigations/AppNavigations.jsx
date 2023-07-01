@@ -75,6 +75,7 @@ const GroupStack = createStackNavigator();
 const DrawerStack = createDrawerNavigator();
 const ProfileStack = createStackNavigator();
 const ChatStack = createStackNavigator();
+const HomeStack = createStackNavigator();
 
 // Auth stack
 const AuthNavigation = () => {
@@ -180,7 +181,7 @@ const ChatStackScreen = () => {
 const BottomTabs = () => {
   //Define an array of tab icons with their names and components
   const tabs = [
-    {name: 'Home', icon: Home, component: HomeScreen},
+    {name: 'Home', icon: Home, component: HomeStackScreen},
     {name: 'Therapy_root', icon: Therapist, component: TherapyStackScreen},
     {name: 'Groups_root', icon: Group, component: GroupStackScreen},
     {name: 'Bot_root', icon: Boticon, component: Bot},
@@ -215,6 +216,22 @@ const BottomTabs = () => {
   );
 };
 
+// Home stack
+const HomeStackScreen = () => {
+  return (
+    <HomeStack.Navigator
+      initialRouteName="HomeScreen"
+      screenOptions={{
+        headerShown: false,
+      }}>
+      <HomeStack.Screen name="HomeScreen" component={HomeScreen} />
+      <HomeStack.Screen name="TestResults" component={TestResult} />
+      <HomeStack.Screen name="Terms" component={Terms} />
+      <HomeStack.Screen name="Test" component={Test} />
+    </HomeStack.Navigator>
+  );
+};
+
 // Therapy stack screen
 const TherapyStackScreen = () => {
   return (
@@ -224,9 +241,6 @@ const TherapyStackScreen = () => {
         headerShown: false,
       }}>
       <TherapyStack.Screen name="Therapy" component={Therapy} />
-      <TherapyStack.Screen name="Terms" component={Terms} />
-      <TherapyStack.Screen name="Test" component={Test} />
-      <TherapyStack.Screen name="TestResults" component={TestResult} />
       <TherapyStack.Screen name="Therapist" component={TherapistScreen} />
       <TherapyStack.Screen name="Confirmation" component={ConfirmationScreen} />
       <TherapyStack.Screen name="PrivateChats" component={PrivateChat} />
@@ -299,6 +313,7 @@ const AppNavigations = () => {
   const [anonymous, setAnonymous] = React.useState(false);
   const [userToken, setUserToken] = React.useState('');
   const [userData, setUserData] = React.useState('');
+  const [takeTest, setTakeTest] = React.useState(false);
   const [notificationCount, setNotificationCount] = React.useState(0);
 
   // get current user and user doc reference
@@ -348,6 +363,8 @@ const AppNavigations = () => {
   return (
     <AuthContext.Provider
       value={{
+        takeTest,
+        setTakeTest,
         notificationCount,
         setNotificationCount,
         user,
