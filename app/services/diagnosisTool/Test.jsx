@@ -16,61 +16,257 @@ import Styles from '../../constants/Styles'; // custom styles for the app
 import Screen from '../../layout/Screen'; // a component for the screen layout
 
 // constants
-import {COLORS, SIZES} from '../../constants'; // predefined colors and sizes for the app
+import {COLORS} from '../../constants'; // predefined colors and sizes for the app
 import {BackBtn, CurvedButton} from '../../components'; // components for the back button and the curved button
 
-import {Formik} from 'formik';
-import {object, string} from 'yup';
+import RadioForm from 'react-native-simple-radio-button';
 
 const Test = ({route, navigation}) => {
-  // handle password
-  const [input1, setInput1] = React.useState('');
-  const [input2, setInput2] = React.useState('');
-  const [input3, setInput3] = React.useState('');
-  const [input4, setInput4] = React.useState('');
-  const [input5, setInput5] = React.useState('');
-
-  // list of items in the form with their labels and placeholders for the input fields respectively using maps and their own keys
-  const formItems = [
+  const depressionQnz = [
     {
-      id: 1,
-      value: input1,
-      label: 'Have you been feeling sad or down most of the time?',
-      placeholder: '',
+      question:
+        'How often have you been bothered by feeling down, depressed, or hopeless over the past two weeks?',
+      options: [
+        {label: 'Not at all', value: 0},
+        {label: 'Several days', value: 1},
+        {label: 'More than half the days', value: 2},
+        {label: 'Nearly every day', value: 3},
+      ],
     },
     {
-      id: 2,
-      value: input2,
-      label: 'Have you lost interest in activities you used to enjoy?',
-      placeholder: '',
+      question:
+        'How often have you been bothered by little interest or pleasure in doing things over the past two weeks?',
+      options: [
+        {label: 'Not at all', value: 0},
+        {label: 'Several days', value: 1},
+        {label: 'More than half the days', value: 2},
+        {label: 'Nearly every day', value: 3},
+      ],
     },
     {
-      id: 3,
-      value: input3,
-      label:
-        'Have you been having trouble sleeping, either sleeping too much or too little?',
-      placeholder: '',
+      question:
+        'How often have you been bothered by trouble falling or staying asleep, or sleeping too much over the past two weeks?',
+      options: [
+        {label: 'Not at all', value: 0},
+        {label: 'Several days', value: 1},
+        {label: 'More than half the days', value: 2},
+        {label: 'Nearly every day', value: 3},
+      ],
     },
     {
-      id: 4,
-      value: input4,
-      label: 'Have you been feeling hopeless or helpless?',
-      placeholder: '',
+      question:
+        'How often have you been bothered by feeling tired or having little energy over the past two weeks?',
+      options: [
+        {label: 'Not at all', value: 0},
+        {label: 'Several days', value: 1},
+        {label: 'More than half the days', value: 2},
+        {label: 'Nearly every day', value: 3},
+      ],
     },
     {
-      id: 5,
-      value: input5,
-      label:
-        'Have you been experiencing changes in your appetite, either eating too much or too little?',
-      placeholder: '',
+      question:
+        'How often have you been bothered by poor appetite or overeating over the past two weeks?',
+      options: [
+        {label: 'Not at all', value: 0},
+        {label: 'Several days', value: 1},
+        {label: 'More than half the days', value: 2},
+        {label: 'Nearly every day', value: 3},
+      ],
     },
     {
-      id: 6,
-      value: input4,
-      label: 'Have you been experiencing changes in your sex drive?',
-      placeholder: '',
+      question:
+        'How often have you been bothered by feeling bad about yourself - or that you are a failure or have let yourself or your family down over the past two weeks?',
+      options: [
+        {label: 'Not at all', value: 0},
+        {label: 'Several days', value: 1},
+        {label: 'More than half the days', value: 2},
+        {label: 'Nearly every day', value: 3},
+      ],
     },
   ];
+
+  const stressQnz = [
+    {
+      question:
+        'How often have you been bothered by feeling nervous, anxious, or on edge over the past two weeks?',
+      options: [
+        {label: 'Not at all', value: 0},
+        {label: 'Several days', value: 1},
+        {label: 'More than half the days', value: 2},
+        {label: 'Nearly every day', value: 3},
+      ],
+    },
+    {
+      question:
+        'How often have you been bothered by not being able to stop or control worrying over the past two weeks?',
+      options: [
+        {label: 'Not at all', value: 0},
+        {label: 'Several days', value: 1},
+        {label: 'More than half the days', value: 2},
+        {label: 'Nearly every day', value: 3},
+      ],
+    },
+    {
+      question:
+        'How often have you been bothered by trouble relaxing over the past two weeks?',
+      options: [
+        {label: 'Not at all', value: 0},
+        {label: 'Several days', value: 1},
+        {label: 'More than half the days', value: 2},
+        {label: 'Nearly every day', value: 3},
+      ],
+    },
+    {
+      question:
+        'How often have you been bothered by becoming easily annoyed or irritable over the past two weeks?',
+      options: [
+        {label: 'Not at all', value: 0},
+        {label: 'Several days', value: 1},
+        {label: 'More than half the days', value: 2},
+        {label: 'Nearly every day', value: 3},
+      ],
+    },
+    {
+      question:
+        'How often have you been bothered by feeling afraid as if something awful might happen over the past two weeks?',
+      options: [
+        {label: 'Not at all', value: 0},
+        {label: 'Several days', value: 1},
+        {label: 'More than half the days', value: 2},
+        {label: 'Nearly every day', value: 3},
+      ],
+    },
+    {
+      question:
+        'How often have you been bothered by feeling restless or fidgety over the past two weeks?',
+      options: [
+        {label: 'Not at all', value: 0},
+        {label: 'Several days', value: 1},
+        {label: 'More than half the days', value: 2},
+        {label: 'Nearly every day', value: 3},
+      ],
+    },
+  ];
+
+  const anxietyQnz = [
+    {
+      question:
+        'How often have you been bothered by feeling nervous, anxious, or on edge over the past two weeks?',
+      options: [
+        {label: 'Not at all', value: 0},
+        {label: 'Several days', value: 1},
+        {label: 'More than half the days', value: 2},
+        {label: 'Nearly every day', value: 3},
+      ],
+    },
+    {
+      question:
+        'How often have you been bothered by not being able to stop or control worrying over the past two weeks?',
+      options: [
+        {label: 'Not at all', value: 0},
+        {label: 'Several days', value: 1},
+        {label: 'More than half the days', value: 2},
+        {label: 'Nearly every day', value: 3},
+      ],
+    },
+    {
+      question:
+        'How often have you been bothered by worrying too much about different things over the past two weeks?',
+      options: [
+        {label: 'Not at all', value: 0},
+        {label: 'Several days', value: 1},
+        {label: 'More than half the days', value: 2},
+        {label: 'Nearly every day', value: 3},
+      ],
+    },
+    {
+      question:
+        'How often have you been bothered by trouble relaxing over the past two weeks?',
+      options: [
+        {label: 'Not at all', value: 0},
+        {label: 'Several days', value: 1},
+        {label: 'More than half the days', value: 2},
+        {label: 'Nearly every day', value: 3},
+      ],
+    },
+    {
+      question:
+        'How often have you been bothered by being so restless that it is hard to sit still over the past two weeks?',
+      options: [
+        {label: 'Not at all', value: 0},
+        {label: 'Several days', value: 1},
+        {label: 'More than half the days', value: 2},
+        {label: 'Nearly every day', value: 3},
+      ],
+    },
+    {
+      question:
+        'How often have you been bothered by becoming easily annoyed or irritable over the past two weeks?',
+      options: [
+        {label: 'Not at all', value: 0},
+        {label: 'Several days', value: 1},
+        {label: 'More than half the days', value: 2},
+        {label: 'Nearly every day', value: 3},
+      ],
+    },
+  ];
+
+  const ptsdQnz = [
+    {
+      question:
+        'Have you experienced or witnessed a traumatic event that involved actual or threatened death, serious injury, or sexual violence?',
+      options: [
+        {label: 'Yes', value: 1},
+        {label: 'No', value: 0},
+      ],
+    },
+    {
+      question:
+        'Do you have recurrent, involuntary, and intrusive distressing memories of the traumatic event?',
+      options: [
+        {label: 'Yes', value: 1},
+        {label: 'No', value: 0},
+      ],
+    },
+    {
+      question:
+        'Do you have recurrent distressing dreams in which the content and/or affect of the dream are related to the traumatic event?',
+      options: [
+        {label: 'Yes', value: 1},
+        {label: 'No', value: 0},
+      ],
+    },
+    {
+      question:
+        'Do you experience dissociative reactions (e.g., flashbacks) in which the traumatic event feels like it is recurring?',
+      options: [
+        {label: 'Yes', value: 1},
+        {label: 'No', value: 0},
+      ],
+    },
+    {
+      question:
+        'Do you experience intense or prolonged psychological distress at exposure to internal or external cues that symbolize or resemble an aspect of the traumatic event?',
+      options: [
+        {label: 'Yes', value: 1},
+        {label: 'No', value: 0},
+      ],
+    },
+    {
+      question:
+        'Do you experience marked physiological reactions to internal or external cues that symbolize or resemble an aspect of the traumatic event?',
+      options: [
+        {label: 'Yes', value: 1},
+        {label: 'No', value: 0},
+      ],
+    },
+  ];
+
+  const [answers, setAnswers] = React.useState(
+    Array(depressionQnz.length).fill(''),
+  );
+
+  // console.log(answers);
 
   // get the params
   const {id, title} = route.params;
@@ -111,16 +307,111 @@ const Test = ({route, navigation}) => {
             {/* The Question section */}
             <View style={styles.diagnosis_questions}>
               <View style={styles.questionForm}>
-                {/* form items */}
-                {formItems.map(item => (
-                  <View key={item.id} style={Styles.Qgroup}>
-                    <Text style={Styles.Qlabel}>{item.label}</Text>
-                    <TextInput
-                      style={Styles.Qinput}
-                      placeholder={item.placeholder}
-                    />
-                  </View>
-                ))}
+                {title === 'Depression' &&
+                  depressionQnz.map((item, index) => (
+                    <View key={index} style={styles.fieldContainer}>
+                      <Text style={styles.question}>{item.question}</Text>
+                      <RadioForm
+                        styles={{marginVertical: 10}}
+                        radio_props={item.options}
+                        formHorizontal={false}
+                        labelHorizontal={true}
+                        initial={-1}
+                        buttonColor={COLORS.primary}
+                        selectedButtonColor={COLORS.primary}
+                        labelStyle={{fontSize: 16, color: COLORS.primary}}
+                        buttonSize={10}
+                        buttonOuterSize={20}
+                        animation={true}
+                        onPress={value => {
+                          setAnswers(prevAnswers => {
+                            const newAnswers = [...prevAnswers];
+                            newAnswers[index] = value;
+                            return newAnswers;
+                          });
+                        }}
+                      />
+                    </View>
+                  ))}
+                {title === 'Stress' &&
+                  stressQnz.map((item, index) => (
+                    <View key={index} style={styles.fieldContainer}>
+                      <Text style={styles.question}>{item.question}</Text>
+                      <RadioForm
+                        styles={{marginVertical: 10}}
+                        radio_props={item.options}
+                        formHorizontal={false}
+                        labelHorizontal={true}
+                        initial={-1}
+                        buttonColor={COLORS.primary}
+                        selectedButtonColor={COLORS.primary}
+                        labelStyle={{fontSize: 16, color: COLORS.primary}}
+                        buttonSize={10}
+                        buttonOuterSize={20}
+                        animation={true}
+                        onPress={value => {
+                          setAnswers(prevAnswers => {
+                            const newAnswers = [...prevAnswers];
+                            newAnswers[index] = value;
+                            return newAnswers;
+                          });
+                        }}
+                      />
+                    </View>
+                  ))}
+                {title === 'Anxiety' &&
+                  anxietyQnz.map((item, index) => (
+                    <View key={index} style={styles.fieldContainer}>
+                      <Text style={styles.question}>{item.question}</Text>
+                      <RadioForm
+                        styles={{marginVertical: 10}}
+                        radio_props={item.options}
+                        formHorizontal={false}
+                        labelHorizontal={true}
+                        initial={-1}
+                        buttonColor={COLORS.primary}
+                        selectedButtonColor={COLORS.primary}
+                        labelStyle={{fontSize: 16, color: COLORS.primary}}
+                        buttonSize={10}
+                        buttonOuterSize={20}
+                        animation={true}
+                        onPress={value => {
+                          setAnswers(prevAnswers => {
+                            const newAnswers = [...prevAnswers];
+                            newAnswers[index] = value;
+                            return newAnswers;
+                          });
+                        }}
+                      />
+                    </View>
+                  ))}
+                {title === 'PTSD' &&
+                  ptsdQnz.map((item, index) => (
+                    <View key={index} style={styles.fieldContainer}>
+                      <Text style={styles.question}>{item.question}</Text>
+                      <RadioForm
+                        styles={{marginVertical: 10}}
+                        radio_props={item.options}
+                        formHorizontal={false}
+                        labelHorizontal={true}
+                        initial={-1}
+                        buttonColor={COLORS.primary}
+                        selectedButtonColor={COLORS.primary}
+                        labelStyle={{fontSize: 16, color: COLORS.primary}}
+                        buttonSize={10}
+                        buttonOuterSize={20}
+                        animation={true}
+                        onPress={value => {
+                          setAnswers(prevAnswers => {
+                            const newAnswers = [...prevAnswers];
+                            newAnswers[index] = value;
+                            return newAnswers;
+                          });
+                        }}
+                      />
+                    </View>
+                  ))}
+
                 <CurvedButton
                   text="Submit"
                   textColor={COLORS.primary}
@@ -157,12 +448,44 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-
+  question: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: COLORS.black,
+    marginBottom: 10,
+  },
+  questionForm: {
+    width: '100%',
+    paddingHorizontal: 10,
+  },
   // question form
   diagnosis_questions: {
     width: '100%',
-    paddingTop: 40,
     paddingBottom: 200,
-    paddingHorizontal: 10,
+    paddingHorizontal: 15,
+  },
+
+  fieldContainer: {
+    marginTop: 20,
+  },
+  radioContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  radioOuter: {
+    height: 20,
+    width: 20,
+    borderRadius: 10,
+    borderWidth: 2,
+    borderColor: '#000',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 5,
+  },
+  radioInner: {
+    height: 10,
+    width: 10,
+    borderRadius: 5,
+    backgroundColor: '#000',
   },
 });

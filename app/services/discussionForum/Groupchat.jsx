@@ -51,109 +51,6 @@ const Groupchat = ({route, navigation}) => {
     );
   };
 
-  React.useEffect(() => {
-    // get the current user id
-    const uid = auth().currentUser.uid;
-
-    // get the group document reference
-    const groupRef = firestore().collection('Groups').doc(groupdata.key);
-
-    // get the messages collection reference
-    const messagesRef = groupRef
-      .collection('Messages')
-      .orderBy('createdAt', 'desc');
-
-    // use onSnapshot to listen for changes in the group document
-    const unsubscribeGroup = groupRef.onSnapshot(
-      doc => {
-        // get the members array from the document data
-        const members = doc.data().Number_of_Members;
-
-        // get userId from members array
-        const isMember = members.some(member => member.userId === uid);
-
-        // check if the user is a member of the group
-        if (isMember) {
-          // use onSnapshot to listen for changes in the messages collection
-          const unsubscribeMessages = messagesRef.onSnapshot(querySnapshot => {
-            const messages = [];
-            querySnapshot.forEach(documentSnapshot => {
-              messages.push({
-                ...documentSnapshot.data(),
-                key: documentSnapshot.id,
-              });
-            });
-            setPastMessages(messages);
-
-            // set loading to false
-            setLoading(false);
-          });
-
-          // detach the messages listener
-          return () => unsubscribeMessages();
-        } else {
-          // use a function to unsubscribe from the group snapshot
-          const unsubscribeGroup = () => {
-            // get the members array from the document data
-            const {Number_of_Members: members} = groupRef.data();
-
-            // check if the user is a member of the group
-            const isMember = members.some(member => member.userId === uid);
-
-            // use a variable to store the messages unsubscribe function
-            let unsubscribeMessages;
-
-            // use a try-catch block to handle errors
-            try {
-              // use onSnapshot to listen for changes in the messages collection
-              unsubscribeMessages = messagesRef.onSnapshot(querySnapshot => {
-                // use map to create an array of messages with key and data
-                const messages = querySnapshot.docs.map(doc => ({
-                  ...doc.data(),
-                  key: doc.id,
-                }));
-                setPastMessages(messages);
-              });
-            } catch (error) {
-              // handle error here
-              console.error(error);
-            } finally {
-              // set loading to false
-              setLoading(false);
-            }
-
-            // return a function that detaches both listeners
-            return () => {
-              unsubscribeGroup();
-              if (isMember) {
-                unsubscribeMessages();
-              } else {
-                // clear the past messages state if user is not a member
-                setPastMessages([]);
-              }
-            };
-          };
-
-          // clear the past messages state if user is not a member
-          setPastMessages([]);
-
-          // set loading to false
-          setLoading(false);
-        }
-      },
-      error => {
-        // handle error here
-        console.error(error);
-
-        // set loading to false
-        setLoading(false);
-      },
-    );
-
-    // detach the group listener
-    return () => unsubscribeGroup();
-  }, []);
-
   return (
     <ChatScreen
       nav={navigation}
@@ -185,19 +82,14 @@ const Groupchat = ({route, navigation}) => {
         </View>
       ) : (
         <FlatList
-          data={pastMessages}
+          data={Response}
           scrollEnabled={false}
           inverted={true}
           keyExtractor={item => item.key}
           extraData={pastMessages}
           renderItem={({item}) => (
             <View key={item.key}>
-              <Text
-                style={
-                  item.userId === currentUser.uid
-                    ? Styles.rightChat
-                    : Styles.leftChat
-                }>
+              <Text>
                 {item.message + ' '}
                 <Text style={Styles.timestamp}>
                   {moment(item.createdAt).format('h:mm a')}
