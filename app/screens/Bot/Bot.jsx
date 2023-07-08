@@ -23,12 +23,13 @@ const ChatMessage = ({sender, text}) => {
       <Text
         style={{
           fontSize: 14,
-          color: sender === 'user' ? 'black' : 'grey',
+          color: '#000',
           fontFamily: 'Montserrat-Regular',
           textAlign: sender === 'user' ? 'right' : 'left',
           padding: 10,
           borderRadius: 10,
-          backgroundColor: sender === 'user' ? '#e6e6e6' : '#f2f2f2',
+          backgroundColor:
+            sender === 'user' ? '#e6e6e6' : '#rgba(202,11, 132, 0.1)',
           margin: 10,
           width: 'auto',
         }}>
@@ -38,15 +39,11 @@ const ChatMessage = ({sender, text}) => {
   );
 };
 
-// create the main component for the bot
 const Bot = ({navigation}) => {
-  // text input
   const [text, setText] = useState('');
-  // message
   const [messages, setMessages] = useState([
     {sender: 'bot', text: 'Hello, I am a chatbot here to help you.'},
   ]);
-  // loading
   const [loading, setLoading] = useState(false);
 
   const BASE_URL = 'https://cynthias-api.onrender.com';
@@ -56,7 +53,8 @@ const Bot = ({navigation}) => {
   });
 
   const onChangeText = async () => {
-    setMessages([...messages, {sender: 'user', text}]);
+    // Add the user's message to the messages array
+    setMessages(prevMessages => [...prevMessages, {sender: 'user', text}]);
     setText('');
     setLoading(true);
     try {
@@ -68,8 +66,11 @@ const Bot = ({navigation}) => {
           },
         ],
       });
-      // keep adding the response to the messages array
-      setMessages([...messages, {sender: 'bot', text: res.data.response}]);
+      // Add the bot's response to the messages array
+      setMessages(prevMessages => [
+        ...prevMessages,
+        {sender: 'bot', text: res.data.response},
+      ]);
       setLoading(false);
     } catch (err) {
       if (err.response.status === 504) {
@@ -80,7 +81,6 @@ const Bot = ({navigation}) => {
     }
   };
 
-  // code to hide the bottom tab bar
   useFocusEffect(
     React.useCallback(() => {
       navigation.addListener('focus', () => {
@@ -100,8 +100,6 @@ const Bot = ({navigation}) => {
     }, [navigation]),
   );
 
-  console.log('ll', messages);
-
   return (
     <ChatScreen
       title="Bot"
@@ -111,7 +109,6 @@ const Bot = ({navigation}) => {
       submit={onChangeText}>
       {messages && messages.length > 0 ? (
         messages.map((message, index) => (
-          // use the custom component for each message
           <ChatMessage
             key={index}
             sender={message.sender}
@@ -120,28 +117,15 @@ const Bot = ({navigation}) => {
         ))
       ) : (
         <View>
-          <Text
-            style={{
-              fontSize: 14,
-              color: 'grey',
-              fontFamily: 'Montserrat-Regular',
-              textAlign: 'left',
-              padding: 10,
-              borderRadius: 10,
-              backgroundColor: '#f2f2f2',
-              margin: 10,
-              width: 'auto',
-            }}>
-            No responses yet
-          </Text>
+          <Text>No responses yet</Text>
         </View>
       )}
       {loading && (
         <View
           style={{
-            flex: 1,
-            justifyContent: 'center',
-            alignItems: 'center',
+            marginTop: 10,
+            marginBottom: 10,
+            padding: 10,
           }}>
           <Text>Loading...</Text>
         </View>

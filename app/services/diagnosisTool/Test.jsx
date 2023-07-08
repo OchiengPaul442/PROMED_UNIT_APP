@@ -1,23 +1,17 @@
 // imports
-import React from 'react';
-import {
-  StyleSheet,
-  Text,
-  View,
-  ScrollView,
-  TextInput,
-  TouchableOpacity,
-} from 'react-native';
+import React, {useContext} from 'react';
+import {StyleSheet, Text, View, ScrollView} from 'react-native';
+import {TouchableOpacity} from 'react-native-gesture-handler';
 
 //General styles
-import Styles from '../../constants/Styles'; // custom styles for the app
+import Styles from '../../constants/Styles';
 
 // screen
-import Screen from '../../layout/Screen'; // a component for the screen layout
+import Screen from '../../layout/Screen';
 
 // constants
-import {COLORS} from '../../constants'; // predefined colors and sizes for the app
-import {BackBtn, CurvedButton} from '../../components'; // components for the back button and the curved button
+import {COLORS} from '../../constants';
+import {BackBtn, CurvedButton} from '../../components';
 
 import RadioForm from 'react-native-simple-radio-button';
 
@@ -266,8 +260,6 @@ const Test = ({route, navigation}) => {
     Array(depressionQnz.length).fill(''),
   );
 
-  // console.log(answers);
-
   // get the params
   const {id, title} = route.params;
 
@@ -319,7 +311,7 @@ const Test = ({route, navigation}) => {
                         initial={-1}
                         buttonColor={COLORS.primary}
                         selectedButtonColor={COLORS.primary}
-                        labelStyle={{fontSize: 16, color: COLORS.primary}}
+                        labelStyle={{fontSize: 14, color: COLORS.black}}
                         buttonSize={10}
                         buttonOuterSize={20}
                         animation={true}
@@ -345,7 +337,7 @@ const Test = ({route, navigation}) => {
                         initial={-1}
                         buttonColor={COLORS.primary}
                         selectedButtonColor={COLORS.primary}
-                        labelStyle={{fontSize: 16, color: COLORS.primary}}
+                        labelStyle={{fontSize: 14, color: COLORS.black}}
                         buttonSize={10}
                         buttonOuterSize={20}
                         animation={true}
@@ -371,7 +363,7 @@ const Test = ({route, navigation}) => {
                         initial={-1}
                         buttonColor={COLORS.primary}
                         selectedButtonColor={COLORS.primary}
-                        labelStyle={{fontSize: 16, color: COLORS.primary}}
+                        labelStyle={{fontSize: 14, color: COLORS.black}}
                         buttonSize={10}
                         buttonOuterSize={20}
                         animation={true}
@@ -397,7 +389,7 @@ const Test = ({route, navigation}) => {
                         initial={-1}
                         buttonColor={COLORS.primary}
                         selectedButtonColor={COLORS.primary}
-                        labelStyle={{fontSize: 16, color: COLORS.primary}}
+                        labelStyle={{fontSize: 14, color: COLORS.black}}
                         buttonSize={10}
                         buttonOuterSize={20}
                         animation={true}
@@ -422,7 +414,13 @@ const Test = ({route, navigation}) => {
                     height: 50,
                   }}
                   onPress={() =>
-                    navigation.push('TestResults', {id: id, title: title})
+                    //  if answers is empty then return nothing
+                    answers.every(answer => answer !== '') &&
+                    navigation.push('TestResults', {
+                      id: id,
+                      title: title,
+                      answers: answers,
+                    })
                   }
                 />
               </View>

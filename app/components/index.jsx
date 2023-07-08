@@ -26,6 +26,7 @@ export {
   WellAnimation,
   RoundLoadingAnimation,
   DotBeconAnimation,
+  MentalDoctorAnimation,
 } from './animations/animations';
 
 // icons

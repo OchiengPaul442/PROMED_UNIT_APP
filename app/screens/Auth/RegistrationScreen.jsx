@@ -51,6 +51,11 @@ let registrationValidationSchema = object({
   phone: string()
     .matches(phoneRegex, 'Phone number is not valid!')
     .required('Phone number is required!'),
+  age: string()
+    .required('Age is required!')
+    .test('is-num-1-99', 'Age must be a number between 1 and 99', val => {
+      return parseInt(val) > 0 && parseInt(val) < 100;
+    }),
   password: string()
     .min(6, ({min}) => `Password must be at least ${min} characters!`)
     .required('Password is required!')
@@ -76,6 +81,7 @@ const RegistrationScreen = ({navigation}) => {
   const [phone, setPhone] = React.useState('');
   const [password, setPassword] = React.useState('');
   const [gender, setGender] = React.useState(null);
+  const [age, setAge] = React.useState('');
 
   // handle dropdown
   const [open, setOpen] = React.useState(false);
@@ -93,7 +99,7 @@ const RegistrationScreen = ({navigation}) => {
   };
 
   // create a new user using firebase authentication and add the user details to the database
-  const createUser = async (email, password, username, phone, gender) => {
+  const createUser = async (email, password, username, phone, gender, age) => {
     if (agree) {
       try {
         // set loading to true before creating the user
@@ -126,6 +132,7 @@ const RegistrationScreen = ({navigation}) => {
                     email: email,
                     phoneNumber: phone,
                     gender: gender,
+                    age: age,
                     userType: 'Client',
                     createdAt: firestore.Timestamp.fromDate(new Date()),
                     updatedAt: firestore.Timestamp.fromDate(new Date()),
@@ -173,6 +180,7 @@ const RegistrationScreen = ({navigation}) => {
         phone: '',
         password: '',
         gender: '',
+        age: '',
       }}
       validateOnMount={true}
       validationSchema={registrationValidationSchema}
@@ -183,11 +191,13 @@ const RegistrationScreen = ({navigation}) => {
           values.username,
           values.phone,
           values.gender,
+          values.age,
         );
         setEmail(values.email);
         setUsername(values.username);
         setPhone(values.phone);
         setPassword(values.password);
+        setAge(values.age);
 
         // reset the form after submission
         resetForm({values: ''});
@@ -244,6 +254,20 @@ const RegistrationScreen = ({navigation}) => {
                 )}
               </View>
               <View style={Styles.group}>
+                <Text style={Styles.label}>Age</Text>
+                <TextInput
+                  style={Styles.input}
+                  placeholder=""
+                  onBlur={handleBlur('age')}
+                  value={values.age}
+                  onChangeText={handleChange('age')}
+                />
+                {errors.age && touched.age && (
+                  <Text style={Styles.error}>{errors.age}</Text>
+                )}
+              </View>
+
+              <View style={Styles.group}>
                 <Text style={Styles.label}>Password</Text>
                 <TextInput
                   style={Styles.input}
@@ -272,7 +296,7 @@ const RegistrationScreen = ({navigation}) => {
               </View>
 
               {/* dropdown */}
-              <View style={{paddingTop: 30, paddingBottom: 20}}>
+              <View style={{paddingTop: 10, paddingBottom: 20}}>
                 <DropDownPicker
                   listMode="SCROLLVIEW"
                   showsVerticalScrollIndicator={false}

@@ -14,7 +14,7 @@ import {COLORS, SIZES} from '../../constants';
 import Styles from '../../constants/Styles';
 
 // components
-import {Card, RoundLoadingAnimation} from '../../components';
+import {Card, RoundLoadingAnimation, CloseIcon} from '../../components';
 import Screen from '../../layout/Screen';
 
 // context
@@ -134,8 +134,6 @@ const HomeScreen = ({navigation, route}) => {
 
     return unsubscribe;
   }, []);
-
-  console.log('health tips', takeTest);
 
   return (
     <Screen>
@@ -282,6 +280,8 @@ const HomeScreen = ({navigation, route}) => {
                     flexDirection: 'row',
                     justifyContent: 'space-between',
                     alignItems: 'center',
+                    marginBottom: 10,
+                    marginTop: 10,
                   }}>
                   <View>
                     <Text style={Styles.heading2}>Self Diagnosis</Text>
@@ -291,13 +291,7 @@ const HomeScreen = ({navigation, route}) => {
                       onPress={() => {
                         setTakeTest(false);
                       }}>
-                      <Text
-                        style={{
-                          color: COLORS.red,
-                          fontSize: 16,
-                        }}>
-                        Close Test
-                      </Text>
+                      <CloseIcon width={30} height={30} fill={COLORS.red} />
                     </TouchableOpacity>
                   </View>
                 </View>
