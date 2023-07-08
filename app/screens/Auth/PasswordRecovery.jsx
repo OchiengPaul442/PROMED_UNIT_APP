@@ -1,24 +1,16 @@
-import {View, Text, TextInput, KeyboardAvoidingView} from 'react-native';
 import React, {useContext} from 'react';
-// context
-import {AuthContext} from '../../navigations/Context/AuthContext';
-
-// firebase imports
+import {View, Text, TextInput, KeyboardAvoidingView} from 'react-native';
 import firebase from '@react-native-firebase/app';
-
-// yup and formik imports
 import {object, string} from 'yup';
 import {Formik} from 'formik';
 
-// components
+import {AuthContext} from '../../navigations/Context/AuthContext';
 import {RecButton, RoundLoadingAnimation} from '../../components';
-
-// constants
 import {COLORS} from '../../constants';
 import Styles from '../../constants/Styles';
-
-// layout
 import AuthScreen from '../../layout/AuthScreen';
+
+// ...
 
 // form validation schema
 let passwordRecoveryValidationSchema = object({

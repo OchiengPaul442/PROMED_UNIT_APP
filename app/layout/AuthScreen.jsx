@@ -1,20 +1,8 @@
-import {
-  View,
-  Text,
-  SafeAreaView,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-} from 'react-native';
+import {View, Text, SafeAreaView, StyleSheet, ScrollView} from 'react-native';
+import {TouchableOpacity} from 'react-native-gesture-handler';
 import React from 'react';
-
-// components
 import {FocusedStatusBar, BackBtn} from '../components';
-
-// constants
 import {COLORS} from '../constants';
-
-// navigation
 import {useNavigation} from '@react-navigation/native';
 
 const AuthScreen = props => {

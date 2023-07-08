@@ -1,43 +1,29 @@
-// imports
 import React, {useContext, Suspense} from 'react';
-import {
-  View,
-  Text,
-  ScrollView,
-  StyleSheet,
-  FlatList,
-  TouchableOpacity,
-} from 'react-native';
+import {View, Text, ScrollView, StyleSheet, FlatList} from 'react-native';
+import {TouchableOpacity} from 'react-native-gesture-handler';
 
-// constants
 import {COLORS, SIZES} from '../../constants';
 import Styles from '../../constants/Styles';
-
-// components
 import {Card, RoundLoadingAnimation, CloseIcon} from '../../components';
 import Screen from '../../layout/Screen';
-
-// context
 import {AuthContext} from '../../navigations/Context/AuthContext';
-
-// fetch functions
 import {
   fetchUserAppointments,
   fetchDailyMentalHealthTips,
   fetchMoreDailyMentalHealthTips,
 } from '../../../fireStore';
 
-// lazy loading
 const MoodTracker = React.lazy(() =>
   import('../../services/moodTracker/MoodTracker'),
 );
 const CenterHalf = React.lazy(() =>
   import('../../components/Modals/CenterHalf'),
 );
-
 const DiagnosisTools = React.lazy(() =>
   import('../../services/diagnosisTool/DiagnosisTools'),
 );
+
+// ...
 
 const HomeScreen = ({navigation, route}) => {
   // use the useContext hook to get the user data value
@@ -150,11 +136,13 @@ const HomeScreen = ({navigation, route}) => {
               <Text style={Styles.text3}>loading...</Text>
             )}
           </Text>
-          <Text style={styles.sessions}>
-            You have
-            {userAppointments ? ' ' + userAppointments + ' ' : ' 0 '}
-            Appointments
-          </Text>
+          {userData.userType === 'Client' && (
+            <Text style={styles.sessions}>
+              You have
+              {userAppointments ? ' ' + userAppointments + ' ' : ' 0 '}
+              Appointments
+            </Text>
+          )}
         </View>
 
         {/* Body */}

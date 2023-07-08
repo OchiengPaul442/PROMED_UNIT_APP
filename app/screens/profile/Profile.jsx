@@ -1,28 +1,23 @@
+import React, {useContext, Suspense} from 'react';
 import {
   StyleSheet,
   Text,
   View,
   SafeAreaView,
-  TouchableOpacity,
   Image,
   ScrollView,
   TextInput,
   KeyboardAvoidingView,
   FlatList,
 } from 'react-native';
-import React, {useContext, Suspense} from 'react';
-
-// context
-import {AuthContext} from '../../navigations/Context/AuthContext';
-
-//General styles
-import Styles from '../../constants/Styles';
-
-// yup and formik imports
+import {TouchableOpacity} from 'react-native-gesture-handler';
 import {object, string, ref} from 'yup';
 import {Formik} from 'formik';
+import CheckBox from '@react-native-community/checkbox';
+import DropDownPicker from 'react-native-dropdown-picker';
 
-// constants
+import {AuthContext} from '../../navigations/Context/AuthContext';
+import Styles from '../../constants/Styles';
 import {COLORS, ProfileMale} from '../../constants';
 import {
   FocusedStatusBar,
@@ -34,19 +29,6 @@ import {
   DeleteIcon,
   RoundLoadingAnimation,
 } from '../../components';
-
-// lazy load centerhalf modal
-const CenterHalf = React.lazy(() =>
-  import('../../components/Modals/CenterHalf'),
-);
-
-// checkbox
-import CheckBox from '@react-native-community/checkbox';
-
-// dropdown
-import DropDownPicker from 'react-native-dropdown-picker';
-
-// fetch functions
 import {
   editUserProfile,
   changeUserPassword,
@@ -57,6 +39,12 @@ import {
   fetchUserDiscussionBoards,
   getUpdatedUserData,
 } from '../../../fireStore';
+
+const CenterHalf = React.lazy(() =>
+  import('../../components/Modals/CenterHalf'),
+);
+
+// ...
 
 // min 8 characters, 1 upper case letter, 1 lower case letter, 1 numeric digit.
 const passwordRules = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$/;

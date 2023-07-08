@@ -1,15 +1,8 @@
-// imports
 import React, {useState} from 'react';
 import {View, Text, FlatList} from 'react-native';
 import {useFocusEffect} from '@react-navigation/native';
-
-// constants
-import Styles from '../../constants/Styles'; // custom styles for the app
-
-// layout
+import Styles from '../../constants/Styles';
 import ChatScreen from '../../layout/ChatScreen';
-
-// import axios
 import axios from 'axios';
 
 // create a custom component for each chat message

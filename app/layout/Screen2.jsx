@@ -1,4 +1,3 @@
-// imports
 import React from 'react';
 import {
   StyleSheet,
@@ -6,18 +5,14 @@ import {
   View,
   Keyboard,
   SafeAreaView,
-  TouchableOpacity,
   ScrollView,
   TextInput,
 } from 'react-native';
+import {TouchableOpacity} from 'react-native-gesture-handler';
 import {useFocusEffect} from '@react-navigation/native';
-
-// constants
-import {COLORS} from '../constants'; // predefined colors for the app
-import Styles from '../constants/Styles'; // custom styles for the app
-
-// components
-import {FocusedStatusBar, BackBtn, DetailsIcon} from '../components'; // components for the status bar, buttons, icons and loading animation
+import {COLORS} from '../constants';
+import Styles from '../constants/Styles';
+import {FocusedStatusBar, BackBtn, DetailsIcon} from '../components';
 
 const Screen2 = ({nav, title, data, nav_route, children}) => {
   // useFocusEffect hook

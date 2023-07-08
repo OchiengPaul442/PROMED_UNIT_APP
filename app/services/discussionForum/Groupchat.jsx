@@ -1,5 +1,5 @@
 // imports
-import React, {useContext, useRef} from 'react';
+import React, {useContext, useEffect} from 'react';
 import {Text, View, FlatList} from 'react-native';
 import moment from 'moment';
 
@@ -51,6 +51,16 @@ const Groupchat = ({route, navigation}) => {
     );
   };
 
+  useEffect(() => {
+    fetchLiveChatMessages(
+      setErrorStatus,
+      setError,
+      groupdata,
+      setPastMessages,
+      setLoading,
+    );
+  }, []);
+
   return (
     <ChatScreen
       nav={navigation}
@@ -82,14 +92,19 @@ const Groupchat = ({route, navigation}) => {
         </View>
       ) : (
         <FlatList
-          data={Response}
+          data={pastMessages}
           scrollEnabled={false}
           inverted={true}
           keyExtractor={item => item.key}
           extraData={pastMessages}
           renderItem={({item}) => (
             <View key={item.key}>
-              <Text>
+              <Text
+                style={
+                  item.userId === currentUser.uid
+                    ? Styles.rightChat
+                    : Styles.leftChat
+                }>
                 {item.message + ' '}
                 <Text style={Styles.timestamp}>
                   {moment(item.createdAt).format('h:mm a')}

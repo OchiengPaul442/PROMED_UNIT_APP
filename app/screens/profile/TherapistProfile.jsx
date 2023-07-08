@@ -143,44 +143,42 @@ const TherapistProfile = ({navigation}) => {
   };
 
   React.useEffect(() => {
-    // use async-await to handle promises
-    async function fetchTherapistData() {
-      try {
-        // get the therapist document reference
-        const therapistRef = firestore()
-          .collection('Therapists')
-          .doc(currentUser.uid);
+    // get the therapist document reference
+    const therapistRef = firestore().collection('Therapists').doc(userUid);
 
-        // use onSnapshot to listen for changes in the therapist details
-        const unsubscribe = therapistRef.onSnapshot(
-          doc => {
-            // set the details state with the updated document data
-            setDetails(doc.data());
-          },
-          error => {
-            // handle error here
-            console.error(error);
-          },
-        );
-
-        therapistRef.collection('Schedule').onSnapshot(
-          querySnapshot => {
-            // set the schedule state with an array of updated document data
-            setSchedule(querySnapshot.docs.map(doc => doc.data()));
-          },
-          error => {
-            // handle error here
-            console.error(error);
-          },
-        );
-      } catch (error) {
+    // use onSnapshot to listen for changes in the therapist details
+    const unsubscribeTherapist = therapistRef.onSnapshot(
+      doc => {
+        // set the details state with the updated document data
+        setDetails(doc.data());
+      },
+      error => {
         // handle error here
         console.error(error);
-      }
-    }
+      },
+    );
 
-    // call the fetch function
-    fetchTherapistData();
+    const unsubscribeSchedule = therapistRef.collection('Schedule').onSnapshot(
+      querySnapshot => {
+        const schedule = [];
+        querySnapshot.forEach(documentSnapshot => {
+          schedule.push({
+            ...documentSnapshot.data(),
+            key: documentSnapshot.id,
+          });
+        });
+        setSchedule(schedule);
+      },
+      error => {
+        // handle error here
+        console.error(error);
+      },
+    );
+
+    return () => {
+      unsubscribeTherapist();
+      unsubscribeSchedule();
+    };
   }, [currentUser.uid]);
 
   // radio buttons Options for time using iteration for appointmentValue array
@@ -232,7 +230,7 @@ const TherapistProfile = ({navigation}) => {
         {/* Content */}
         <Formik
           initialValues={{
-            about: details.about,
+            about: 'hello world',
           }}
           onSubmit={values => {
             editTherapistDetails(values);
@@ -241,18 +239,20 @@ const TherapistProfile = ({navigation}) => {
             <View style={Styles.Content}>
               <ScrollView showsVerticalScrollIndicator={false}>
                 <View style={styles.wrapper}>
-                  <View
-                    style={{
-                      width: '100%',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      paddingTop: 20,
-                      paddingVertical: 20,
-                      paddingHorizontal: 10,
-                    }}>
-                    <Text style={Styles.heading}>Therapist</Text>
-                  </View>
+                  {userData.userType === 'Client' && (
+                    <View
+                      style={{
+                        width: '100%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        paddingTop: 20,
+                        paddingVertical: 20,
+                        paddingHorizontal: 10,
+                      }}>
+                      <Text style={Styles.heading}>Therapist</Text>
+                    </View>
+                  )}
 
                   <View
                     style={{
@@ -263,9 +263,13 @@ const TherapistProfile = ({navigation}) => {
                       alignItems: 'center',
                       width: '100%',
                     }}>
-                    <TouchableOpacity onPress={() => navigation.goBack()}>
-                      <BackBtn width={30} height={30} fill={COLORS.primary} />
-                    </TouchableOpacity>
+                    {userData.userType === 'Client' ? (
+                      <TouchableOpacity onPress={() => navigation.goBack()}>
+                        <BackBtn width={30} height={30} fill={COLORS.primary} />
+                      </TouchableOpacity>
+                    ) : (
+                      <Text style={Styles.heading}>Therapist</Text>
+                    )}
                     {editMode ? (
                       <View
                         style={{
@@ -493,18 +497,17 @@ const TherapistProfile = ({navigation}) => {
                     </View>
 
                     {/* Schedule section */}
-                    {userData.userType === 'Therapist' ? (
+                    {userData.userType === 'Therapist' && (
                       <View style={styles.card}>
                         <View style={{flex: 1}}>
                           <Text style={Styles.heading2}>Schedule</Text>
-                          {/* table */}
                           <View style={{width: '100%', paddingVertical: 10}}>
                             {schedule.length === 0 ? (
                               <Text
                                 style={{...Styles.text, textAlign: 'center'}}>
                                 No schedule available
                               </Text>
-                            ) : !Loading ? (
+                            ) : Loading ? (
                               <Table
                                 tableHead={TABLECONTENT.tableHead}
                                 tableData={TABLECONTENT.tableData}
@@ -523,18 +526,20 @@ const TherapistProfile = ({navigation}) => {
                           </View>
                         </View>
                       </View>
-                    ) : null}
+                    )}
 
                     {/* Date picker */}
-                    <View
-                      style={{
-                        ...styles.card2,
-                      }}>
-                      <Text style={{paddingVertical: 10, ...Styles.heading2}}>
-                        Select Appointment Date
-                      </Text>
-                      <Datepicker datachange={e => setDate(e)} />
-                    </View>
+                    {userData.userType === 'Client' ? (
+                      <View
+                        style={{
+                          ...styles.card2,
+                        }}>
+                        <Text style={{paddingVertical: 10, ...Styles.heading2}}>
+                          Select Appointment Date
+                        </Text>
+                        <Datepicker datachange={e => setDate(e)} />
+                      </View>
+                    ) : null}
 
                     {/* Time picker */}
                     <View style={styles.card}>
@@ -547,7 +552,9 @@ const TherapistProfile = ({navigation}) => {
                           paddingVertical: 10,
                         }}>
                         <Text style={Styles.heading2}>
-                          Select Appointment Time
+                          {userData.userType === 'Client'
+                            ? 'Select Appointment Time'
+                            : 'Appointment Time'}
                         </Text>
                         {editMode ? (
                           appointments.map((option, index) => (
@@ -565,7 +572,7 @@ const TherapistProfile = ({navigation}) => {
                               <Text>{option.label + ' ' + 'Session'}</Text>
                             </View>
                           ))
-                        ) : (
+                        ) : userData.userType === 'Client' ? (
                           <View>
                             <Text style={{paddingBottom: 10, ...Styles.text}}>
                               select based on Therapists availability!
@@ -592,6 +599,18 @@ const TherapistProfile = ({navigation}) => {
                               />
                             </View>
                           </View>
+                        ) : details.appointmentValue ? (
+                          details.appointmentValue.map((time, index) => (
+                            <Text
+                              key={index + 1}
+                              style={{padding: 10, ...Styles.text}}>
+                              {time} Session
+                            </Text>
+                          ))
+                        ) : (
+                          <Text style={{padding: 10, ...Styles.text}}>
+                            Loading...
+                          </Text>
                         )}
                       </View>
                     </View>

@@ -42,7 +42,6 @@ export async function fetchUserDiscussionBoards() {
   return count.size;
 }
 
-// use async-await to handle promises
 export async function getUserData(setUserData, setError, user) {
   const userDocRef = firestore().collection('Users').doc(user.uid);
 
@@ -54,13 +53,21 @@ export async function getUserData(setUserData, setError, user) {
 
         // get user data from firestore using onSnapshot() method
         userDocRef.onSnapshot(documentSnapshot => {
-          // check if document exists
-          // set userData state
-          setUserData({
-            ...documentSnapshot.data(),
-            displayName,
-            photoURL,
-          });
+          // check if documentSnapshot is not null
+          if (documentSnapshot) {
+            // check if document exists
+            if (documentSnapshot.exists) {
+              // set userData state
+              setUserData({
+                ...documentSnapshot.data(),
+                displayName,
+                photoURL,
+              });
+            } else {
+              // handle case where document does not exist
+              console.error('Document does not exist');
+            }
+          }
         });
       }
     });
@@ -1128,6 +1135,71 @@ export async function sendLiveChatMessage(
 
     // set error
     setError(error.message);
+  }
+}
+
+// function to fetch live chat messages from database
+export async function fetchLiveChatMessages(
+  setErrorStatus,
+  setError,
+  groupdata,
+  setPastMessages,
+  setLoading,
+) {
+  try {
+    // set loading to true
+    setLoading(true);
+
+    // get the group document reference
+    const groupRef = firestore().collection('Groups').doc(groupdata.key);
+
+    // get the array of members
+    const members = await groupRef
+      .get()
+      .then(snapshot => snapshot.data().Number_of_Members);
+
+    // get current user data
+    const currentUser = auth().currentUser;
+
+    // check if current user is a member of the group
+    const isMember = members.some(item => item.userId === currentUser.uid);
+
+    // check if user is a member of the group
+    if (!isMember) {
+      throw new Error('You are not a member of this group');
+    }
+
+    // get all messages
+    const messages = await groupRef
+      .collection('Messages')
+      .orderBy('createdAt', 'desc')
+      .limit(20)
+      .get()
+      .then(querySnapshot => {
+        const messages = [];
+        querySnapshot.forEach(documentSnapshot => {
+          messages.push({
+            ...documentSnapshot.data(),
+            key: documentSnapshot.id,
+          });
+        });
+        return messages;
+      });
+
+    // set past messages
+    setPastMessages(messages);
+
+    // set loading to false
+    setLoading(false);
+  } catch (error) {
+    // set error status
+    setErrorStatus('error');
+
+    // set error
+    setError(error.message);
+
+    // set loading to false
+    setLoading(false);
   }
 }
 

@@ -1,36 +1,27 @@
-// imports
 import React, {useContext, Suspense} from 'react';
 import {
   View,
   Text,
   ScrollView,
   StyleSheet,
-  TouchableOpacity,
   Image,
   FlatList,
 } from 'react-native';
+import {TouchableOpacity} from 'react-native-gesture-handler';
+import auth from '@react-native-firebase/auth';
 
-// constants
 import {COLORS} from '../../constants';
 import Styles from '../../constants/Styles';
-
-// components
 import {Menu, Card, RoundLoadingAnimation} from '../../components';
 import Screen from '../../layout/Screen';
-
-// context
 import {AuthContext} from '../../navigations/Context/AuthContext';
+import {fetchTherapist, fetchMoreTherapist} from '../../../fireStore';
 
-// lazy loading
 const BottomModal = React.lazy(() =>
   import('../../components/Modals/BottomModal'),
 );
 
-// firebase
-import auth from '@react-native-firebase/auth';
-
-// fetch functions
-import {fetchTherapist, fetchMoreTherapist} from '../../../fireStore';
+// ...
 
 const Therapy = ({navigation}) => {
   // context
@@ -69,9 +60,6 @@ const Therapy = ({navigation}) => {
   const toggleModal = () => {
     setModalVisible(!isModalVisible);
   };
-
-  console.log(therapist.map(item => item.key));
-
   return (
     <Screen>
       <View style={Styles.Container}>

@@ -1,24 +1,18 @@
-// imports
 import React, {useContext} from 'react';
 import {View, Text, Image, SafeAreaView, StyleSheet} from 'react-native';
+import auth from '@react-native-firebase/auth';
 
-// context
-import {AuthContext} from '../../navigations/Context/AuthContext'; // a context for the authentication state
-
-// firebase imports
-import auth from '@react-native-firebase/auth'; // a module for the firebase authentication
-
-// components
+import {AuthContext} from '../../navigations/Context/AuthContext';
 import {
   FocusedStatusBar,
   RecButton,
   RegisterIcon,
   GuestIcon,
   SigninIcon,
-} from '../../components'; // components for the status bar, buttons and icons
+} from '../../components';
+import {COLORS, Logo} from '../../constants';
 
-// constants
-import {COLORS, Logo} from '../../constants'; // predefined colors and logo for the app
+// ...
 
 const AccessScreen = ({navigation}) => {
   // use the useContext hook to get the user data value

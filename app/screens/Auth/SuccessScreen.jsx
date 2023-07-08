@@ -1,15 +1,14 @@
-import {View, Text, SafeAreaView, StyleSheet} from 'react-native';
 import React from 'react';
+import {View, Text, SafeAreaView, StyleSheet} from 'react-native';
 
-// constants
 import {COLORS} from '../../constants';
-
-// components
 import {
   FocusedStatusBar,
   RecButton,
   ConfirmedAnimation,
 } from '../../components';
+
+// ...
 
 const SuccessScreen = ({navigation}) => {
   return (
