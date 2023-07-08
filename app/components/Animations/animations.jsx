@@ -96,3 +96,15 @@ export const DotBeconAnimation = props => {
     />
   );
 };
+
+// mental doctor
+export const MentalDoctorAnimation = props => {
+  return (
+    <Lottie
+      style={{width: props.width, height: props.height, ...props}}
+      source={require('../../assets/animations/mentalDoctor.json')}
+      autoPlay
+      loop={true}
+    />
+  );
+};

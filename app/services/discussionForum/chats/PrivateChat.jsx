@@ -38,7 +38,7 @@ const PrivateChat = ({navigation, route}) => {
     userImage,
   } = route.params;
   // SCROLL TO BOTTOM
-  const scrollRef = useRef();
+  // const scrollRef = useRef();
 
   // text input
   const [text, onChangeText] = React.useState('');
@@ -71,7 +71,7 @@ const PrivateChat = ({navigation, route}) => {
         setMessage(sortedMessages);
 
         // scroll to bottom
-        scrollRef.current.scrollToEnd({animated: true});
+        // scrollRef.current.scrollToEnd({animated: true});
       }
     });
 
@@ -99,7 +99,7 @@ const PrivateChat = ({navigation, route}) => {
 
   return (
     <ChatScreen
-      scrollBottom={scrollRef}
+      // scrollBottom={scrollRef}
       title="Private Chat"
       nav={navigation}
       text={text}

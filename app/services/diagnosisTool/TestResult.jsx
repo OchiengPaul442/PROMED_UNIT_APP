@@ -1,37 +1,104 @@
 // imports
-import React from 'react';
-import {
-  StyleSheet,
-  Text,
-  View,
-  ScrollView,
-  TouchableOpacity,
-} from 'react-native';
+import React, {useEffect, useState, useContext} from 'react';
+import {StyleSheet, Text, View, ScrollView} from 'react-native';
+import {TouchableOpacity} from 'react-native-gesture-handler';
 
 //General styles
-import Styles from '../../constants/Styles'; // custom styles for the app
+import Styles from '../../constants/Styles';
 
 // constants
-import {COLORS, SIZES} from '../../constants'; // predefined colors and sizes for the app
-import {BackBtn} from '../../components'; // a component for the back button
+import {COLORS, SIZES} from '../../constants';
+import {BackBtn, MentalDoctorAnimation} from '../../components';
 
 // screen
-import Screen from '../../layout/Screen'; // a component for the screen layout
+import Screen from '../../layout/Screen';
+
+import axios from 'axios';
 
 const TestResult = ({route, navigation}) => {
   // get params
-  const {id, title} = route.params;
+  const {id, title, answers} = route.params;
 
-  // summary item
-  const summary = [
-    {
-      test: 'Depression Test',
-      score: '60%',
-      questions_answered: '8/10',
-      partial_diagnosis: 'Mild Depression',
-      date: '12/12/2020',
-    },
-  ];
+  const [response, setResponse] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  const BASE_URL = 'https://cynthias-diagnosis-api.onrender.com';
+
+  const api = axios.create({
+    baseURL: `${BASE_URL}/predict`,
+  });
+
+  const getResponse = async () => {
+    setLoading(true);
+    try {
+      switch (title) {
+        case 'Depression':
+          const res1 = await api.post('', {
+            Schizophrenia: answers[0],
+            BipolarDisorder: answers[1],
+            EatingDisorders: answers[2],
+            AnxietyDisorders: answers[3],
+            DrugUseDisorders: answers[4],
+            AlcoholUseDisorders: answers[5],
+          });
+          setResponse(res1.data.prediction);
+          setTimeout(() => {
+            setLoading(false);
+          }, 4500);
+          break;
+        case 'Anxiety':
+          const res2 = await api.post('', {
+            Schizophrenia: answers[0],
+            BipolarDisorder: answers[1],
+            EatingDisorders: answers[2],
+            AnxietyDisorders: answers[3],
+            DrugUseDisorders: answers[4],
+            AlcoholUseDisorders: answers[5],
+          });
+          setResponse(res2.data.prediction);
+          setLoading(false);
+          break;
+        case 'Stress':
+          const res3 = await api.post('', {
+            Schizophrenia: answers[0],
+            BipolarDisorder: answers[1],
+            EatingDisorders: answers[2],
+            AnxietyDisorders: answers[3],
+            DrugUseDisorders: answers[4],
+            AlcoholUseDisorders: answers[5],
+          });
+          setResponse(res3.data.prediction);
+          setLoading(false);
+          break;
+        case 'PTSD':
+          const res4 = await api.post('', {
+            Schizophrenia: answers[0],
+            BipolarDisorder: answers[1],
+            EatingDisorders: answers[2],
+            AnxietyDisorders: answers[3],
+            DrugUseDisorders: answers[4],
+            AlcoholUseDisorders: answers[5],
+          });
+          setResponse(res4.data.prediction);
+          setLoading(false);
+          break;
+        default:
+          break;
+      }
+    } catch (error) {
+      console.log(error);
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    getResponse();
+  }, []);
+
+  // Calculate the result percentage based on the intensity of the disorder
+  const resultPercentage = Math.round(
+    (answers.reduce((acc, cur) => acc + cur, 0) / (answers.length * 3)) * 100,
+  );
 
   return (
     <Screen>
@@ -44,131 +111,183 @@ const TestResult = ({route, navigation}) => {
 
         {/* Content section */}
         <View style={Styles.Content}>
-          <ScrollView showsVerticalScrollIndicator={false}>
+          {loading ? (
             <View
               style={{
-                width: '100%',
-                paddingVertical: 10,
-                paddingHorizontal: 10,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginTop: 85,
               }}>
-              <Text
-                style={{
-                  width: '100%',
-                  textAlign: 'center',
-                  ...Styles.heading,
-                }}>
-                Test Results
-              </Text>
+              <MentalDoctorAnimation width={320} height={350} />
             </View>
-            <View
-              style={{
-                paddingLeft: 15,
-                paddingVertical: 15,
-              }}>
-              <TouchableOpacity onPress={() => navigation.push('Therapy')}>
-                <BackBtn width={30} height={30} fill={COLORS.primary} />
-              </TouchableOpacity>
-            </View>
-
-            {/* The Results section */}
-            <View style={styles.results}>
+          ) : (
+            <ScrollView showsVerticalScrollIndicator={false}>
               <View
                 style={{
-                  display: 'flex',
-                  justifyContent: 'center',
-                  alignItems: 'center',
                   width: '100%',
-                  height: '100%',
+                  paddingVertical: 10,
+                  paddingHorizontal: 10,
                 }}>
-                <View style={styles.Outer_ring}>
-                  <View style={styles.result_box}>
-                    <Text style={styles.result_percentage}>60%</Text>
+                <Text
+                  style={{
+                    width: '100%',
+                    textAlign: 'center',
+                    ...Styles.heading,
+                  }}>
+                  Test Results
+                </Text>
+              </View>
+              <View
+                style={{
+                  paddingLeft: 15,
+                  paddingVertical: 15,
+                }}>
+                <TouchableOpacity onPress={() => navigation.push('HomeScreen')}>
+                  <BackBtn width={30} height={30} fill={COLORS.primary} />
+                </TouchableOpacity>
+              </View>
+
+              {/* The Results section */}
+              <View style={styles.results}>
+                <View
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    width: '100%',
+                    height: '100%',
+                  }}>
+                  <View style={styles.Outer_ring}>
+                    <View style={styles.result_box}>
+                      <Text style={styles.result_percentage}>
+                        {resultPercentage + '%'}
+                      </Text>
+                    </View>
                   </View>
-                </View>
-                <View style={styles.summary}>
-                  <View
-                    style={{
-                      display: 'flex',
-                      justifyContent: 'flex-start',
-                      width: '100%',
-                      marginTop: 10,
-                    }}>
-                    <Text style={styles.summary_text}>Result Summary:</Text>
-                  </View>
-                  <View style={styles.summary_card_con}>
-                    <View style={styles.summary_card}>
-                      <View
-                        style={{
-                          display: 'flex',
-                          flexDirection: 'row',
-                          paddingVertical: 10,
-                        }}>
-                        <Text style={styles.summary_card_title}>Test:</Text>
-                        <Text style={styles.summary_card_text}>
-                          {summary[0].test}
-                        </Text>
-                      </View>
-                      <View
-                        style={{
-                          display: 'flex',
-                          flexDirection: 'row',
-                          paddingVertical: 10,
-                        }}>
-                        <Text style={styles.summary_card_title}>
-                          Questions answered:
-                        </Text>
-                        <Text style={styles.summary_card_text}>
-                          {summary[0].questions_answered}
-                        </Text>
-                      </View>
-                      <View
-                        style={{
-                          display: 'flex',
-                          flexDirection: 'row',
-                          paddingVertical: 10,
-                        }}>
-                        <Text style={styles.summary_card_title}>Score:</Text>
-                        <Text style={styles.summary_card_text}>
-                          {summary[0].score}
-                        </Text>
-                      </View>
-                      <View
-                        style={{
-                          display: 'flex',
-                          flexDirection: 'row',
-                          paddingVertical: 10,
-                        }}>
-                        <Text style={styles.summary_card_title}>
-                          Partial Diagnosis:
-                        </Text>
-                        <Text
+                  <View style={styles.summary}>
+                    <View
+                      style={{
+                        display: 'flex',
+                        justifyContent: 'flex-start',
+                        width: '100%',
+                        marginTop: 10,
+                      }}>
+                      <Text style={styles.summary_text}>Result Summary:</Text>
+                    </View>
+                    <View style={styles.summary_card_con}>
+                      <View style={styles.summary_card}>
+                        <View
                           style={{
-                            backgroundColor: COLORS.primary,
-                            borderRadius: 10,
-                            paddingHorizontal: 10,
+                            display: 'flex',
+                            flexDirection: 'row',
+                            paddingVertical: 10,
                           }}>
-                          {summary[0].partial_diagnosis}
-                        </Text>
-                      </View>
-                      <View
-                        style={{
-                          display: 'flex',
-                          flexDirection: 'row',
-                          paddingVertical: 10,
-                        }}>
-                        <Text style={styles.summary_card_title}>
-                          Diagnosis Date:
-                        </Text>
-                        <Text style={styles.summary_card_title}>
-                          {summary[0].date}
-                        </Text>
+                          <Text style={styles.summary_card_title}>Test:</Text>
+                          <Text style={styles.summary_card_text}>
+                            {title + ' Test'}
+                          </Text>
+                        </View>
+                        <View
+                          style={{
+                            display: 'flex',
+                            flexDirection: 'row',
+                            paddingVertical: 10,
+                          }}>
+                          <Text style={styles.summary_card_title}>
+                            Questions answered:
+                          </Text>
+                          <Text style={styles.summary_card_text}>
+                            {answers.filter(answer => answer !== '').length +
+                              '/' +
+                              answers.length}
+                          </Text>
+                        </View>
+                        <View
+                          style={{
+                            display: 'flex',
+                            flexDirection: 'row',
+                            paddingVertical: 10,
+                          }}>
+                          <Text style={styles.summary_card_title}>
+                            {title + ' level'}:
+                          </Text>
+                          <Text style={styles.summary_card_text}>
+                            {resultPercentage + '%'}
+                          </Text>
+                        </View>
+                        <View
+                          style={{
+                            display: 'flex',
+                            flexDirection: 'row',
+                            paddingVertical: 10,
+                          }}>
+                          <Text style={styles.summary_card_title}>
+                            Diagnosis:
+                          </Text>
+                          {/* based on the percentage level show different label with different background colors of need help, self care or okay and also the diagnosis from the AI */}
+                          <Text
+                            style={{
+                              borderRadius: 10,
+                              paddingHorizontal: 10,
+                              color:
+                                resultPercentage > 50
+                                  ? COLORS.white
+                                  : COLORS.black,
+                              backgroundColor:
+                                resultPercentage > 50
+                                  ? COLORS.red
+                                  : resultPercentage > 30
+                                  ? COLORS.yellow
+                                  : COLORS.green,
+                            }}>
+                            {resultPercentage > 50
+                              ? 'Need Help'
+                              : resultPercentage > 30
+                              ? 'Self Care'
+                              : 'Okay'}
+                          </Text>
+                        </View>
+                        <View
+                          style={{
+                            display: 'flex',
+                            flexDirection: 'row',
+                            paddingVertical: 10,
+                          }}>
+                          <Text style={styles.summary_card_title}>
+                            Mental state:
+                          </Text>
+                          <Text
+                            style={{
+                              color: COLORS.white,
+                              backgroundColor: COLORS.cyan,
+                              borderRadius: 10,
+                              paddingHorizontal: 10,
+                            }}>
+                            {response}
+                          </Text>
+                        </View>
+
+                        <View
+                          style={{
+                            display: 'flex',
+                            flexDirection: 'row',
+                            paddingVertical: 10,
+                          }}>
+                          <Text style={styles.summary_card_title}>
+                            Diagnosis Date:
+                          </Text>
+                          <Text style={styles.summary_card_title}>
+                            {new Date().toLocaleDateString()}
+                          </Text>
+                        </View>
                       </View>
                     </View>
                   </View>
                 </View>
               </View>
-            </View>
-          </ScrollView>
+            </ScrollView>
+          )}
         </View>
       </View>
     </Screen>

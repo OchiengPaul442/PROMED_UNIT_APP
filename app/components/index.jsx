@@ -26,10 +26,12 @@ export {
   WellAnimation,
   RoundLoadingAnimation,
   DotBeconAnimation,
+  MentalDoctorAnimation,
 } from './animations/animations';
 
 // icons
 export {
+  RetryIcon,
   DetailsIcon,
   BackBtn,
   Bell,
