@@ -1,6 +1,12 @@
 import React, {useContext} from 'react';
-import {StyleSheet, Text, View, ScrollView, SafeAreaView} from 'react-native';
-import {TouchableOpacity} from 'react-native-gesture-handler';
+import {
+  StyleSheet,
+  Text,
+  View,
+  ScrollView,
+  SafeAreaView,
+  TouchableOpacity,
+} from 'react-native';
 
 import {COLORS} from '../../constants';
 import Styles from '../../constants/Styles';

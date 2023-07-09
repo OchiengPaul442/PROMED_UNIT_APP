@@ -7,8 +7,8 @@ import {
   TextInput,
   Image,
   FlatList,
+  TouchableOpacity,
 } from 'react-native';
-import {TouchableOpacity} from 'react-native-gesture-handler';
 import auth from '@react-native-firebase/auth';
 
 import {AuthContext} from '../../navigations/Context/AuthContext';

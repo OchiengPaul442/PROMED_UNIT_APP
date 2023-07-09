@@ -7,8 +7,8 @@ import {
   StyleSheet,
   Image,
   Linking,
+  TouchableOpacity,
 } from 'react-native';
-import {TouchableOpacity} from 'react-native-gesture-handler';
 import moment from 'moment';
 import RadioGroup from 'react-native-radio-buttons-group';
 import CheckBox from '@react-native-community/checkbox';
@@ -216,7 +216,6 @@ const Therapy = ({navigation, route}) => {
 
   // handle phone call
   const handleRefCall = () => {
-    // direct to phones dialer with therapist phone number
     Linking.openURL(`tel:${details.phone}`);
   };
 

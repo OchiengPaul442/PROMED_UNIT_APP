@@ -5,8 +5,8 @@ import {
   StyleSheet,
   TextInput,
   KeyboardAvoidingView,
+  TouchableOpacity,
 } from 'react-native';
-import {TouchableOpacity} from 'react-native-gesture-handler';
 import firestore from '@react-native-firebase/firestore';
 import firebase from '@react-native-firebase/app';
 import {object, string} from 'yup';

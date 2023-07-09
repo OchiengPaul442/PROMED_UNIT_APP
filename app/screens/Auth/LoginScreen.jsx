@@ -5,8 +5,8 @@ import {
   StyleSheet,
   TextInput,
   KeyboardAvoidingView,
+  TouchableOpacity,
 } from 'react-native';
-import {TouchableOpacity} from 'react-native-gesture-handler';
 import firebase from '@react-native-firebase/app';
 import {object, string} from 'yup';
 import {Formik} from 'formik';

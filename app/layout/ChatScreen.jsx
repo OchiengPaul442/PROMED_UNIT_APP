@@ -7,8 +7,8 @@ import {
   SafeAreaView,
   ScrollView,
   TextInput,
+  TouchableOpacity,
 } from 'react-native';
-import {TouchableOpacity} from 'react-native-gesture-handler';
 import {useFocusEffect} from '@react-navigation/native';
 
 import {COLORS} from '../constants';

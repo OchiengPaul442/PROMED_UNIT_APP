@@ -1,5 +1,11 @@
-import {View, Text, SafeAreaView, StyleSheet, ScrollView} from 'react-native';
-import {TouchableOpacity} from 'react-native-gesture-handler';
+import {
+  View,
+  Text,
+  SafeAreaView,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+} from 'react-native';
 import React from 'react';
 import {FocusedStatusBar, BackBtn} from '../components';
 import {COLORS} from '../constants';

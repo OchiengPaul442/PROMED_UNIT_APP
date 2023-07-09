@@ -1,6 +1,12 @@
 import React, {useContext, Suspense} from 'react';
-import {View, Text, ScrollView, StyleSheet, FlatList} from 'react-native';
-import {TouchableOpacity} from 'react-native-gesture-handler';
+import {
+  View,
+  Text,
+  ScrollView,
+  StyleSheet,
+  FlatList,
+  TouchableOpacity,
+} from 'react-native';
 
 import {COLORS, SIZES} from '../../constants';
 import Styles from '../../constants/Styles';
@@ -50,9 +56,7 @@ const HomeScreen = ({navigation, route}) => {
   const [userAppointments, setUserAppointments] = React.useState(0);
 
   const toggleModal = () => {
-    setTimeout(() => {
-      setOpen(!open);
-    }, 500);
+    setOpen(!open);
   };
 
   // greetings function

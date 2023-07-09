@@ -9,8 +9,8 @@ import {
   TextInput,
   KeyboardAvoidingView,
   FlatList,
+  TouchableOpacity,
 } from 'react-native';
-import {TouchableOpacity} from 'react-native-gesture-handler';
 import {object, string, ref} from 'yup';
 import {Formik} from 'formik';
 import CheckBox from '@react-native-community/checkbox';

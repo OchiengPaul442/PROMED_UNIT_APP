@@ -8,6 +8,7 @@ import {
   StyleSheet,
   TouchableOpacity,
   Image,
+  Alert,
 } from 'react-native';
 import moment from 'moment';
 import RadioGroup from 'react-native-radio-buttons-group';
@@ -21,7 +22,7 @@ import {COLORS, ProfileMale} from '../../constants';
 import Styles from '../../constants/Styles';
 
 // components
-import {BackBtn, MessageIcon, EditIcon} from '../../components';
+import {BackBtn, MessageIcon, EditIcon, ViewIconeye} from '../../components';
 import Screen from '../../layout/Screen';
 
 // context
@@ -39,6 +40,10 @@ const Table = React.lazy(() => import('../../components/table/Table'));
 const Datepicker = React.lazy(() =>
   import('../../components/date&timepicker/Datepicker'),
 );
+const CenterHalf = React.lazy(() =>
+  import('../../components/Modals/CenterHalf'),
+);
+
 const TherapistProfile = ({navigation}) => {
   // context
   const {anonymous, setError, setErrorStatus, userData} =
@@ -49,6 +54,8 @@ const TherapistProfile = ({navigation}) => {
 
   // therapist details
   const [details, setDetails] = React.useState({});
+
+  const [showModal, setShowModal] = React.useState(false);
 
   // current user id
   const userUid = auth().currentUser.uid;
@@ -216,11 +223,17 @@ const TherapistProfile = ({navigation}) => {
 
   // table content
   const TABLECONTENT = {
-    tableHead: ['Day', 'Time', 'Status'],
+    tableHead: ['Day', 'Time', 'Status', 'Action'],
     tableData: schedule.map(item => [
       moment(item.date, 'YYYY/MM/DD').format('dddd'),
       item.time,
       item.status,
+      <TouchableOpacity
+        onPress={() => {
+          setShowModal(true);
+        }}>
+        <ViewIconeye width={20} height={20} />
+      </TouchableOpacity>,
     ]),
   };
 
@@ -621,6 +634,34 @@ const TherapistProfile = ({navigation}) => {
           )}
         </Formik>
       </View>
+      {/* MODAL */}
+      <CenterHalf Visibility={showModal} hide={() => setShowModal(!showModal)}>
+        <View
+          style={{
+            width: '100%',
+            height: 'auto',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}>
+          <Text style={Styles.title}>Chack</Text>
+          <Text style={{paddingVertical: 10, ...Styles.text}}>hello</Text>
+        </View>
+        <View>
+          <TouchableOpacity onPress={() => setShowModal(!showModal)}>
+            <Text
+              style={{
+                paddingVertical: 10,
+                color: COLORS.red,
+              }}>
+              Close
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => setShowModal(!showModal)}>
+            <Text>Delete Session</Text>
+          </TouchableOpacity>
+        </View>
+      </CenterHalf>
     </Screen>
   );
 };

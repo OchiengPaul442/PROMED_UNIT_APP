@@ -11,14 +11,12 @@ import {COLORS} from '../../constants';
 import Styles from '../../constants/Styles';
 
 // components
-import {RoundLoadingAnimation} from '../../components'; // components for the status bar, buttons, icons and loading animation
-
-// fetch function
-import {sendLiveChatMessage, fetchLiveChatMessages} from '../../../fireStore'; // functions to interact with the live chat messages in firestore
+import {RoundLoadingAnimation} from '../../components';
+import {sendLiveChatMessage} from '../../../fireStore';
 
 // firebase
-import auth from '@react-native-firebase/auth'; // a module for the firebase authentication
-import firestore from '@react-native-firebase/firestore'; // a module for the firestore database
+import auth from '@react-native-firebase/auth';
+import firestore from '@react-native-firebase/firestore';
 
 // layout
 import ChatScreen from '../../layout/ChatScreen';
@@ -52,14 +50,32 @@ const Groupchat = ({route, navigation}) => {
   };
 
   useEffect(() => {
-    fetchLiveChatMessages(
-      setErrorStatus,
-      setError,
-      groupdata,
-      setPastMessages,
-      setLoading,
-    );
-  }, []);
+    // fetch live chat messages
+    const unsubscribe = firestore()
+      .collection('Groups')
+      .doc(groupdata.key)
+      .collection('Messages')
+      .orderBy('createdAt', 'asc')
+      .onSnapshot(querySnapshot => {
+        const messages = [];
+        querySnapshot.forEach(documentSnapshot => {
+          messages.push({
+            ...documentSnapshot.data(),
+            key: documentSnapshot.id,
+          });
+        });
+
+        const sortedMessages = messages.sort(
+          (a, b) => b.createdAt - a.createdAt,
+        );
+
+        setPastMessages(sortedMessages);
+        setLoading(false);
+      });
+
+    // unsubscribe listener
+    return () => unsubscribe();
+  }, [message]);
 
   return (
     <ChatScreen

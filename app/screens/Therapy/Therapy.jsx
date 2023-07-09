@@ -6,8 +6,8 @@ import {
   StyleSheet,
   Image,
   FlatList,
+  TouchableOpacity,
 } from 'react-native';
-import {TouchableOpacity} from 'react-native-gesture-handler';
 import auth from '@react-native-firebase/auth';
 
 import {COLORS} from '../../constants';
@@ -60,6 +60,7 @@ const Therapy = ({navigation}) => {
   const toggleModal = () => {
     setModalVisible(!isModalVisible);
   };
+
   return (
     <Screen>
       <View style={Styles.Container}>
