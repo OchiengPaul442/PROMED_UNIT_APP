@@ -150,10 +150,26 @@ const TherapistProfile = ({navigation}) => {
     setEditMode(false);
   };
 
-  console.log(
-    'schedule---->',
-    schedule.map(item => item.client),
-  );
+  // function to fetch the therapist schedule
+  const fetchSchedule = async () => {
+    setLoading(true);
+    await firestore()
+      .collection('Therapists')
+      .doc(userUid)
+      .collection('Schedule')
+      .get()
+      .then(querySnapshot => {
+        const schedule = [];
+        querySnapshot.forEach(documentSnapshot => {
+          schedule.push({
+            ...documentSnapshot.data(),
+            key: documentSnapshot.id,
+          });
+        });
+        setSchedule(schedule);
+      });
+    setLoading(false);
+  };
 
   React.useEffect(() => {
     // get the therapist document reference
@@ -171,28 +187,9 @@ const TherapistProfile = ({navigation}) => {
       },
     );
 
-    const unsubscribeSchedule = therapistRef.collection('Schedule').onSnapshot(
-      querySnapshot => {
-        const schedule = [];
-        querySnapshot.forEach(documentSnapshot => {
-          schedule.push({
-            ...documentSnapshot.data(),
-            key: documentSnapshot.id,
-          });
-        });
-        setSchedule(schedule);
-      },
-      error => {
-        // handle error here
-        console.error(error);
-      },
-    );
-
-    return () => {
-      unsubscribeTherapist();
-      unsubscribeSchedule();
-    };
-  }, [currentUser.uid]);
+    unsubscribeTherapist();
+    fetchSchedule();
+  }, []);
 
   // radio buttons Options for time using iteration for appointmentValue array
   const radioButtons = React.useMemo(() => {
@@ -526,7 +523,7 @@ const TherapistProfile = ({navigation}) => {
                                 style={{...Styles.text, textAlign: 'center'}}>
                                 No schedule available
                               </Text>
-                            ) : Loading ? (
+                            ) : !Loading ? (
                               <Table
                                 tableHead={TABLECONTENT.tableHead}
                                 tableData={TABLECONTENT.tableData}

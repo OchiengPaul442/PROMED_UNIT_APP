@@ -26,6 +26,7 @@ export async function fetchUserAppointments() {
   // return the number of sessions
   return count.size;
 }
+
 export async function getUserData(setUserData, setError, user) {
   const userDocRef = firestore().collection('Users').doc(user.uid);
 
@@ -886,28 +887,6 @@ export async function deleteUserAccount(
     // set error message using error code and message from firebase
     setError(`Something went wrong! (${error.code}: ${error.message})`);
   }
-}
-
-// function to return live test results from DB
-export async function fetchLiveTestResults() {
-  // list to hold live test results
-  const liveTestResults = [];
-
-  // get live test results from firestore
-  await firestore()
-    .collection('Results')
-    .get()
-    .then(querySnapshot => {
-      querySnapshot.forEach(documentSnapshot => {
-        liveTestResults.push({
-          ...documentSnapshot.data(),
-          key: documentSnapshot.id,
-        });
-      });
-    });
-
-  // return live test results
-  return liveTestResults;
 }
 
 //-------------------------------------------------------------------------//

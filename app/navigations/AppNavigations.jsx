@@ -379,7 +379,7 @@ const AppNavigations = () => {
         setErrorStatus,
       }}>
       {/* Display */}
-      {userToken ? <DrawerStackScreen /> : <AuthNavigation />}
+      {user && user.uid ? <DrawerStackScreen /> : <AuthNavigation />}
       {/* <DrawerStackScreen /> */}
 
       {/* Loader */}

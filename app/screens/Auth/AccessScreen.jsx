@@ -28,10 +28,8 @@ const AccessScreen = ({navigation}) => {
       .then(() => {
         // set loading to false
         setLoading(false);
-        // set the user token to the anonymous user id
-        setUserToken(auth().currentUser.uid);
         // set the user data to the anonymous user data
-        setUserData('');
+        setUserData(null);
         // set anonymous to true
         setAnonymous(true);
       })

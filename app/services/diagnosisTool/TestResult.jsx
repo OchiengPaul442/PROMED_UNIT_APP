@@ -40,8 +40,7 @@ const TestResult = ({route, navigation}) => {
   // send the data to the firestore database for storage new collection called Results if it doesn't exist already
   const sendToFireStore = async () => {
     const user = auth().currentUser;
-    const uid = user.uid;
-    const docRef = firestore().collection('Results').doc(uid);
+    const docRef = firestore().collection('Results').doc(user.uid);
     const doc = await docRef.get();
     if (!doc.exists) {
       await docRef.set({

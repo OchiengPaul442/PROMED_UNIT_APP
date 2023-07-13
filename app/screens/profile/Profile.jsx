@@ -100,6 +100,9 @@ const Profile = ({navigation}) => {
     setLoading,
   } = useContext(AuthContext);
 
+  // current user
+  const currentUserUid = auth().currentUser.uid;
+
   // edit mode
   const [editMode, setEditMode] = React.useState(false);
 
@@ -282,23 +285,20 @@ const Profile = ({navigation}) => {
     );
   };
 
-  const [Groups, setGroups] = React.useState();
-
   React.useEffect(() => {
     // check if therapist details exists
     checkIfTherapistDetailsExists(setTherapistDetailsExists);
 
     // fetch test results
-    fetchLiveTestResults()
-      .then(results => {
-        setTestResults(results);
-      })
-      .catch(e => {
-        // set the test results to 0
-        setTestResults(0);
-
-        // set the error
-        setError(e.message);
+    firestore()
+      .collection('Results')
+      .doc(currentUserUid)
+      .onSnapshot(documentSnapshot => {
+        if (documentSnapshot.exists) {
+          setTestResults(documentSnapshot.data());
+        } else {
+          setTestResults(0);
+        }
       });
 
     // fetch the user appointments
@@ -375,27 +375,23 @@ const Profile = ({navigation}) => {
                       </View>
                       <Text style={Styles.text2}>Appointments</Text>
                     </View>
-                    {testResults.length > 0 ? (
-                      testResults.map((result, index) => (
-                        <View key={index} style={styles.card_container}>
-                          <View style={{width: 100, ...styles.card}}>
-                            <Text
-                              style={{
-                                textAlign: 'center',
-                                ...Styles.heading2,
-                              }}>
-                              {result
-                                ? result.response.Accuracy_score.toFixed(2) *
-                                    100 +
-                                  '%'
-                                : '0%'}
-                            </Text>
-                          </View>
-                          <Text style={Styles.text2}>
-                            {result.title} Test Score
+                    {testResults ? (
+                      <View style={styles.card_container}>
+                        <View style={{width: 100, ...styles.card}}>
+                          <Text
+                            style={{
+                              textAlign: 'center',
+                              ...Styles.heading2,
+                            }}>
+                            {testResults.response.Accuracy_score.toFixed(2) *
+                              100 +
+                              '%'}
                           </Text>
                         </View>
-                      ))
+                        <Text style={Styles.text2}>
+                          {testResults.title} Test Score
+                        </Text>
+                      </View>
                     ) : (
                       <View style={styles.card_container}>
                         <View style={{width: 100, ...styles.card}}>

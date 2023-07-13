@@ -134,13 +134,13 @@ const HomeScreen = ({navigation, route}) => {
           <Text style={styles.username}>
             {anonymous ? (
               'guest user'
-            ) : userData.userName ? (
+            ) : userData ? (
               userData.userName
             ) : (
               <Text style={Styles.text3}>loading...</Text>
             )}
           </Text>
-          {userData.userType === 'Client' && (
+          {userData && userData.userType === 'Client' && (
             <Text style={styles.sessions}>
               You have
               {userAppointments ? ' ' + userAppointments + ' ' : ' 0 '}
