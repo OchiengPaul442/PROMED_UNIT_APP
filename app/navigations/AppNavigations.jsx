@@ -165,26 +165,28 @@ const ChatStackScreen = () => {
   );
 };
 
-//Bottom nav stack
 const BottomTabs = () => {
   // use the useContext hook to get the user data value
-  const {userData} = React.useContext(AuthContext);
+  const {userData, anonymous} = React.useContext(AuthContext);
 
   //Define an array of tab icons with their names and components
-  const tabs = [
+  let tabs = [
     {name: 'Home', icon: Home, component: HomeStackScreen},
     {
       name: 'Therapy_root',
       icon: Therapist,
-
       component:
-        userData.userType !== 'Therapist'
+        userData && userData.userType !== 'Therapist'
           ? TherapyStackScreen
           : TherapistProfile,
     },
     {name: 'Groups_root', icon: Group, component: GroupStackScreen},
-    {name: 'Bot_root', icon: Boticon, component: Bot},
   ];
+
+  // Only add the Bot_root tab if anonymous is false
+  if (!anonymous) {
+    tabs.push({name: 'Bot_root', icon: Boticon, component: Bot});
+  }
 
   return (
     <BottomTabStack.Navigator
@@ -287,10 +289,10 @@ const HandleLogout = () => {
     auth()
       .signOut()
       .then(() => {
-        // set the user token to null
-        setUserToken('');
-        // set the user data to null
-        setUserData('');
+        // set user token to null
+        setUserToken(null);
+        // set user data to null
+        setUserData(null);
         // set anonymous to false
         setAnonymous(false);
       })
@@ -317,7 +319,7 @@ const AppNavigations = () => {
   const user = auth().currentUser;
 
   React.useEffect(() => {
-    if (userToken && user) {
+    if (user) {
       getUserData(setUserData, setError, user);
     }
 
@@ -377,8 +379,8 @@ const AppNavigations = () => {
         setErrorStatus,
       }}>
       {/* Display */}
-      {/* {userToken ? <DrawerStackScreen /> : <AuthNavigation />} */}
-      <DrawerStackScreen />
+      {userToken ? <DrawerStackScreen /> : <AuthNavigation />}
+      {/* <DrawerStackScreen /> */}
 
       {/* Loader */}
       <Loader loading={loading} />

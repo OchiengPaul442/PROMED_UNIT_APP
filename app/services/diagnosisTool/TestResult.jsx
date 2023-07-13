@@ -20,6 +20,10 @@ import Screen from '../../layout/Screen';
 
 import axios from 'axios';
 
+// fireStore
+import firestore from '@react-native-firebase/firestore';
+import auth from '@react-native-firebase/auth';
+
 const TestResult = ({route, navigation}) => {
   // get params
   const {id, title, answers} = route.params;
@@ -32,6 +36,31 @@ const TestResult = ({route, navigation}) => {
   const api = axios.create({
     baseURL: `${BASE_URL}/predict`,
   });
+
+  // send the data to the firestore database for storage new collection called Results if it doesn't exist already
+  const sendToFireStore = async () => {
+    const user = auth().currentUser;
+    const uid = user.uid;
+    const docRef = firestore().collection('Results').doc(uid);
+    const doc = await docRef.get();
+    if (!doc.exists) {
+      await docRef.set({
+        id,
+        title,
+        answers,
+        response: response,
+        createdAt: firestore.FieldValue.serverTimestamp(),
+      });
+    } else {
+      await docRef.update({
+        id,
+        title,
+        answers,
+        response: response,
+        createdAt: firestore.FieldValue.serverTimestamp(),
+      });
+    }
+  };
 
   const getResponse = async () => {
     setLoading(true);
@@ -46,10 +75,10 @@ const TestResult = ({route, navigation}) => {
             DrugUseDisorders: answers[4],
             AlcoholUseDisorders: answers[5],
           });
-          setResponse(res1.data.prediction);
+          setResponse(res1.data);
           setTimeout(() => {
             setLoading(false);
-          }, 4500);
+          }, 2500);
           break;
         case 'Anxiety':
           const res2 = await api.post('', {
@@ -60,7 +89,7 @@ const TestResult = ({route, navigation}) => {
             DrugUseDisorders: answers[4],
             AlcoholUseDisorders: answers[5],
           });
-          setResponse(res2.data.prediction);
+          setResponse(res2.data);
           setLoading(false);
           break;
         case 'Stress':
@@ -72,7 +101,7 @@ const TestResult = ({route, navigation}) => {
             DrugUseDisorders: answers[4],
             AlcoholUseDisorders: answers[5],
           });
-          setResponse(res3.data.prediction);
+          setResponse(res3.data);
           setLoading(false);
           break;
         case 'PTSD':
@@ -84,7 +113,7 @@ const TestResult = ({route, navigation}) => {
             DrugUseDisorders: answers[4],
             AlcoholUseDisorders: answers[5],
           });
-          setResponse(res4.data.prediction);
+          setResponse(res4.data);
           setLoading(false);
           break;
         default:
@@ -96,14 +125,19 @@ const TestResult = ({route, navigation}) => {
     }
   };
 
+  // send the data to the firestore database for storage if response is not null
+  if (response) {
+    sendToFireStore();
+  }
+
   useEffect(() => {
     getResponse();
   }, []);
 
   // Calculate the result percentage based on the intensity of the disorder
-  const resultPercentage = Math.round(
-    (answers.reduce((acc, cur) => acc + cur, 0) / (answers.length * 3)) * 100,
-  );
+  // const resultPercentage = Math.round(
+  //   (answers.reduce((acc, cur) => acc + cur, 0) / (answers.length * 3)) * 100,
+  // );
 
   return (
     <Screen>
@@ -166,7 +200,9 @@ const TestResult = ({route, navigation}) => {
                   <View style={styles.Outer_ring}>
                     <View style={styles.result_box}>
                       <Text style={styles.result_percentage}>
-                        {resultPercentage + '%'}
+                        {response
+                          ? response.Accuracy_score.toFixed(2) * 100 + '%'
+                          : '0%'}
                       </Text>
                     </View>
                   </View>
@@ -218,7 +254,9 @@ const TestResult = ({route, navigation}) => {
                             {title + ' level'}:
                           </Text>
                           <Text style={styles.summary_card_text}>
-                            {resultPercentage + '%'}
+                            {response
+                              ? response.Accuracy_score.toFixed(2) * 100 + '%'
+                              : '0%'}
                           </Text>
                         </View>
                         <View
@@ -230,27 +268,35 @@ const TestResult = ({route, navigation}) => {
                           <Text style={styles.summary_card_title}>
                             Diagnosis:
                           </Text>
-                          {/* based on the percentage level show different label with different background colors of need help, self care or okay and also the diagnosis from the AI */}
                           <Text
                             style={{
                               borderRadius: 10,
                               paddingHorizontal: 10,
                               color:
-                                resultPercentage > 50
-                                  ? COLORS.white
+                                response !== null
+                                  ? response.Accuracy_score.toFixed(2) * 100 >
+                                    50
+                                    ? COLORS.white
+                                    : COLORS.black
                                   : COLORS.black,
                               backgroundColor:
-                                resultPercentage > 50
-                                  ? COLORS.red
-                                  : resultPercentage > 30
-                                  ? COLORS.yellow
+                                response !== null
+                                  ? response.Accuracy_score.toFixed(2) * 100 >
+                                    50
+                                    ? COLORS.red
+                                    : response.Accuracy_score.toFixed(2) * 100 >
+                                      30
+                                    ? COLORS.yellow
+                                    : COLORS.green
                                   : COLORS.green,
                             }}>
-                            {resultPercentage > 50
-                              ? 'Need Help'
-                              : resultPercentage > 30
-                              ? 'Self Care'
-                              : 'Okay'}
+                            {response !== null
+                              ? response.Accuracy_score.toFixed(2) * 100 > 50
+                                ? 'Need Help'
+                                : response.Accuracy_score.toFixed(2) * 100 > 30
+                                ? 'Self Care'
+                                : 'Okay'
+                              : 'loading Diagnosis...'}
                           </Text>
                         </View>
                         <View
@@ -264,12 +310,14 @@ const TestResult = ({route, navigation}) => {
                           </Text>
                           <Text
                             style={{
+                              width: 'auto',
+                              flex: 1,
                               color: COLORS.white,
                               backgroundColor: COLORS.cyan,
                               borderRadius: 10,
                               paddingHorizontal: 10,
                             }}>
-                            {response}
+                            {response && response.prediction}
                           </Text>
                         </View>
 

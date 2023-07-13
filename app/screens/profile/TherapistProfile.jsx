@@ -67,6 +67,7 @@ const TherapistProfile = ({navigation}) => {
 
   // set schedule
   const [schedule, setSchedule] = React.useState([]);
+  const [resultData, setResultData] = React.useState([]);
 
   // set edit mode
   const [editMode, setEditMode] = React.useState(false);
@@ -149,6 +150,11 @@ const TherapistProfile = ({navigation}) => {
     setEditMode(false);
   };
 
+  console.log(
+    'schedule---->',
+    schedule.map(item => item.client),
+  );
+
   React.useEffect(() => {
     // get the therapist document reference
     const therapistRef = firestore().collection('Therapists').doc(userUid);
@@ -223,17 +229,17 @@ const TherapistProfile = ({navigation}) => {
 
   // table content
   const TABLECONTENT = {
-    tableHead: ['Day', 'Time', 'Status', 'Action'],
+    tableHead: ['Day', 'Time', 'Status'],
     tableData: schedule.map(item => [
       moment(item.date, 'YYYY/MM/DD').format('dddd'),
       item.time,
       item.status,
-      <TouchableOpacity
-        onPress={() => {
-          setShowModal(true);
-        }}>
-        <ViewIconeye width={20} height={20} />
-      </TouchableOpacity>,
+      // <TouchableOpacity
+      //   onPress={() => {
+      //     setShowModal(true);
+      //   }}>
+      //   <ViewIconeye width={20} height={20} />
+      // </TouchableOpacity>,
     ]),
   };
 
@@ -644,21 +650,52 @@ const TherapistProfile = ({navigation}) => {
             justifyContent: 'center',
             alignItems: 'center',
           }}>
-          <Text style={Styles.title}>Chack</Text>
-          <Text style={{paddingVertical: 10, ...Styles.text}}>hello</Text>
+          <Text
+            style={{
+              ...Styles.title,
+              display: 'flex',
+              flexDirection: 'row',
+              width: '100%',
+            }}>
+            User Brief Report
+          </Text>
+          <View
+            style={{
+              width: '100%',
+            }}>
+            <Text style={{marginTop: 15, ...Styles.text}}>
+              Test taken: Depression
+            </Text>
+            <Text style={{paddingVertical: 5, ...Styles.text}}>
+              Depression Level: 80%
+            </Text>
+          </View>
         </View>
-        <View>
+        <View
+          style={{
+            width: '100%',
+            display: 'flex',
+            flexDirection: 'row',
+            justifyContent: 'flex-end',
+          }}>
+          <TouchableOpacity
+            style={{
+              marginRight: 10,
+            }}>
+            <Text
+              style={{
+                color: 'green',
+              }}>
+              Cancel Session
+            </Text>
+          </TouchableOpacity>
           <TouchableOpacity onPress={() => setShowModal(!showModal)}>
             <Text
               style={{
-                paddingVertical: 10,
                 color: COLORS.red,
               }}>
               Close
             </Text>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => setShowModal(!showModal)}>
-            <Text>Delete Session</Text>
           </TouchableOpacity>
         </View>
       </CenterHalf>

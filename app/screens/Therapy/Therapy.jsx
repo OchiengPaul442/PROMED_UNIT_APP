@@ -104,7 +104,7 @@ const Therapy = ({navigation}) => {
                       data={therapist}
                       keyExtractor={(item, index) => index.toString()}
                       renderItem={({item, index}) =>
-                        item.key === currentUser.uid ? null : (
+                        item.key === currentUser?.uid ? null : (
                           <View style={{paddingHorizontal: 10}}>
                             <Card
                               Press={() =>
@@ -159,6 +159,7 @@ const Therapy = ({navigation}) => {
                         )
                       }
                     />
+
                     {Loading2 ? (
                       <View
                         style={{

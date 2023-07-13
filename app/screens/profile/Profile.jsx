@@ -36,9 +36,13 @@ import {
   uploadTherapistDetailsToFirestore,
   checkIfTherapistDetailsExists,
   fetchUserAppointments,
-  fetchUserDiscussionBoards,
   getUpdatedUserData,
+  fetchLiveTestResults,
 } from '../../../fireStore';
+
+// fireStore
+import firestore from '@react-native-firebase/firestore';
+import auth from '@react-native-firebase/auth';
 
 const CenterHalf = React.lazy(() =>
   import('../../components/Modals/CenterHalf'),
@@ -106,7 +110,7 @@ const Profile = ({navigation}) => {
   const [userAppointments, setUserAppointments] = React.useState(0);
 
   // get the user discussion boards
-  const [userDiscussionBoards, setUserDiscussionBoards] = React.useState(0);
+  const [userDiscussionBoards, setUserDiscussionBoards] = React.useState();
 
   // show password
   const [showPassword1, setShowPassword1] = React.useState(true);
@@ -124,6 +128,7 @@ const Profile = ({navigation}) => {
   const [title, setTitle] = React.useState('');
   const [workplace, setWorkplace] = React.useState('');
   const [about, setAbout] = React.useState('');
+  const [testResults, setTestResults] = React.useState(0);
 
   // dropdown
   const [open, setOpen] = React.useState(false);
@@ -277,18 +282,20 @@ const Profile = ({navigation}) => {
     );
   };
 
+  const [Groups, setGroups] = React.useState();
+
   React.useEffect(() => {
     // check if therapist details exists
     checkIfTherapistDetailsExists(setTherapistDetailsExists);
 
-    // fetch number of discussion boards joined
-    fetchUserDiscussionBoards()
-      .then(count => {
-        setUserDiscussionBoards(count);
+    // fetch test results
+    fetchLiveTestResults()
+      .then(results => {
+        setTestResults(results);
       })
       .catch(e => {
-        // set the user discussion boards to 0
-        setUserDiscussionBoards(0);
+        // set the test results to 0
+        setTestResults(0);
 
         // set the error
         setError(e.message);
@@ -356,10 +363,9 @@ const Profile = ({navigation}) => {
                       width: '100%',
                       height: 'auto',
                       display: 'flex',
-                      flexDirection: 'row',
+                      flexWrap: 'wrap',
                       justifyContent: 'space-between',
-                      alignItems: 'center',
-                      marginBottom: 15,
+                      flexDirection: 'row',
                     }}>
                     <View style={styles.card_container}>
                       <View style={{width: 100, ...styles.card}}>
@@ -369,22 +375,38 @@ const Profile = ({navigation}) => {
                       </View>
                       <Text style={Styles.text2}>Appointments</Text>
                     </View>
-                    <View style={styles.card_container}>
-                      <View style={{width: 100, ...styles.card}}>
-                        <Text style={{textAlign: 'center', ...Styles.heading2}}>
-                          {anonymous ? 'N/A' : userDiscussionBoards}
-                        </Text>
+                    {testResults.length > 0 ? (
+                      testResults.map((result, index) => (
+                        <View key={index} style={styles.card_container}>
+                          <View style={{width: 100, ...styles.card}}>
+                            <Text
+                              style={{
+                                textAlign: 'center',
+                                ...Styles.heading2,
+                              }}>
+                              {result
+                                ? result.response.Accuracy_score.toFixed(2) *
+                                    100 +
+                                  '%'
+                                : '0%'}
+                            </Text>
+                          </View>
+                          <Text style={Styles.text2}>
+                            {result.title} Test Score
+                          </Text>
+                        </View>
+                      ))
+                    ) : (
+                      <View style={styles.card_container}>
+                        <View style={{width: 100, ...styles.card}}>
+                          <Text
+                            style={{textAlign: 'center', ...Styles.heading2}}>
+                            {'N/A'}
+                          </Text>
+                        </View>
+                        <Text style={Styles.text2}>Test score</Text>
                       </View>
-                      <Text style={Styles.text2}>Communities Joined</Text>
-                    </View>
-                    <View style={styles.card_container}>
-                      <View style={{width: 100, ...styles.card}}>
-                        <Text style={{textAlign: 'center', ...Styles.heading2}}>
-                          {anonymous ? 'N/A' : '0%'}
-                        </Text>
-                      </View>
-                      <Text style={Styles.text2}>Recent Test score</Text>
-                    </View>
+                    )}
                   </View>
                   {/* personal details */}
                   <View
