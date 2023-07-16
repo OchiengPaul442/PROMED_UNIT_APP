@@ -1,34 +1,18 @@
 import React, {useRef} from 'react';
-import {View, Text, FlatList} from 'react-native';
+import {View, Text, FlatList, Image, StyleSheet} from 'react-native';
 import moment from 'moment';
-
-// context
-import {AuthContext} from '../../../navigations/Context/AuthContext'; // a context for the authentication state
-
-// constants
-import {COLORS} from '../../../constants'; // predefined colors for the app
-import Styles from '../../../constants/Styles'; // custom styles for the app
-
-// components
-import {RoundLoadingAnimation} from '../../../components'; // components for the status bar, buttons, icons and loading animation
-
-//layout
+import {AuthContext} from '../../../navigations/Context/AuthContext';
+import {COLORS} from '../../../constants';
+import Styles from '../../../constants/Styles';
+import {RoundLoadingAnimation} from '../../../components';
 import ChatScreen from '../../../layout/ChatScreen';
-
-// firebase
 import auth from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
-
 import {sendPrivateMessage} from '../../../../fireStore';
 
 const PrivateChat = ({navigation, route}) => {
-  // context
   const {setErrorStatus, setError} = React.useContext(AuthContext);
-
-  // current user
-  const currentuser = auth().currentUser;
-
-  // get params
+  const currentUser = auth().currentUser;
   const {
     therapistId,
     userUid,
@@ -37,49 +21,25 @@ const PrivateChat = ({navigation, route}) => {
     userName,
     userImage,
   } = route.params;
-  // SCROLL TO BOTTOM
-  // const scrollRef = useRef();
-
-  // text input
   const [text, onChangeText] = React.useState('');
-
-  // message
   const [message, setMessage] = React.useState([]);
+  const [loading, setLoading] = React.useState(true);
+  const [userData, setUserData] = React.useState([]);
 
-  // use useEffect hook to fetch messages on component mount
-  React.useEffect(() => {
-    // create a reference to the document that contains the messages
-    const RefDoc = firestore()
-      .collection('Therapists')
-      .doc(therapistId)
-      .collection('PrivateMessages')
-      .doc(`${userUid}-${therapistId}`);
-
-    // attach a listener to get the current data and listen for updates
-    const unsubscribe = RefDoc.onSnapshot(doc => {
-      // check if document exists
-      if (doc.exists) {
-        // extract the messages array from the document data
-        const messagesData = doc.data().messages;
-
-        // sort the messages by timestamp in descending order
-        const sortedMessages = messagesData.sort(
-          (a, b) => b.createdAt - a.createdAt,
-        );
-
-        // update the state variable with the sorted messages array
-        setMessage(sortedMessages);
-
-        // scroll to bottom
-        // scrollRef.current.scrollToEnd({animated: true});
-      }
+  const getUserData = async () => {
+    setLoading(true);
+    const users = [];
+    const querySnapshot = await firestore().collection('Users').get();
+    querySnapshot.forEach(documentSnapshot => {
+      users.push({
+        ...documentSnapshot.data(),
+        key: documentSnapshot.id,
+      });
     });
+    setUserData(users);
+    setLoading(false);
+  };
 
-    // unsubscribe when unmounting
-    return () => unsubscribe();
-  }, [therapistId, userUid]);
-
-  // handle private chat
   const handlePrivateChat = () => {
     sendPrivateMessage(
       setErrorStatus,
@@ -97,15 +57,44 @@ const PrivateChat = ({navigation, route}) => {
     onChangeText('');
   };
 
+  React.useEffect(() => {
+    getUserData();
+
+    const RefDoc = firestore()
+      .collection('Therapists')
+      .doc(therapistId)
+      .collection('PrivateMessages')
+      .doc(`${userUid}-${therapistId}`);
+
+    const unsubscribe = RefDoc.onSnapshot(doc => {
+      setLoading(true);
+      if (doc.exists) {
+        const messagesData = doc.data().messages;
+        setMessage(messagesData);
+      }
+      setLoading(false);
+    });
+    return () => unsubscribe();
+  }, [therapistId, userUid]);
+
   return (
     <ChatScreen
-      // scrollBottom={scrollRef}
       title="Private Chat"
       nav={navigation}
       text={text}
       setMess={onChangeText}
       submit={handlePrivateChat}>
-      {message.length === 0 ? (
+      {loading ? (
+        <View
+          style={{
+            flex: 1,
+            justifyContent: 'center',
+            alignItems: 'center',
+            paddingVertical: 20,
+          }}>
+          <RoundLoadingAnimation width={80} height={80} />
+        </View>
+      ) : message.length === 0 ? (
         <View
           style={{
             flex: 1,
@@ -118,29 +107,143 @@ const PrivateChat = ({navigation, route}) => {
       ) : (
         <FlatList
           data={message}
-          keyExtractor={(item, index) => index.toString()}
           scrollEnabled={false}
-          inverted={true}
-          showsVerticalScrollIndicator={false}
-          renderItem={({item, index}) => (
-            <View key={index}>
-              <Text
-                style={
-                  item.user._id === currentuser.uid
-                    ? Styles.rightChat
-                    : Styles.leftChat
-                }>
-                {item.message + ' '}
-                <Text style={Styles.timestamp}>
-                  {moment(item.createdAt).format('h:mm a')}
-                </Text>
-              </Text>
-            </View>
-          )}
+          inverted={false}
+          keyExtractor={item => item.key}
+          extraData={message}
+          renderItem={({item, index}) =>
+            userData.length > 0 &&
+            userData.map(data => {
+              if (item.user._id === data.key)
+                return (
+                  <View
+                    key={index}
+                    style={
+                      currentUser.uid === item.user._id
+                        ? styles.containerRight
+                        : styles.container
+                    }>
+                    {currentUser.uid === item.user._id ? null : (
+                      <Image
+                        source={{uri: data.photoURL}}
+                        style={
+                          currentUser.uid === item.user._id
+                            ? styles.photoRight
+                            : styles.photo
+                        }
+                      />
+                    )}
+                    <View
+                      style={
+                        currentUser.uid === item.user._id
+                          ? styles.messageContainerRight
+                          : styles.messageContainer
+                      }>
+                      <Text
+                        style={
+                          currentUser.uid === item.userId
+                            ? styles.userNameRight
+                            : styles.userName
+                        }>
+                        {data.userName}
+                      </Text>
+                      <Text
+                        style={
+                          currentUser.uid === item.user._id
+                            ? styles.messageRight
+                            : styles.message
+                        }>
+                        {item.message}
+                      </Text>
+                      <Text
+                        style={
+                          currentUser.uid === item.user._id
+                            ? styles.timeRight
+                            : styles.time
+                        }>
+                        {moment(item.createdAt).format('h:mm a')}
+                      </Text>
+                    </View>
+                  </View>
+                );
+            })
+          }
         />
       )}
     </ChatScreen>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flexDirection: 'row',
+    marginVertical: 8,
+  },
+  containerRight: {
+    flexDirection: 'row-reverse',
+    marginVertical: 8,
+  },
+  photo: {
+    width: 20,
+    height: 20,
+    borderRadius: 20,
+    marginRight: 8,
+  },
+  photoRight: {
+    width: 20,
+    height: 20,
+    borderRadius: 20,
+    marginLeft: 8,
+  },
+  messageContainer: {
+    // flex: 1,
+    width: 'auto',
+    marginRight: 17,
+    backgroundColor: '#DCF8C6',
+    borderRadius: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+  },
+  messageContainerRight: {
+    // flex: 1,
+    width: 'auto',
+    marginRight: 10,
+    backgroundColor: '#ECECEC',
+    borderRadius: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+  },
+
+  userName: {
+    fontWeight: 'bold',
+    marginBottom: 4,
+    color: COLORS.black,
+  },
+  userNameRight: {
+    textAlign: 'right',
+    fontWeight: 'bold',
+    marginBottom: 4,
+    color: COLORS.primary,
+  },
+  message: {
+    marginBottom: 4,
+    flexWrap: 'wrap',
+  },
+  messageRight: {
+    textAlign: 'right',
+    marginBottom: 4,
+    flexWrap: 'wrap',
+  },
+  time: {
+    alignSelf: 'flex-end',
+    color: '#808080',
+    fontSize: 12,
+  },
+  timeRight: {
+    alignSelf: 'flex-start',
+    color: '#808080',
+    fontSize: 12,
+  },
+});
 
 export default PrivateChat;

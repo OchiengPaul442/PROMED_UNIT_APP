@@ -125,6 +125,10 @@ const RegistrationScreen = ({navigation}) => {
                     gender: gender,
                     age: age,
                     userType: 'Client',
+                    photoURL:
+                      `https://source.unsplash.com/collection/139386/160x160/?sig=${Math.floor(
+                        Math.random() * 1000,
+                      )}` || ProfileMale,
                     createdAt: firestore.Timestamp.fromDate(new Date()),
                     updatedAt: firestore.Timestamp.fromDate(new Date()),
                   });

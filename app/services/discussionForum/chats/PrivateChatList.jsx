@@ -41,7 +41,7 @@ const PrivateChatList = ({navigation}) => {
     } else {
       fetchPrivateChats(setPrivateChats, setLoading);
     }
-  }, []);
+  }, [userData.userType]);
 
   return (
     <Screen2

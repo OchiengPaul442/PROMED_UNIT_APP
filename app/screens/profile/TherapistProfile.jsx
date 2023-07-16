@@ -48,28 +48,14 @@ const TherapistProfile = ({navigation}) => {
   // context
   const {anonymous, setError, setErrorStatus, userData} =
     useContext(AuthContext);
-
-  // set loading state
   const [Loading, setLoading] = React.useState(true);
-
-  // therapist details
   const [details, setDetails] = React.useState({});
-
   const [showModal, setShowModal] = React.useState(false);
-
-  // current user id
   const userUid = auth().currentUser.uid;
   const currentUser = auth().currentUser;
-
-  // time and date
   const [date, setDate] = React.useState('');
   const [time, setTime] = React.useState('');
-
-  // set schedule
   const [schedule, setSchedule] = React.useState([]);
-  const [resultData, setResultData] = React.useState([]);
-
-  // set edit mode
   const [editMode, setEditMode] = React.useState(false);
 
   // dropdown
@@ -171,23 +157,20 @@ const TherapistProfile = ({navigation}) => {
     setLoading(false);
   };
 
+  // function to fetch the therapist details
+  const fetchDetails = async () => {
+    setLoading(true);
+    await firestore()
+      .collection('Therapists')
+      .doc(userUid)
+      .onSnapshot(documentSnapshot => {
+        setDetails(documentSnapshot.data());
+      });
+    setLoading(false);
+  };
+
   React.useEffect(() => {
-    // get the therapist document reference
-    const therapistRef = firestore().collection('Therapists').doc(userUid);
-
-    // use onSnapshot to listen for changes in the therapist details
-    const unsubscribeTherapist = therapistRef.onSnapshot(
-      doc => {
-        // set the details state with the updated document data
-        setDetails(doc.data());
-      },
-      error => {
-        // handle error here
-        console.error(error);
-      },
-    );
-
-    unsubscribeTherapist();
+    fetchDetails();
     fetchSchedule();
   }, []);
 
@@ -222,7 +205,7 @@ const TherapistProfile = ({navigation}) => {
     }
 
     return options;
-  }, [details.appointmentValue]);
+  }, []);
 
   // table content
   const TABLECONTENT = {
@@ -244,395 +227,425 @@ const TherapistProfile = ({navigation}) => {
     <Screen>
       <View style={Styles.Container}>
         {/* Content */}
+
         <Formik
           initialValues={{
-            about: 'hello world',
+            about: details ? details.about : '',
           }}
           onSubmit={values => {
             editTherapistDetails(values);
           }}>
           {({handleChange, handleBlur, handleSubmit, values}) => (
             <View style={Styles.Content}>
-              <ScrollView showsVerticalScrollIndicator={false}>
-                <View style={styles.wrapper}>
-                  {userData.userType === 'Client' && (
+              {details ? (
+                <ScrollView showsVerticalScrollIndicator={false}>
+                  <View style={styles.wrapper}>
+                    {userData.userType === 'Client' && (
+                      <View
+                        style={{
+                          width: '100%',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          paddingTop: 20,
+                          paddingVertical: 20,
+                          paddingHorizontal: 10,
+                        }}>
+                        <Text style={Styles.heading}>Therapist</Text>
+                      </View>
+                    )}
+
                     <View
                       style={{
-                        width: '100%',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        paddingTop: 20,
-                        paddingVertical: 20,
                         paddingHorizontal: 10,
+                        display: 'flex',
+                        flexDirection: 'row',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        width: '100%',
                       }}>
-                      <Text style={Styles.heading}>Therapist</Text>
-                    </View>
-                  )}
-
-                  <View
-                    style={{
-                      paddingHorizontal: 10,
-                      display: 'flex',
-                      flexDirection: 'row',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                      width: '100%',
-                    }}>
-                    {userData.userType === 'Client' ? (
-                      <TouchableOpacity onPress={() => navigation.goBack()}>
-                        <BackBtn width={30} height={30} fill={COLORS.primary} />
-                      </TouchableOpacity>
-                    ) : (
-                      <Text style={Styles.heading}>Therapist</Text>
-                    )}
-                    {editMode ? (
-                      <View
-                        style={{
-                          display: 'flex',
-                          flexDirection: 'row',
-                          justifyContent: 'space-between',
-                          alignItems: 'center',
-                        }}>
-                        <TouchableOpacity onPress={handleSubmit}>
-                          <Text
-                            style={{
-                              color: COLORS.white,
-                              fontSize: 16,
-                              padding: 10,
-                              borderRadius: 10,
-                              backgroundColor: COLORS.orange,
-                              marginRight: 10,
-                            }}>
-                            Save changes
-                          </Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity onPress={() => setEditMode(false)}>
-                          <Text
-                            style={{
-                              color: COLORS.white,
-                              fontSize: 16,
-                              padding: 10,
-                              borderRadius: 10,
-                              backgroundColor: COLORS.red,
-                              textAlign: 'center',
-                            }}>
-                            Close
-                          </Text>
-                        </TouchableOpacity>
-                      </View>
-                    ) : (
-                      <View
-                        style={{
-                          display: 'flex',
-                          flexDirection: 'row',
-                          justifyContent: 'space-between',
-                          alignItems: 'center',
-                        }}>
-                        <TouchableOpacity
-                          style={{marginHorizontal: 20}}
-                          onPress={() => setEditMode(true)}>
-                          <EditIcon
+                      {userData.userType === 'Client' ? (
+                        <TouchableOpacity onPress={() => navigation.goBack()}>
+                          <BackBtn
                             width={30}
                             height={30}
-                            fill={COLORS.tertiary}
+                            fill={COLORS.primary}
                           />
                         </TouchableOpacity>
-                      </View>
-                    )}
-                  </View>
-                  {/* Therapist information */}
-                  <View style={styles.Therapist_information}>
-                    {/* top info section */}
-                    <View style={styles.card}>
-                      <View>
-                        <Image
-                          source={
-                            details.image ? {uri: details.image} : ProfileMale
-                          }
+                      ) : (
+                        <Text style={Styles.heading}>Therapist</Text>
+                      )}
+                      {editMode ? (
+                        <View
                           style={{
-                            width: 80,
-                            height: 80,
-                            borderRadius: 50,
-                          }}
-                        />
-                      </View>
-                      <View
-                        style={{
-                          display: 'flex',
-                          justifyContent: 'center',
-                          alignItems: 'flex-end',
-                        }}>
-                        <View style={{position: 'relative'}}>
-                          <Text style={Styles.heading2}>
-                            {details.name ? details.name : 'Loading...'}
-                          </Text>
-                          <Text style={Styles.title2}>
-                            {details.title ? details.title : 'Loading...'}
-                          </Text>
-                          <Text style={Styles.text}>
-                            Language:
-                            {details.languageValue
-                              ? details.languageValue.map((lang, index) => {
-                                  return (
-                                    <Text key={index}>
-                                      {lang}
-                                      {index ===
-                                      details.languageValue.length - 1
-                                        ? ''
-                                        : ', '}
-                                    </Text>
-                                  );
-                                })
-                              : 'Loading...'}
-                          </Text>
+                            display: 'flex',
+                            flexDirection: 'row',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                          }}>
+                          <TouchableOpacity onPress={handleSubmit}>
+                            <Text
+                              style={{
+                                color: COLORS.white,
+                                fontSize: 16,
+                                padding: 10,
+                                borderRadius: 10,
+                                backgroundColor: COLORS.orange,
+                                marginRight: 10,
+                              }}>
+                              Save changes
+                            </Text>
+                          </TouchableOpacity>
+                          <TouchableOpacity onPress={() => setEditMode(false)}>
+                            <Text
+                              style={{
+                                color: COLORS.white,
+                                fontSize: 16,
+                                padding: 10,
+                                borderRadius: 10,
+                                backgroundColor: COLORS.red,
+                                textAlign: 'center',
+                              }}>
+                              Close
+                            </Text>
+                          </TouchableOpacity>
+                        </View>
+                      ) : (
+                        <View
+                          style={{
+                            display: 'flex',
+                            flexDirection: 'row',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                          }}>
+                          <TouchableOpacity
+                            style={{marginHorizontal: 20}}
+                            onPress={() => setEditMode(true)}>
+                            <EditIcon
+                              width={30}
+                              height={30}
+                              fill={COLORS.tertiary}
+                            />
+                          </TouchableOpacity>
+                        </View>
+                      )}
+                    </View>
+                    {/* Therapist information */}
+                    <View style={styles.Therapist_information}>
+                      {/* top info section */}
+                      <View style={styles.card}>
+                        <View>
+                          <Image
+                            source={
+                              details.image ? {uri: details.image} : ProfileMale
+                            }
+                            style={{
+                              width: 80,
+                              height: 80,
+                              borderRadius: 50,
+                            }}
+                          />
+                        </View>
+                        <View
+                          style={{
+                            display: 'flex',
+                            justifyContent: 'center',
+                            alignItems: 'flex-end',
+                          }}>
+                          <View style={{position: 'relative'}}>
+                            <Text style={Styles.heading2}>
+                              {details.name ? details.name : 'Loading...'}
+                            </Text>
+                            <Text style={Styles.title2}>
+                              {details.title ? details.title : 'Loading...'}
+                            </Text>
+                            <Text style={Styles.text}>
+                              Language:
+                              {details.languageValue
+                                ? details.languageValue.map((lang, index) => {
+                                    return (
+                                      <Text key={index}>
+                                        {lang}
+                                        {index ===
+                                        details.languageValue.length - 1
+                                          ? ''
+                                          : ', '}
+                                      </Text>
+                                    );
+                                  })
+                                : 'Loading...'}
+                            </Text>
+                          </View>
                         </View>
                       </View>
-                    </View>
 
-                    {/* About section */}
-                    <View style={styles.card}>
-                      <View style={{width: '100%'}}>
-                        <Text style={Styles.heading2}>About</Text>
-                        {editMode ? (
-                          <TextInput
-                            style={{
-                              marginBottom: 10,
-                              width: '100%',
-                              height: 'auto',
-                              borderWidth: 1,
-                              borderColor: COLORS.gray,
-                              borderRadius: 10,
-                              padding: 5,
-                            }}
-                            multiline={true}
-                            value={values.about}
-                            onBlur={handleBlur('about')}
-                            onChangeText={handleChange('about')}
-                          />
-                        ) : (
-                          <Text style={Styles.text}>
-                            {details.about ? details.about : 'Loading...'}
-                          </Text>
-                        )}
-                      </View>
-                    </View>
-
-                    {/* Availability section */}
-                    <View style={styles.card}>
-                      <View style={{flex: 1}}>
-                        <Text style={{paddingBottom: 10, ...Styles.heading2}}>
-                          Availability
-                        </Text>
-                        <View>
+                      {/* About section */}
+                      <View style={styles.card}>
+                        <View style={{width: '100%'}}>
+                          <Text style={Styles.heading2}>About</Text>
                           {editMode ? (
-                            <View>
-                              {availabe.map((option, index) => (
-                                <View
-                                  key={index}
-                                  style={{
-                                    flexDirection: 'row',
-                                    alignItems: 'center',
-                                  }}>
-                                  <CheckBox
-                                    disabled={false}
-                                    value={option.checked}
-                                    onValueChange={() => handleCheck(index)}
-                                  />
-                                  <Text>{option.label}</Text>
-                                </View>
-                              ))}
-                              <Text
-                                style={{paddingVertical: 10, ...Styles.text}}>
-                                Availability Status
-                              </Text>
-                              <View
-                                style={{height: 'auto', position: 'relative'}}>
-                                <DropDownPicker
-                                  listMode="SCROLLVIEW"
-                                  showsVerticalScrollIndicator={false}
-                                  open={open}
-                                  setOpen={setOpen}
-                                  items={items}
-                                  setItems={setItems}
-                                  value={status}
-                                  setValue={setStatus}
-                                  onChangeItem={item => setStatus(item.value)}
-                                  placeholder="Select Status"
-                                  dropDownDirection="TOP"
-                                  dropDownContainerStyle={{
-                                    backgroundColor: COLORS.white,
-                                    borderRadius: 10,
-                                  }}
-                                />
-                              </View>
-                            </View>
-                          ) : (
-                            <View
+                            <TextInput
                               style={{
-                                width: 'auto',
-                                display: 'flex',
-                                flexDirection: 'row',
-                                justifyContent: 'space-between',
-                                alignItems: 'center',
-                              }}>
-                              <Text
-                                style={{paddingVertical: 10, ...Styles.text}}>
-                                {details.dayValue
-                                  ? details.dayValue.map((day, index) => {
-                                      return (
-                                        <Text key={index}>
-                                          {day}
-                                          {index === details.dayValue.length - 1
-                                            ? ''
-                                            : ', '}
-                                        </Text>
-                                      );
-                                    })
-                                  : 'Loading...'}
-                              </Text>
-                              <Text
-                                style={{
-                                  padding: 5,
-                                  backgroundColor:
-                                    details.value === 'active'
-                                      ? COLORS.primary
-                                      : details.value
-                                      ? COLORS.red
-                                      : null,
-                                  borderRadius: 8,
-                                  textAlign: 'center',
-                                  ...Styles.text3,
-                                }}>
-                                {details.value}
-                              </Text>
-                            </View>
+                                marginBottom: 10,
+                                width: '100%',
+                                height: 'auto',
+                                borderWidth: 1,
+                                borderColor: COLORS.gray,
+                                borderRadius: 10,
+                                padding: 5,
+                              }}
+                              multiline={true}
+                              defaultValue={details.about}
+                              value={values.about}
+                              onBlur={handleBlur('about')}
+                              onChangeText={handleChange('about')}
+                            />
+                          ) : (
+                            <Text style={Styles.text}>
+                              {details.about ? details.about : 'Loading...'}
+                            </Text>
                           )}
                         </View>
                       </View>
-                    </View>
 
-                    {/* Schedule section */}
-                    {userData.userType === 'Therapist' && (
+                      {/* Availability section */}
                       <View style={styles.card}>
                         <View style={{flex: 1}}>
-                          <Text style={Styles.heading2}>Schedule</Text>
-                          <View style={{width: '100%', paddingVertical: 10}}>
-                            {schedule.length === 0 ? (
-                              <Text
-                                style={{...Styles.text, textAlign: 'center'}}>
-                                No schedule available
-                              </Text>
-                            ) : !Loading ? (
-                              <Table
-                                tableHead={TABLECONTENT.tableHead}
-                                tableData={TABLECONTENT.tableData}
-                                BorderColor={COLORS.primary}
-                                BorderWidth={1}
-                                tableDataColor={COLORS.black}
-                                HeaderTextColor={COLORS.white}
-                                HeaderBackgroundColor={COLORS.primary}
-                              />
+                          <Text style={{paddingBottom: 10, ...Styles.heading2}}>
+                            Availability
+                          </Text>
+                          <View>
+                            {editMode ? (
+                              <View>
+                                {availabe.map((option, index) => (
+                                  <View
+                                    key={index}
+                                    style={{
+                                      flexDirection: 'row',
+                                      alignItems: 'center',
+                                    }}>
+                                    <CheckBox
+                                      disabled={false}
+                                      value={option.checked}
+                                      onValueChange={() => handleCheck(index)}
+                                    />
+                                    <Text>{option.label}</Text>
+                                  </View>
+                                ))}
+                                <Text
+                                  style={{paddingVertical: 10, ...Styles.text}}>
+                                  Availability Status
+                                </Text>
+                                <View
+                                  style={{
+                                    height: 'auto',
+                                    position: 'relative',
+                                  }}>
+                                  <DropDownPicker
+                                    listMode="SCROLLVIEW"
+                                    showsVerticalScrollIndicator={false}
+                                    open={open}
+                                    setOpen={setOpen}
+                                    items={items}
+                                    setItems={setItems}
+                                    value={status}
+                                    setValue={setStatus}
+                                    onChangeItem={item => setStatus(item.value)}
+                                    placeholder="Select Status"
+                                    dropDownDirection="TOP"
+                                    dropDownContainerStyle={{
+                                      backgroundColor: COLORS.white,
+                                      borderRadius: 10,
+                                    }}
+                                  />
+                                </View>
+                              </View>
                             ) : (
-                              <Text
-                                style={{...Styles.text, textAlign: 'center'}}>
-                                Loading schedule...
-                              </Text>
+                              <View
+                                style={{
+                                  width: 'auto',
+                                  display: 'flex',
+                                  flexDirection: 'row',
+                                  justifyContent: 'space-between',
+                                  alignItems: 'center',
+                                }}>
+                                <Text
+                                  style={{paddingVertical: 10, ...Styles.text}}>
+                                  {details.dayValue
+                                    ? details.dayValue.map((day, index) => {
+                                        return (
+                                          <Text key={index}>
+                                            {day}
+                                            {index ===
+                                            details.dayValue.length - 1
+                                              ? ''
+                                              : ', '}
+                                          </Text>
+                                        );
+                                      })
+                                    : 'Loading...'}
+                                </Text>
+                                <Text
+                                  style={{
+                                    padding: 5,
+                                    backgroundColor:
+                                      details.value === 'active'
+                                        ? COLORS.primary
+                                        : details.value
+                                        ? COLORS.red
+                                        : null,
+                                    borderRadius: 8,
+                                    textAlign: 'center',
+                                    ...Styles.text3,
+                                  }}>
+                                  {details.value}
+                                </Text>
+                              </View>
                             )}
                           </View>
                         </View>
                       </View>
-                    )}
 
-                    {/* Date picker */}
-                    {userData.userType === 'Client' ? (
-                      <View
-                        style={{
-                          ...styles.card2,
-                        }}>
-                        <Text style={{paddingVertical: 10, ...Styles.heading2}}>
-                          Select Appointment Date
-                        </Text>
-                        <Datepicker datachange={e => setDate(e)} />
-                      </View>
-                    ) : null}
-
-                    {/* Time picker */}
-                    <View style={styles.card}>
-                      <View
-                        style={{
-                          width: '100%',
-                          height: 'auto',
-                          display: 'flex',
-                          justifyContent: 'flex-start',
-                          paddingVertical: 10,
-                        }}>
-                        <Text style={Styles.heading2}>
-                          {userData.userType === 'Client'
-                            ? 'Select Appointment Time'
-                            : 'Appointment Time'}
-                        </Text>
-                        {editMode ? (
-                          appointments.map((option, index) => (
-                            <View
-                              key={index}
-                              style={{
-                                flexDirection: 'row',
-                                alignItems: 'center',
-                              }}>
-                              <CheckBox
-                                disabled={false}
-                                value={option.checked}
-                                onValueChange={() => handleCheck2(index)}
-                              />
-                              <Text>{option.label + ' ' + 'Session'}</Text>
-                            </View>
-                          ))
-                        ) : userData.userType === 'Client' ? (
-                          <View>
-                            <Text style={{paddingBottom: 10, ...Styles.text}}>
-                              select based on Therapists availability!
-                            </Text>
-                            <View
-                              style={{
-                                position: 'relative',
-                              }}>
-                              <RadioGroup
-                                radioButtons={radioButtons}
-                                onPress={time => {
-                                  setTime(time);
-                                }}
-                                value={time}
-                                selectedId={time}
-                                layout="column"
-                                containerStyle={{
-                                  height: 'auto',
-                                  width: '100%',
-                                  position: 'relative',
-                                  justifyContent: 'flex-start',
-                                  alignItems: 'flex-start',
-                                }}
-                              />
+                      {/* Schedule section */}
+                      {userData.userType === 'Therapist' && (
+                        <View style={styles.card}>
+                          <View style={{flex: 1}}>
+                            <Text style={Styles.heading2}>Schedule</Text>
+                            <View style={{width: '100%', paddingVertical: 10}}>
+                              {schedule.length === 0 ? (
+                                <Text
+                                  style={{...Styles.text, textAlign: 'center'}}>
+                                  No schedule available
+                                </Text>
+                              ) : !Loading ? (
+                                <Table
+                                  tableHead={TABLECONTENT.tableHead}
+                                  tableData={TABLECONTENT.tableData}
+                                  BorderColor={COLORS.primary}
+                                  BorderWidth={1}
+                                  tableDataColor={COLORS.black}
+                                  HeaderTextColor={COLORS.white}
+                                  HeaderBackgroundColor={COLORS.primary}
+                                />
+                              ) : (
+                                <Text
+                                  style={{...Styles.text, textAlign: 'center'}}>
+                                  Loading schedule...
+                                </Text>
+                              )}
                             </View>
                           </View>
-                        ) : details.appointmentValue ? (
-                          details.appointmentValue.map((time, index) => (
-                            <Text
-                              key={index + 1}
-                              style={{padding: 10, ...Styles.text}}>
-                              {time} Session
-                            </Text>
-                          ))
-                        ) : (
-                          <Text style={{padding: 10, ...Styles.text}}>
-                            Loading...
+                        </View>
+                      )}
+
+                      {/* Date picker */}
+                      {userData.userType === 'Client' ? (
+                        <View
+                          style={{
+                            ...styles.card2,
+                          }}>
+                          <Text
+                            style={{paddingVertical: 10, ...Styles.heading2}}>
+                            Select Appointment Date
                           </Text>
-                        )}
+                          <Datepicker datachange={e => setDate(e)} />
+                        </View>
+                      ) : null}
+
+                      {/* Time picker */}
+                      <View style={styles.card}>
+                        <View
+                          style={{
+                            width: '100%',
+                            height: 'auto',
+                            display: 'flex',
+                            justifyContent: 'flex-start',
+                            paddingVertical: 10,
+                          }}>
+                          <Text style={Styles.heading2}>
+                            {userData.userType === 'Client'
+                              ? 'Select Appointment Time'
+                              : 'Appointment Time'}
+                          </Text>
+                          {editMode ? (
+                            appointments.map((option, index) => (
+                              <View
+                                key={index}
+                                style={{
+                                  flexDirection: 'row',
+                                  alignItems: 'center',
+                                }}>
+                                <CheckBox
+                                  disabled={false}
+                                  value={option.checked}
+                                  onValueChange={() => handleCheck2(index)}
+                                />
+                                <Text>{option.label + ' ' + 'Session'}</Text>
+                              </View>
+                            ))
+                          ) : userData.userType === 'Client' ? (
+                            <View>
+                              <Text style={{paddingBottom: 10, ...Styles.text}}>
+                                select based on Therapists availability!
+                              </Text>
+                              <View
+                                style={{
+                                  position: 'relative',
+                                }}>
+                                <RadioGroup
+                                  radioButtons={radioButtons}
+                                  onPress={time => {
+                                    setTime(time);
+                                  }}
+                                  value={time}
+                                  selectedId={time}
+                                  layout="column"
+                                  containerStyle={{
+                                    height: 'auto',
+                                    width: '100%',
+                                    position: 'relative',
+                                    justifyContent: 'flex-start',
+                                    alignItems: 'flex-start',
+                                  }}
+                                />
+                              </View>
+                            </View>
+                          ) : details.appointmentValue ? (
+                            details.appointmentValue.map((time, index) => (
+                              <Text
+                                key={index + 1}
+                                style={{padding: 10, ...Styles.text}}>
+                                {time} Session
+                              </Text>
+                            ))
+                          ) : (
+                            <Text style={{padding: 10, ...Styles.text}}>
+                              Loading...
+                            </Text>
+                          )}
+                        </View>
                       </View>
                     </View>
                   </View>
+                </ScrollView>
+              ) : (
+                <View
+                  style={{
+                    flex: 1,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                  }}>
+                  <Text
+                    style={{
+                      ...Styles.text,
+                      textAlign: 'center',
+                      paddingHorizontal: 20,
+                    }}>
+                    Your details have not been uploaded yet please redirect to
+                    the profile page to upload your details.
+                  </Text>
                 </View>
-              </ScrollView>
+              )}
             </View>
           )}
         </Formik>
