@@ -1,9 +1,5 @@
 import {StyleSheet, View, SafeAreaView} from 'react-native';
-
-// components
 import {FocusedStatusBar, Header} from '../components';
-
-// constants
 import {COLORS} from '../constants';
 
 const Screen = props => {

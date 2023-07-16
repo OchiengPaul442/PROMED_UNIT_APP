@@ -1,39 +1,59 @@
 // imports
-import React, {useEffect, useState, useContext} from 'react';
-import {StyleSheet, Text, View, ScrollView} from 'react-native';
-import {TouchableOpacity} from 'react-native-gesture-handler';
-
-//General styles
+import React, {useEffect, useState} from 'react';
+import {
+  StyleSheet,
+  Text,
+  View,
+  ScrollView,
+  TouchableOpacity,
+} from 'react-native';
 import Styles from '../../constants/Styles';
-
-// constants
 import {COLORS, SIZES} from '../../constants';
 import {BackBtn, MentalDoctorAnimation} from '../../components';
-
-// screen
 import Screen from '../../layout/Screen';
-
 import axios from 'axios';
+import firestore from '@react-native-firebase/firestore';
+import auth from '@react-native-firebase/auth';
 
 const TestResult = ({route, navigation}) => {
-  // get params
   const {id, title, answers} = route.params;
-
   const [response, setResponse] = useState(null);
   const [loading, setLoading] = useState(false);
-
   const BASE_URL = 'https://cynthias-diagnosis-api.onrender.com';
-
   const api = axios.create({
-    baseURL: `${BASE_URL}/predict`,
+    baseURL: `${BASE_URL}`,
   });
+
+  // send the data to the firestore database for storage new collection called Results if it doesn't exist already
+  const sendToFireStore = async () => {
+    const user = auth().currentUser;
+    const docRef = firestore().collection('Results').doc(user.uid);
+    const doc = await docRef.get();
+    if (!doc.exists) {
+      await docRef.set({
+        id,
+        title,
+        answers,
+        response: response,
+        createdAt: firestore.FieldValue.serverTimestamp(),
+      });
+    } else {
+      await docRef.update({
+        id,
+        title,
+        answers,
+        response: response,
+        createdAt: firestore.FieldValue.serverTimestamp(),
+      });
+    }
+  };
 
   const getResponse = async () => {
     setLoading(true);
     try {
       switch (title) {
         case 'Depression':
-          const res1 = await api.post('', {
+          const res1 = await api.post('/depression', {
             Schizophrenia: answers[0],
             BipolarDisorder: answers[1],
             EatingDisorders: answers[2],
@@ -41,13 +61,13 @@ const TestResult = ({route, navigation}) => {
             DrugUseDisorders: answers[4],
             AlcoholUseDisorders: answers[5],
           });
-          setResponse(res1.data.prediction);
+          setResponse(res1.data);
           setTimeout(() => {
             setLoading(false);
-          }, 4500);
+          }, 2500);
           break;
         case 'Anxiety':
-          const res2 = await api.post('', {
+          const res2 = await api.post('/anxiety', {
             Schizophrenia: answers[0],
             BipolarDisorder: answers[1],
             EatingDisorders: answers[2],
@@ -55,7 +75,7 @@ const TestResult = ({route, navigation}) => {
             DrugUseDisorders: answers[4],
             AlcoholUseDisorders: answers[5],
           });
-          setResponse(res2.data.prediction);
+          setResponse(res2.data);
           setLoading(false);
           break;
         case 'Stress':
@@ -67,7 +87,7 @@ const TestResult = ({route, navigation}) => {
             DrugUseDisorders: answers[4],
             AlcoholUseDisorders: answers[5],
           });
-          setResponse(res3.data.prediction);
+          setResponse(res3.data);
           setLoading(false);
           break;
         case 'PTSD':
@@ -79,7 +99,7 @@ const TestResult = ({route, navigation}) => {
             DrugUseDisorders: answers[4],
             AlcoholUseDisorders: answers[5],
           });
-          setResponse(res4.data.prediction);
+          setResponse(res4.data);
           setLoading(false);
           break;
         default:
@@ -91,14 +111,14 @@ const TestResult = ({route, navigation}) => {
     }
   };
 
+  // send the data to the firestore database for storage if response is not null
+  if (response) {
+    sendToFireStore();
+  }
+
   useEffect(() => {
     getResponse();
   }, []);
-
-  // Calculate the result percentage based on the intensity of the disorder
-  const resultPercentage = Math.round(
-    (answers.reduce((acc, cur) => acc + cur, 0) / (answers.length * 3)) * 100,
-  );
 
   return (
     <Screen>
@@ -161,7 +181,9 @@ const TestResult = ({route, navigation}) => {
                   <View style={styles.Outer_ring}>
                     <View style={styles.result_box}>
                       <Text style={styles.result_percentage}>
-                        {resultPercentage + '%'}
+                        {response
+                          ? response.Accuracy_score.toFixed(2) * 100 + '%'
+                          : '0%'}
                       </Text>
                     </View>
                   </View>
@@ -210,44 +232,15 @@ const TestResult = ({route, navigation}) => {
                             paddingVertical: 10,
                           }}>
                           <Text style={styles.summary_card_title}>
-                            {title + ' level'}:
+                            Accuracy score:
                           </Text>
                           <Text style={styles.summary_card_text}>
-                            {resultPercentage + '%'}
+                            {response
+                              ? response.Accuracy_score.toFixed(2) * 100 + '%'
+                              : '0%'}
                           </Text>
                         </View>
-                        <View
-                          style={{
-                            display: 'flex',
-                            flexDirection: 'row',
-                            paddingVertical: 10,
-                          }}>
-                          <Text style={styles.summary_card_title}>
-                            Diagnosis:
-                          </Text>
-                          {/* based on the percentage level show different label with different background colors of need help, self care or okay and also the diagnosis from the AI */}
-                          <Text
-                            style={{
-                              borderRadius: 10,
-                              paddingHorizontal: 10,
-                              color:
-                                resultPercentage > 50
-                                  ? COLORS.white
-                                  : COLORS.black,
-                              backgroundColor:
-                                resultPercentage > 50
-                                  ? COLORS.red
-                                  : resultPercentage > 30
-                                  ? COLORS.yellow
-                                  : COLORS.green,
-                            }}>
-                            {resultPercentage > 50
-                              ? 'Need Help'
-                              : resultPercentage > 30
-                              ? 'Self Care'
-                              : 'Okay'}
-                          </Text>
-                        </View>
+
                         <View
                           style={{
                             display: 'flex',
@@ -264,7 +257,28 @@ const TestResult = ({route, navigation}) => {
                               borderRadius: 10,
                               paddingHorizontal: 10,
                             }}>
-                            {response}
+                            {response && response.prediction}
+                          </Text>
+                        </View>
+                        <View
+                          style={{
+                            display: 'flex',
+                            flexDirection: 'row',
+                            paddingVertical: 10,
+                          }}>
+                          <Text style={styles.summary_card_title}>
+                            Medical Advice:
+                          </Text>
+                          <Text
+                            style={{
+                              width: 'auto',
+                              flex: 1,
+                              color: COLORS.black,
+                              backgroundColor: COLORS.peach,
+                              borderRadius: 10,
+                              paddingHorizontal: 10,
+                            }}>
+                            {response && response.Advice}
                           </Text>
                         </View>
 

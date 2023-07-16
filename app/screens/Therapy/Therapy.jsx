@@ -1,36 +1,27 @@
-// imports
 import React, {useContext, Suspense} from 'react';
 import {
   View,
   Text,
   ScrollView,
   StyleSheet,
-  TouchableOpacity,
   Image,
   FlatList,
+  TouchableOpacity,
 } from 'react-native';
+import auth from '@react-native-firebase/auth';
 
-// constants
 import {COLORS} from '../../constants';
 import Styles from '../../constants/Styles';
-
-// components
 import {Menu, Card, RoundLoadingAnimation} from '../../components';
 import Screen from '../../layout/Screen';
-
-// context
 import {AuthContext} from '../../navigations/Context/AuthContext';
+import {fetchTherapist, fetchMoreTherapist} from '../../../fireStore';
 
-// lazy loading
 const BottomModal = React.lazy(() =>
   import('../../components/Modals/BottomModal'),
 );
 
-// firebase
-import auth from '@react-native-firebase/auth';
-
-// fetch functions
-import {fetchTherapist, fetchMoreTherapist} from '../../../fireStore';
+// ...
 
 const Therapy = ({navigation}) => {
   // context
@@ -69,8 +60,6 @@ const Therapy = ({navigation}) => {
   const toggleModal = () => {
     setModalVisible(!isModalVisible);
   };
-
-  console.log(therapist.map(item => item.key));
 
   return (
     <Screen>
@@ -115,7 +104,7 @@ const Therapy = ({navigation}) => {
                       data={therapist}
                       keyExtractor={(item, index) => index.toString()}
                       renderItem={({item, index}) =>
-                        item.key === currentUser.uid ? null : (
+                        item.key === currentUser?.uid ? null : (
                           <View style={{paddingHorizontal: 10}}>
                             <Card
                               Press={() =>
@@ -170,6 +159,7 @@ const Therapy = ({navigation}) => {
                         )
                       }
                     />
+
                     {Loading2 ? (
                       <View
                         style={{

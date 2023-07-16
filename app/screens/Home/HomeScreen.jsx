@@ -1,4 +1,3 @@
-// imports
 import React, {useContext, Suspense} from 'react';
 import {
   View,
@@ -9,35 +8,28 @@ import {
   TouchableOpacity,
 } from 'react-native';
 
-// constants
 import {COLORS, SIZES} from '../../constants';
 import Styles from '../../constants/Styles';
-
-// components
 import {Card, RoundLoadingAnimation, CloseIcon} from '../../components';
 import Screen from '../../layout/Screen';
-
-// context
 import {AuthContext} from '../../navigations/Context/AuthContext';
-
-// fetch functions
 import {
   fetchUserAppointments,
   fetchDailyMentalHealthTips,
   fetchMoreDailyMentalHealthTips,
 } from '../../../fireStore';
 
-// lazy loading
 const MoodTracker = React.lazy(() =>
   import('../../services/moodTracker/MoodTracker'),
 );
 const CenterHalf = React.lazy(() =>
   import('../../components/Modals/CenterHalf'),
 );
-
 const DiagnosisTools = React.lazy(() =>
   import('../../services/diagnosisTool/DiagnosisTools'),
 );
+
+// ...
 
 const HomeScreen = ({navigation, route}) => {
   // use the useContext hook to get the user data value
@@ -64,9 +56,7 @@ const HomeScreen = ({navigation, route}) => {
   const [userAppointments, setUserAppointments] = React.useState(0);
 
   const toggleModal = () => {
-    setTimeout(() => {
-      setOpen(!open);
-    }, 500);
+    setOpen(!open);
   };
 
   // greetings function
@@ -144,17 +134,19 @@ const HomeScreen = ({navigation, route}) => {
           <Text style={styles.username}>
             {anonymous ? (
               'guest user'
-            ) : userData.userName ? (
+            ) : userData ? (
               userData.userName
             ) : (
               <Text style={Styles.text3}>loading...</Text>
             )}
           </Text>
-          <Text style={styles.sessions}>
-            You have
-            {userAppointments ? ' ' + userAppointments + ' ' : ' 0 '}
-            Appointments
-          </Text>
+          {userData && userData.userType === 'Client' && (
+            <Text style={styles.sessions}>
+              You have
+              {userAppointments ? ' ' + userAppointments + ' ' : ' 0 '}
+              Appointments
+            </Text>
+          )}
         </View>
 
         {/* Body */}

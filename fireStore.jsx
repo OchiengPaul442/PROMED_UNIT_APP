@@ -27,22 +27,6 @@ export async function fetchUserAppointments() {
   return count.size;
 }
 
-// function to fetch total number of discussion boards the user is a member of
-export async function fetchUserDiscussionBoards() {
-  // get current user data
-  const currentUser = auth().currentUser;
-
-  // loop through all the discussion boards and find out how many groups the current user is in
-  const count = await firestore()
-    .collection('Groups')
-    .where('Number_of_Members', 'array-contains', currentUser.uid)
-    .get();
-
-  // return the number of discussion boards
-  return count.size;
-}
-
-// use async-await to handle promises
 export async function getUserData(setUserData, setError, user) {
   const userDocRef = firestore().collection('Users').doc(user.uid);
 
@@ -54,13 +38,25 @@ export async function getUserData(setUserData, setError, user) {
 
         // get user data from firestore using onSnapshot() method
         userDocRef.onSnapshot(documentSnapshot => {
-          // check if document exists
-          // set userData state
-          setUserData({
-            ...documentSnapshot.data(),
-            displayName,
-            photoURL,
-          });
+          // check if documentSnapshot is not null
+          if (documentSnapshot) {
+            // check if document exists
+            if (documentSnapshot.exists) {
+              // set userData state
+              setUserData({
+                ...documentSnapshot.data(),
+                displayName,
+                photoURL,
+              });
+            } else {
+              // handle case where document does not exist by creating a new document with default values
+              userDocRef.set({
+                displayName,
+                photoURL,
+                // add any other default values here
+              });
+            }
+          }
         });
       }
     });
@@ -150,7 +146,6 @@ export async function fetchMoreDailyMentalHealthTips(
 //-------------------------------------------------------------------------//
 // NOTIFICATION FUNCTION
 //-------------------------------------------------------------------------//
-// fetch Notifications for the user
 export async function fetchNotifications(setLoading) {
   // set loading to true
   setLoading(true);
@@ -162,7 +157,7 @@ export async function fetchNotifications(setLoading) {
   const notifications = [];
 
   // get notifications from firestore under the Users collection
-  await firestore()
+  firestore()
     .collection('Users')
     .doc(currentUser.uid)
     .collection('Notifications')
@@ -170,13 +165,15 @@ export async function fetchNotifications(setLoading) {
     .onSnapshot(querySnapshot => {
       // clear the notifications list
       notifications.length = 0;
-      // loop through the documents and add them to the list
-      querySnapshot.forEach(documentSnapshot => {
-        notifications.push({
-          ...documentSnapshot.data(),
-          key: documentSnapshot.id,
+      if (querySnapshot) {
+        // loop through the documents and add them to the list
+        querySnapshot.forEach(documentSnapshot => {
+          notifications.push({
+            ...documentSnapshot.data(),
+            key: documentSnapshot.id,
+          });
         });
-      });
+      }
       // set loading to false
       setLoading(false);
     });

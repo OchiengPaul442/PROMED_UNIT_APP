@@ -1,19 +1,15 @@
-// imports
 import React, {useContext} from 'react';
 import {
   StyleSheet,
   Text,
   View,
   ScrollView,
-  TouchableOpacity,
   SafeAreaView,
+  TouchableOpacity,
 } from 'react-native';
 
-// constants
 import {COLORS} from '../../constants';
 import Styles from '../../constants/Styles';
-
-// components
 import {
   BackBtn,
   FocusedStatusBar,
@@ -21,20 +17,17 @@ import {
   RoundLoadingAnimation,
   DotBeconAnimation,
 } from '../../components';
-
-// context
 import {AuthContext} from '../../navigations/Context/AuthContext';
-
-// fetch functions
 import {
   fetchNotifications,
   updateNotificationReadStatus,
 } from '../../../fireStore';
 
-// lazy loading for center half modal
 const CenterHalf = React.lazy(() =>
   import('../../components/Modals/CenterHalf'),
 );
+
+// ...
 
 const Notifications = ({navigation}) => {
   // context

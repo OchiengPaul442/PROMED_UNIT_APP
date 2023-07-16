@@ -1,7 +1,12 @@
 // imports
-import React, {useContext} from 'react';
-import {StyleSheet, Text, View, ScrollView} from 'react-native';
-import {TouchableOpacity} from 'react-native-gesture-handler';
+import React from 'react';
+import {
+  StyleSheet,
+  Text,
+  View,
+  ScrollView,
+  TouchableOpacity,
+} from 'react-native';
 
 //General styles
 import Styles from '../../constants/Styles';

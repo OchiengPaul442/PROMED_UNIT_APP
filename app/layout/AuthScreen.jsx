@@ -7,14 +7,8 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import React from 'react';
-
-// components
 import {FocusedStatusBar, BackBtn} from '../components';
-
-// constants
 import {COLORS} from '../constants';
-
-// navigation
 import {useNavigation} from '@react-navigation/native';
 
 const AuthScreen = props => {

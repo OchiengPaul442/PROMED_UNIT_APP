@@ -1,44 +1,24 @@
 // imports
-import React, {useContext, useRef} from 'react';
-import {Text, View, FlatList} from 'react-native';
+import React, {useContext, useEffect} from 'react';
+import {Text, View, FlatList, Image, StyleSheet} from 'react-native';
 import moment from 'moment';
-
-// context
 import {AuthContext} from '../../navigations/Context/AuthContext';
-
-// constants
 import {COLORS} from '../../constants';
-import Styles from '../../constants/Styles';
-
-// components
-import {RoundLoadingAnimation} from '../../components'; // components for the status bar, buttons, icons and loading animation
-
-// fetch function
-import {sendLiveChatMessage, fetchLiveChatMessages} from '../../../fireStore'; // functions to interact with the live chat messages in firestore
-
-// firebase
-import auth from '@react-native-firebase/auth'; // a module for the firebase authentication
-import firestore from '@react-native-firebase/firestore'; // a module for the firestore database
-
-// layout
+import {RoundLoadingAnimation} from '../../components';
+import {sendLiveChatMessage} from '../../../fireStore';
+import auth from '@react-native-firebase/auth';
+import firestore from '@react-native-firebase/firestore';
 import ChatScreen from '../../layout/ChatScreen';
 
 const Groupchat = ({route, navigation}) => {
   // get params
   const {groupdata} = route.params;
-
-  // context
   const {setErrorStatus, setError} = useContext(AuthContext);
-
-  // current user
   const currentUser = auth().currentUser;
-
-  // set loading
   const [loading, setLoading] = React.useState(true);
-
-  // text input
-  const [message, setMessage] = React.useState(''); // message
-  const [pastMessages, setPastMessages] = React.useState([]); // past messages
+  const [message, setMessage] = React.useState('');
+  const [pastMessages, setPastMessages] = React.useState([]);
+  const [userData, setUserData] = React.useState([]);
 
   // handle send message
   const handleSendMessage = () => {
@@ -51,6 +31,44 @@ const Groupchat = ({route, navigation}) => {
     );
   };
 
+  const getUserData = async () => {
+    setLoading(true);
+    const users = [];
+    const querySnapshot = await firestore().collection('Users').get();
+    querySnapshot.forEach(documentSnapshot => {
+      users.push({
+        ...documentSnapshot.data(),
+        key: documentSnapshot.id,
+      });
+    });
+    setUserData(users);
+    setLoading(false);
+  };
+  const fetchLiveChatMessages = () => {
+    return firestore()
+      .collection('Groups')
+      .doc(groupdata.key)
+      .collection('Messages')
+      .orderBy('createdAt', 'asc')
+      .onSnapshot(querySnapshot => {
+        const messages = [];
+        querySnapshot.forEach(documentSnapshot => {
+          messages.push({
+            ...documentSnapshot.data(),
+            key: documentSnapshot.id,
+          });
+        });
+        setPastMessages(messages);
+        setLoading(false);
+      });
+  };
+
+  useEffect(() => {
+    getUserData();
+    const unsubscribe = fetchLiveChatMessages();
+    return () => unsubscribe();
+  }, []);
+
   return (
     <ChatScreen
       nav={navigation}
@@ -60,7 +78,7 @@ const Groupchat = ({route, navigation}) => {
       text={message}
       nav_route="Groupdetails"
       submit={handleSendMessage}>
-      {loading ? (
+      {loading && userData ? (
         <View
           style={{
             flex: 1,
@@ -82,25 +100,144 @@ const Groupchat = ({route, navigation}) => {
         </View>
       ) : (
         <FlatList
-          data={Response}
+          data={pastMessages}
           scrollEnabled={false}
-          inverted={true}
+          inverted={false}
           keyExtractor={item => item.key}
           extraData={pastMessages}
-          renderItem={({item}) => (
-            <View key={item.key}>
-              <Text>
-                {item.message + ' '}
-                <Text style={Styles.timestamp}>
-                  {moment(item.createdAt).format('h:mm a')}
-                </Text>
-              </Text>
-            </View>
-          )}
+          renderItem={({item}) =>
+            userData.length > 0 &&
+            userData.map(data => {
+              if (item.userId === data.key)
+                return (
+                  <View
+                    key={item.key}
+                    style={
+                      currentUser.uid === item.userId
+                        ? styles.containerRight
+                        : styles.container
+                    }>
+                    {currentUser.uid === item.userId ? null : (
+                      <Image
+                        source={{uri: data.photoURL}}
+                        style={
+                          currentUser.uid === item.userId
+                            ? styles.photoRight
+                            : styles.photo
+                        }
+                      />
+                    )}
+                    <View
+                      style={
+                        currentUser.uid === item.userId
+                          ? styles.messageContainerRight
+                          : styles.messageContainer
+                      }>
+                      <Text
+                        style={
+                          currentUser.uid === item.userId
+                            ? styles.userNameRight
+                            : styles.userName
+                        }>
+                        {data.userName}
+                      </Text>
+                      <Text
+                        style={
+                          currentUser.uid === item.userId
+                            ? styles.messageRight
+                            : styles.message
+                        }>
+                        {item.message}
+                      </Text>
+                      <Text
+                        style={
+                          currentUser.uid === item.userId
+                            ? styles.timeRight
+                            : styles.time
+                        }>
+                        {moment(item.createdAt).format('h:mm a')}
+                      </Text>
+                    </View>
+                  </View>
+                );
+            })
+          }
         />
       )}
     </ChatScreen>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flexDirection: 'row',
+    marginVertical: 8,
+  },
+  containerRight: {
+    flexDirection: 'row-reverse',
+    marginVertical: 8,
+  },
+  photo: {
+    width: 20,
+    height: 20,
+    borderRadius: 20,
+    marginRight: 8,
+  },
+  photoRight: {
+    width: 20,
+    height: 20,
+    borderRadius: 20,
+    marginLeft: 8,
+  },
+  messageContainer: {
+    // flex: 1,
+    width: 'auto',
+    marginRight: 17,
+    backgroundColor: '#DCF8C6',
+    borderRadius: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+  },
+  messageContainerRight: {
+    // flex: 1,
+    width: 'auto',
+    marginRight: 10,
+    backgroundColor: '#ECECEC',
+    borderRadius: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+  },
+
+  userName: {
+    fontWeight: 'bold',
+    marginBottom: 4,
+    color: COLORS.black,
+  },
+  userNameRight: {
+    textAlign: 'right',
+    fontWeight: 'bold',
+    marginBottom: 4,
+    color: COLORS.primary,
+  },
+  message: {
+    marginBottom: 4,
+    flexWrap: 'wrap',
+  },
+  messageRight: {
+    textAlign: 'right',
+    marginBottom: 4,
+    flexWrap: 'wrap',
+  },
+  time: {
+    alignSelf: 'flex-end',
+    color: '#808080',
+    fontSize: 12,
+  },
+  timeRight: {
+    alignSelf: 'flex-start',
+    color: '#808080',
+    fontSize: 12,
+  },
+});
 
 export default Groupchat;

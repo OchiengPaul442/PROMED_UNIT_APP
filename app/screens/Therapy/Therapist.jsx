@@ -1,4 +1,3 @@
-// imports
 import React, {useContext} from 'react';
 import {
   View,
@@ -6,21 +5,19 @@ import {
   TextInput,
   ScrollView,
   StyleSheet,
-  TouchableOpacity,
   Image,
+  Linking,
+  TouchableOpacity,
 } from 'react-native';
 import moment from 'moment';
 import RadioGroup from 'react-native-radio-buttons-group';
 import CheckBox from '@react-native-community/checkbox';
 import DropDownPicker from 'react-native-dropdown-picker';
-
 import {Formik} from 'formik';
+import auth from '@react-native-firebase/auth';
 
-// constants
 import {COLORS, ProfileMale} from '../../constants';
 import Styles from '../../constants/Styles';
-
-// components
 import {
   BackBtn,
   MessageIcon,
@@ -30,25 +27,19 @@ import {
   DeleteIcon,
 } from '../../components';
 import Screen from '../../layout/Screen';
-
-// context
 import {AuthContext} from '../../navigations/Context/AuthContext';
-
-// fetch functions
 import {
   fetchTherapistSchedule,
   editTherapistDetailsInFirestore,
   fetchSelectedTherapist,
 } from '../../../fireStore';
 
-// firebase
-import auth from '@react-native-firebase/auth';
-
-// lazy loading
 const Table = React.lazy(() => import('../../components/table/Table'));
 const Datepicker = React.lazy(() =>
   import('../../components/date&timepicker/Datepicker'),
 );
+
+// ...
 
 const Therapy = ({navigation, route}) => {
   // context
@@ -221,6 +212,11 @@ const Therapy = ({navigation, route}) => {
         userImage,
       });
     }
+  };
+
+  // handle phone call
+  const handleRefCall = () => {
+    Linking.openURL(`tel:${details.phone}`);
   };
 
   React.useEffect(() => {
@@ -472,8 +468,10 @@ const Therapy = ({navigation, route}) => {
                           <TouchableOpacity
                             onPress={() =>
                               anonymous
-                                ? setError('You an account to access this!!')
-                                : null
+                                ? setError(
+                                    'You need an account to access this!!',
+                                  )
+                                : handleRefCall()
                             }>
                             <CallIcon
                               width={25}

@@ -1,4 +1,3 @@
-// imports
 import React from 'react';
 import {
   StyleSheet,
@@ -6,18 +5,16 @@ import {
   View,
   Keyboard,
   SafeAreaView,
-  TouchableOpacity,
   ScrollView,
   TextInput,
+  TouchableOpacity,
 } from 'react-native';
 import {useFocusEffect} from '@react-navigation/native';
 
-// constants
-import {COLORS} from '../constants'; // predefined colors for the app
-import Styles from '../constants/Styles'; // custom styles for the app
+import {COLORS} from '../constants';
+import Styles from '../constants/Styles';
 
-// components
-import {FocusedStatusBar, BackBtn, DetailsIcon, SendIcon} from '../components'; // components for the status bar, buttons, icons and loading animation
+import {FocusedStatusBar, BackBtn, DetailsIcon, SendIcon} from '../components';
 
 const ChatScreen = ({
   nav,
@@ -28,7 +25,6 @@ const ChatScreen = ({
   setMess,
   text,
   submit,
-  scrollBottom,
 }) => {
   // Height of the keyboard
   const [keyboardHeight, setKeyboardHeight] = React.useState(0);
@@ -96,7 +92,7 @@ const ChatScreen = ({
         {/* Content */}
         <View style={styles.Content}>
           <View style={Styles.chats}>
-            <ScrollView ref={scrollBottom} showsVerticalScrollIndicator={false}>
+            <ScrollView showsVerticalScrollIndicator={false}>
               {children}
             </ScrollView>
           </View>

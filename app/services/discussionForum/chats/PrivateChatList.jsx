@@ -1,5 +1,5 @@
 import {StyleSheet, Text, View, Image, TouchableOpacity} from 'react-native';
-import React, {Context} from 'react';
+import React from 'react';
 
 // context
 import {AuthContext} from '../../../navigations/Context/AuthContext';
@@ -41,7 +41,7 @@ const PrivateChatList = ({navigation}) => {
     } else {
       fetchPrivateChats(setPrivateChats, setLoading);
     }
-  }, []);
+  }, [userData.userType]);
 
   return (
     <Screen2

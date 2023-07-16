@@ -1,26 +1,25 @@
-// imports
 import React from 'react';
 import {StyleSheet, Text} from 'react-native';
 
 // firebase imports
-import auth from '@react-native-firebase/auth'; // a module for the firebase authentication
-import firestore from '@react-native-firebase/firestore'; // a module for the firebase firestore
-import AsyncStorage from '@react-native-async-storage/async-storage'; // a module for the async storage
+import auth from '@react-native-firebase/auth';
+import firestore from '@react-native-firebase/firestore';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // NetInfo
-import NetInfo from '@react-native-community/netinfo'; // a module for the network information
+import NetInfo from '@react-native-community/netinfo';
 
 // navigation
-import {createStackNavigator} from '@react-navigation/stack'; // a module for the stack navigation
-import {createBottomTabNavigator} from '@react-navigation/bottom-tabs'; // a module for the bottom tab navigation
+import {createStackNavigator} from '@react-navigation/stack';
+import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import {createDrawerNavigator} from '@react-navigation/drawer'; // a module for the drawer navigation
 
 // constants
-import {COLORS} from '../constants'; // predefined colors for the app
-import Styles from '../constants/Styles'; // custom styles for the app
+import {COLORS} from '../constants';
+import Styles from '../constants/Styles';
 
 // components
-import {Loader, ErrorHandle, DetailsIcon} from '../components'; // components for the loader and the error handle
+import {Loader, ErrorHandle} from '../components';
 
 // icons
 import {
@@ -32,7 +31,7 @@ import {
   Therapist,
   Boticon,
   LogoutIcon,
-} from '../components'; // components for the icons
+} from '../components';
 
 // screens
 import {
@@ -96,9 +95,6 @@ const AuthNavigation = () => {
 
 // Drawer stack
 const DrawerStackScreen = () => {
-  // use the useContext hook to get the user data value
-  const {userData} = React.useContext(AuthContext);
-
   //Define an array of drawer items with their names, components and icons
   const drawers = [
     {name: 'HomeScreen', label: 'Home', component: BottomTabs, icon: Home},
@@ -115,14 +111,6 @@ const DrawerStackScreen = () => {
       component: ChatStackScreen,
       icon: ChatIcon,
     },
-    userData.userType !== 'Therapist'
-      ? null
-      : {
-          name: 'Therapist_profile',
-          label: 'Therapist Profile',
-          component: TherapistProfile,
-          icon: DetailsIcon,
-        },
     {
       name: 'Notification',
       label: 'Notification',
@@ -177,15 +165,28 @@ const ChatStackScreen = () => {
   );
 };
 
-//Bottom nav stack
 const BottomTabs = () => {
+  // use the useContext hook to get the user data value
+  const {userData, anonymous} = React.useContext(AuthContext);
+
   //Define an array of tab icons with their names and components
-  const tabs = [
+  let tabs = [
     {name: 'Home', icon: Home, component: HomeStackScreen},
-    {name: 'Therapy_root', icon: Therapist, component: TherapyStackScreen},
+    {
+      name: 'Therapy_root',
+      icon: Therapist,
+      component:
+        userData && userData.userType !== 'Therapist'
+          ? TherapyStackScreen
+          : TherapistProfile,
+    },
     {name: 'Groups_root', icon: Group, component: GroupStackScreen},
-    {name: 'Bot_root', icon: Boticon, component: Bot},
   ];
+
+  // Only add the Bot_root tab if anonymous is false
+  if (!anonymous) {
+    tabs.push({name: 'Bot_root', icon: Boticon, component: Bot});
+  }
 
   return (
     <BottomTabStack.Navigator
@@ -288,12 +289,10 @@ const HandleLogout = () => {
     auth()
       .signOut()
       .then(() => {
-        // remove the user token from async storage
-        AsyncStorage.removeItem('userToken');
-        // set the user token to null
-        setUserToken('');
-        // set the user data to null
-        setUserData('');
+        // set user token to null
+        setUserToken(null);
+        // set user data to null
+        setUserData(null);
         // set anonymous to false
         setAnonymous(false);
       })
@@ -319,27 +318,23 @@ const AppNavigations = () => {
   // get current user and user doc reference
   const user = auth().currentUser;
 
-  // if usertoken is set, get stream of user data for the current user from firestore
   React.useEffect(() => {
-    if (userToken) {
+    if (user) {
       getUserData(setUserData, setError, user);
     }
 
-    // if app is not connected to internet
-    NetInfo.addEventListener(state => {
+    const unsubscribe = NetInfo.addEventListener(state => {
       if (!state.isConnected) {
-        // set error status to true
         setErrorStatus(true);
-        // set error message
         setError('No internet connection');
       } else {
-        // set error status to false
         setErrorStatus(false);
-        // set error message
         setError('');
       }
     });
-  }, [userToken]);
+
+    return () => unsubscribe();
+  }, [userToken, user]);
 
   React.useEffect(() => {
     // if user is signed in
@@ -350,11 +345,13 @@ const AppNavigations = () => {
         .collection('Notifications');
       notificationRef.onSnapshot(querySnapshot => {
         let count = 0;
-        querySnapshot.forEach(documentSnapshot => {
-          if (!documentSnapshot.data().read) {
-            count++;
-          }
-        });
+        if (querySnapshot) {
+          querySnapshot.forEach(documentSnapshot => {
+            if (!documentSnapshot.data().read) {
+              count++;
+            }
+          });
+        }
         setNotificationCount(count);
       });
     }
@@ -382,7 +379,7 @@ const AppNavigations = () => {
         setErrorStatus,
       }}>
       {/* Display */}
-      {userToken ? <DrawerStackScreen /> : <AuthNavigation />}
+      {user && user.uid ? <DrawerStackScreen /> : <AuthNavigation />}
       {/* <DrawerStackScreen /> */}
 
       {/* Loader */}

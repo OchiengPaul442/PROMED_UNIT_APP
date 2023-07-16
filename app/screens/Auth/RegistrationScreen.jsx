@@ -1,23 +1,19 @@
+import React, {useContext} from 'react';
 import {
   View,
   Text,
   StyleSheet,
-  TouchableOpacity,
   TextInput,
   KeyboardAvoidingView,
+  TouchableOpacity,
 } from 'react-native';
-import React, {useContext} from 'react';
-import {AuthContext} from '../../navigations/Context/AuthContext';
-
-// firebase imports
 import firestore from '@react-native-firebase/firestore';
 import firebase from '@react-native-firebase/app';
-
-// yup and formik imports
 import {object, string} from 'yup';
 import {Formik} from 'formik';
+import DropDownPicker from 'react-native-dropdown-picker';
 
-// components
+import {AuthContext} from '../../navigations/Context/AuthContext';
 import {
   RecButton,
   Checkbox,
@@ -25,16 +21,11 @@ import {
   CloseIconeye,
   RoundLoadingAnimation,
 } from '../../components';
-
-// dropdown import
-import DropDownPicker from 'react-native-dropdown-picker';
-
-// constants
 import {COLORS, ProfileMale} from '../../constants';
 import Styles from '../../constants/Styles';
-
-//layout
 import AuthScreen from '../../layout/AuthScreen';
+
+// ...
 
 // min 8 characters, 1 upper case letter, 1 lower case letter, 1 numeric digit.
 const passwordRules = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$/;
@@ -134,6 +125,10 @@ const RegistrationScreen = ({navigation}) => {
                     gender: gender,
                     age: age,
                     userType: 'Client',
+                    photoURL:
+                      `https://source.unsplash.com/collection/139386/160x160/?sig=${Math.floor(
+                        Math.random() * 1000,
+                      )}` || ProfileMale,
                     createdAt: firestore.Timestamp.fromDate(new Date()),
                     updatedAt: firestore.Timestamp.fromDate(new Date()),
                   });

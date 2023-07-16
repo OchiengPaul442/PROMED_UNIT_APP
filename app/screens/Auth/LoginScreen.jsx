@@ -1,22 +1,17 @@
+import React, {useContext} from 'react';
 import {
   View,
   Text,
   StyleSheet,
   TextInput,
-  TouchableOpacity,
   KeyboardAvoidingView,
+  TouchableOpacity,
 } from 'react-native';
-import React, {useContext} from 'react';
-import {AuthContext} from '../../navigations/Context/AuthContext';
-
-// firebase imports
 import firebase from '@react-native-firebase/app';
-
-// yup and formik imports
 import {object, string} from 'yup';
 import {Formik} from 'formik';
 
-// components
+import {AuthContext} from '../../navigations/Context/AuthContext';
 import {
   RecButton,
   Checkbox,
@@ -24,12 +19,8 @@ import {
   CloseIconeye,
   RoundLoadingAnimation,
 } from '../../components';
-
-// constants
 import {COLORS} from '../../constants';
 import Styles from '../../constants/Styles';
-
-//layout
 import AuthScreen from '../../layout/AuthScreen';
 
 // form validation schema

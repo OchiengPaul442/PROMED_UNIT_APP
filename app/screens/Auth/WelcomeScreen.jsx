@@ -1,10 +1,6 @@
 import {StyleSheet, View, Text, SafeAreaView, Image} from 'react-native';
 import React from 'react';
-
-// components
 import {FocusedStatusBar, CurvedButton} from '../../components';
-
-// Constants
 import {COLORS, SIZES, RightPam, LeftPam} from '../../constants';
 
 const WelcomeScreen = ({navigation}) => {

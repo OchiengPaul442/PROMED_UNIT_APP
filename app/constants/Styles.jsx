@@ -106,6 +106,7 @@ export default Styles = StyleSheet.create({
     height: '92%',
     borderTopRightRadius: 30,
     borderTopLeftRadius: 30,
+    paddingHorizontal: 10,
   },
 
   inputfield_con: {
