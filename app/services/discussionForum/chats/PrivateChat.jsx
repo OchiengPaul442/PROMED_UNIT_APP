@@ -76,7 +76,7 @@ const PrivateChat = ({navigation, route}) => {
     });
     return () => unsubscribe();
   }, [therapistId, userUid]);
-
+  console.log(message);
   return (
     <ChatScreen
       title="Private Chat"
@@ -111,13 +111,13 @@ const PrivateChat = ({navigation, route}) => {
           inverted={false}
           keyExtractor={item => item.key}
           extraData={message}
-          renderItem={({item, index}) =>
+          renderItem={({item}) =>
             userData.length > 0 &&
             userData.map(data => {
               if (item.user._id === data.key)
                 return (
                   <View
-                    key={index}
+                    key={Math.random()}
                     style={
                       currentUser.uid === item.user._id
                         ? styles.containerRight

@@ -108,3 +108,15 @@ export const MentalDoctorAnimation = props => {
     />
   );
 };
+
+// mental health animation
+export const MentalHealthAnimation = props => {
+  return (
+    <Lottie
+      style={{width: props.width, height: props.height, ...props}}
+      source={require('../../assets/animations/mentalHealth.json')}
+      autoPlay
+      loop={true}
+    />
+  );
+};

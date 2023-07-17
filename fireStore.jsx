@@ -14,17 +14,16 @@ import React from 'react';
 //-------------------------------------------------------------------------//
 // fetch User Appointments
 export async function fetchUserAppointments() {
-  // get current user data
   const currentUser = auth().currentUser;
 
-  // count the number of Appointments the user has
-  const count = await firestore()
+  const appointmentsRef = firestore()
     .collection('Appointments')
-    .where('userId', '==', currentUser.uid)
-    .get();
+    .doc(currentUser.uid)
+    .collection('UserAppointments');
 
-  // return the number of sessions
-  return count.size;
+  const snapshot = await appointmentsRef.get();
+
+  return snapshot.size;
 }
 
 export async function getUserData(setUserData, setError, user) {
@@ -141,6 +140,32 @@ export async function fetchMoreDailyMentalHealthTips(
     // set error
     setError(error.message);
   }
+}
+
+//-------------------------------------------------------------------------//
+// CHECK IF USER HAS DONE TEST
+//-------------------------------------------------------------------------//
+export async function checkIfUserHasDoneTest(setHasDoneTest) {
+  // get current user data
+  const currentUser = auth().currentUser;
+
+  // get user data from firestore
+  await firestore()
+    .collection('Results')
+    .doc(currentUser.uid)
+    .onSnapshot(documentSnapshot => {
+      // check if documentSnapshot is not null
+      if (documentSnapshot) {
+        // check if document exists
+        if (documentSnapshot.exists) {
+          // set hasDoneTest to true
+          setHasDoneTest(true);
+        } else {
+          // set hasDoneTest to false
+          setHasDoneTest(false);
+        }
+      }
+    });
 }
 
 //-------------------------------------------------------------------------//
@@ -323,17 +348,19 @@ export async function confirmUserBooking(
   navigation,
   name,
 ) {
-  // set loading to true
   setLoading(true);
 
-  // get current user
   const user = auth().currentUser;
+  const appointmentsRef = firestore()
+    .collection('Appointments')
+    .doc(user.uid)
+    .collection('UserAppointments')
+    .doc();
 
   try {
-    // save booking to firestore
-    const bookingRef = await firestore()
-      .collection('Appointments')
-      .add({
+    const doc = await appointmentsRef.get();
+    if (doc.exists) {
+      await appointmentsRef.update({
         userId: user.uid,
         therapistId: therapistId,
         date: date,
@@ -341,15 +368,21 @@ export async function confirmUserBooking(
         token: `${userData.phoneNumber}${token}`,
         createdAt: firestore.FieldValue.serverTimestamp(),
       });
+    } else {
+      await appointmentsRef.set({
+        userId: user.uid,
+        therapistId: therapistId,
+        date: date,
+        time: time,
+        token: `${userData.phoneNumber}${token}`,
+        createdAt: firestore.FieldValue.serverTimestamp(),
+      });
+    }
 
-    // send notification to user
     sendNotification(name, date, time);
-
-    // send notification to therapist
     sendNotificationToTherapist(therapistId, name, date, time);
 
-    // Update therapist schedule in firestore
-    const scheduleRef = await firestore()
+    await firestore()
       .collection('Therapists')
       .doc(therapistId)
       .collection('Schedule')
@@ -361,22 +394,16 @@ export async function confirmUserBooking(
         createdAt: firestore.FieldValue.serverTimestamp(),
       });
 
-    // set error status
     setErrorStatus('success');
-    // set error message
     setError('Appointment booked successfully');
 
-    // navigate to home screen after a delay
     setTimeout(() => {
       navigation.navigate('Therapy');
     }, 900);
   } catch (error) {
-    // set error status
     setErrorStatus('error');
-    // set error message
     setError(error.message);
   } finally {
-    // set loading to false
     setLoading(false);
   }
 }

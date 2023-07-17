@@ -84,128 +84,75 @@ const Test = ({route, navigation}) => {
     },
   ];
 
-  const stressQnz = [
+  const anxietyQnz = [
     {
       question:
         'How often have you been bothered by feeling nervous, anxious, or on edge over the past two weeks?',
       options: [
-        {label: 'Not at all', value: 0},
-        {label: 'Several days', value: 1},
-        {label: 'More than half the days', value: 2},
-        {label: 'Nearly every day', value: 3},
+        {label: 'Not at all', value: 1},
+        {label: 'Several days', value: 2},
+        {label: 'More than half the days', value: 3},
+        {label: 'Nearly every day', value: 4},
       ],
     },
     {
       question:
         'How often have you been bothered by not being able to stop or control worrying over the past two weeks?',
       options: [
-        {label: 'Not at all', value: 0},
-        {label: 'Several days', value: 1},
-        {label: 'More than half the days', value: 2},
-        {label: 'Nearly every day', value: 3},
+        {label: 'Not at all', value: 1},
+        {label: 'Several days', value: 2},
+        {label: 'More than half the days', value: 3},
+        {label: 'Nearly every day', value: 4},
       ],
     },
     {
       question:
         'How often have you been bothered by trouble relaxing over the past two weeks?',
       options: [
-        {label: 'Not at all', value: 0},
-        {label: 'Several days', value: 1},
-        {label: 'More than half the days', value: 2},
-        {label: 'Nearly every day', value: 3},
+        {label: 'Not at all', value: 1},
+        {label: 'Several days', value: 2},
+        {label: 'More than half the days', value: 3},
+        {label: 'Nearly every day', value: 4},
       ],
     },
     {
       question:
         'How often have you been bothered by becoming easily annoyed or irritable over the past two weeks?',
       options: [
-        {label: 'Not at all', value: 0},
-        {label: 'Several days', value: 1},
-        {label: 'More than half the days', value: 2},
-        {label: 'Nearly every day', value: 3},
+        {label: 'Not at all', value: 1},
+        {label: 'Several days', value: 2},
+        {label: 'More than half the days', value: 3},
+        {label: 'Nearly every day', value: 4},
       ],
     },
     {
       question:
         'How often have you been bothered by feeling afraid as if something awful might happen over the past two weeks?',
       options: [
-        {label: 'Not at all', value: 0},
-        {label: 'Several days', value: 1},
-        {label: 'More than half the days', value: 2},
-        {label: 'Nearly every day', value: 3},
+        {label: 'Not at all', value: 1},
+        {label: 'Several days', value: 2},
+        {label: 'More than half the days', value: 3},
+        {label: 'Nearly every day', value: 4},
       ],
     },
     {
       question:
         'How often have you been bothered by feeling restless or fidgety over the past two weeks?',
       options: [
-        {label: 'Not at all', value: 0},
-        {label: 'Several days', value: 1},
-        {label: 'More than half the days', value: 2},
-        {label: 'Nearly every day', value: 3},
-      ],
-    },
-  ];
-
-  const anxietyQnz = [
-    {
-      question:
-        'How often have you been bothered by feeling nervous, anxious, or on edge over the past two weeks?',
-      options: [
-        {label: 'Not at all', value: 0},
-        {label: 'Several days', value: 1},
-        {label: 'More than half the days', value: 2},
-        {label: 'Nearly every day', value: 3},
+        {label: 'Not at all', value: 1},
+        {label: 'Several days', value: 2},
+        {label: 'More than half the days', value: 3},
+        {label: 'Nearly every day', value: 4},
       ],
     },
     {
       question:
-        'How often have you been bothered by not being able to stop or control worrying over the past two weeks?',
+        'How often have you been bothered by feeling restless or fidgety over the past two weeks?',
       options: [
-        {label: 'Not at all', value: 0},
-        {label: 'Several days', value: 1},
-        {label: 'More than half the days', value: 2},
-        {label: 'Nearly every day', value: 3},
-      ],
-    },
-    {
-      question:
-        'How often have you been bothered by worrying too much about different things over the past two weeks?',
-      options: [
-        {label: 'Not at all', value: 0},
-        {label: 'Several days', value: 1},
-        {label: 'More than half the days', value: 2},
-        {label: 'Nearly every day', value: 3},
-      ],
-    },
-    {
-      question:
-        'How often have you been bothered by trouble relaxing over the past two weeks?',
-      options: [
-        {label: 'Not at all', value: 0},
-        {label: 'Several days', value: 1},
-        {label: 'More than half the days', value: 2},
-        {label: 'Nearly every day', value: 3},
-      ],
-    },
-    {
-      question:
-        'How often have you been bothered by being so restless that it is hard to sit still over the past two weeks?',
-      options: [
-        {label: 'Not at all', value: 0},
-        {label: 'Several days', value: 1},
-        {label: 'More than half the days', value: 2},
-        {label: 'Nearly every day', value: 3},
-      ],
-    },
-    {
-      question:
-        'How often have you been bothered by becoming easily annoyed or irritable over the past two weeks?',
-      options: [
-        {label: 'Not at all', value: 0},
-        {label: 'Several days', value: 1},
-        {label: 'More than half the days', value: 2},
-        {label: 'Nearly every day', value: 3},
+        {label: 'Not at all', value: 1},
+        {label: 'Several days', value: 2},
+        {label: 'More than half the days', value: 3},
+        {label: 'Nearly every day', value: 4},
       ],
     },
   ];

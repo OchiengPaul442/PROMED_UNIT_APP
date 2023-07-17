@@ -41,36 +41,38 @@ const Table = props => {
             );
           })}
         </View>
-        {tableData.map((rowData, index) => {
-          return (
-            <View
-              key={index}
-              style={{
-                borderTopWidth: BorderWidth,
-                borderBottomWidth:
-                  index === tableData.length - 1 ? 0 : BorderWidth,
-                borderColor: BorderColor,
-                ...styles.tableRow,
-              }}>
-              {rowData.map((cellData, cellIndex) => {
-                return (
-                  <View
-                    key={cellIndex}
-                    style={{
-                      borderRightWidth:
-                        cellIndex === rowData.length - 1 ? 0 : BorderWidth,
-                      borderColor: BorderColor,
-                      ...styles.datacell,
-                    }}>
-                    <Text style={{color: tableDataColor, ...styles.tableData}}>
-                      {cellData}
-                    </Text>
-                  </View>
-                );
-              })}
-            </View>
-          );
-        })}
+        {tableData &&
+          tableData.map((rowData, index) => {
+            return (
+              <View
+                key={index}
+                style={{
+                  borderTopWidth: BorderWidth,
+                  borderBottomWidth:
+                    index === tableData.length - 1 ? 0 : BorderWidth,
+                  borderColor: BorderColor,
+                  ...styles.tableRow,
+                }}>
+                {rowData.map((cellData, cellIndex) => {
+                  return (
+                    <View
+                      key={cellIndex}
+                      style={{
+                        borderRightWidth:
+                          cellIndex === rowData.length - 1 ? 0 : BorderWidth,
+                        borderColor: BorderColor,
+                        ...styles.datacell,
+                      }}>
+                      <Text
+                        style={{color: tableDataColor, ...styles.tableData}}>
+                        {cellData}
+                      </Text>
+                    </View>
+                  );
+                })}
+              </View>
+            );
+          })}
       </View>
     </View>
   );
@@ -104,5 +106,11 @@ const styles = StyleSheet.create({
   },
   tableData: {
     flex: 1,
+    paddingHorizontal: 2,
+    paddingVertical: 5,
+    justifyContent: 'center',
+    alignItems: 'center',
+    alignContent: 'center',
+    verticalAlign: 'middle',
   },
 });

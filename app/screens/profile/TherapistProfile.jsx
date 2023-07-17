@@ -14,24 +14,13 @@ import moment from 'moment';
 import RadioGroup from 'react-native-radio-buttons-group';
 import CheckBox from '@react-native-community/checkbox';
 import DropDownPicker from 'react-native-dropdown-picker';
-
 import {Formik} from 'formik';
-
-// constants
 import {COLORS, ProfileMale} from '../../constants';
 import Styles from '../../constants/Styles';
-
-// components
 import {BackBtn, MessageIcon, EditIcon, ViewIconeye} from '../../components';
 import Screen from '../../layout/Screen';
-
-// context
 import {AuthContext} from '../../navigations/Context/AuthContext';
-
-// fetch functions
 import {editTherapistDetailsInFirestore} from '../../../fireStore';
-
-// firebase
 import auth from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
 
@@ -211,7 +200,7 @@ const TherapistProfile = ({navigation}) => {
   const TABLECONTENT = {
     tableHead: ['Day', 'Time', 'Status'],
     tableData: schedule.map(item => [
-      moment(item.date, 'YYYY/MM/DD').format('dddd'),
+      moment(item.date, 'YYYY/MM/DD').format('MMMM Do YYYY'),
       item.time,
       item.status,
       // <TouchableOpacity

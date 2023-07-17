@@ -110,10 +110,14 @@ const ChatScreen = ({
               style={Styles.inputfield}
             />
             <TouchableOpacity
+              style={{
+                marginRight: 5,
+                marginLeft: 5,
+              }}
               onPress={() => {
                 sendPrivateMessage();
               }}>
-              <SendIcon width={50} height={50} fill={COLORS.tertiary} />
+              <SendIcon width={45} height={45} fill={COLORS.primary} />
             </TouchableOpacity>
           </View>
         </View>

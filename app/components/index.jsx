@@ -9,6 +9,7 @@ export {RecButton, BackButton, CurvedButton} from './Buttons/Button';
 
 // cards
 export {default as Card} from './Cards/Card';
+export {default as CardView} from './Cards/CardView';
 
 // loader
 export {default as Loader} from './loader/Loader';
@@ -18,6 +19,7 @@ export {default as ErrorHandle} from './errors/ErrorHandle';
 
 // animations
 export {
+  MentalHealthAnimation,
   ConfirmedAnimation,
   BadAnimation,
   HappyAnimation,
@@ -31,6 +33,7 @@ export {
 
 // icons
 export {
+  HumanNotSureIcon,
   RetryIcon,
   DetailsIcon,
   BackBtn,

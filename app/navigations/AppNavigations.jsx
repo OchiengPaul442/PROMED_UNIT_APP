@@ -4,7 +4,6 @@ import {StyleSheet, Text} from 'react-native';
 // firebase imports
 import auth from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // NetInfo
 import NetInfo from '@react-native-community/netinfo';

@@ -6,11 +6,17 @@ import {
   StyleSheet,
   FlatList,
   TouchableOpacity,
+  Image,
+  Linking,
 } from 'react-native';
-
 import {COLORS, SIZES} from '../../constants';
 import Styles from '../../constants/Styles';
-import {Card, RoundLoadingAnimation, CloseIcon} from '../../components';
+import {
+  CardView,
+  RoundLoadingAnimation,
+  CloseIcon,
+  ViewIconeye,
+} from '../../components';
 import Screen from '../../layout/Screen';
 import {AuthContext} from '../../navigations/Context/AuthContext';
 import {
@@ -36,23 +42,12 @@ const HomeScreen = ({navigation, route}) => {
   const {userData, anonymous, setError, takeTest, setTakeTest} =
     useContext(AuthContext);
 
-  // loading
   const [Loading, setLoading] = React.useState(false);
   const [Loading2, setLoading2] = React.useState(false);
-
-  // model
   const [open, setOpen] = React.useState(false);
-
-  // selected tip
   const [selectedTip, setSelectedTip] = React.useState('');
-
-  // Get the greeting based on the time of the day
   const [greeting, setGreeting] = React.useState('');
-
-  // Health tips
   const [healthTips, setHealthTips] = React.useState([]);
-
-  // Get the user appointments
   const [userAppointments, setUserAppointments] = React.useState(0);
 
   const toggleModal = () => {
@@ -61,7 +56,6 @@ const HomeScreen = ({navigation, route}) => {
 
   // greetings function
   const getGreetings = () => {
-    // get the current time of the day
     const date = new Date();
     const hours = date.getHours();
 
@@ -155,7 +149,6 @@ const HomeScreen = ({navigation, route}) => {
             {!takeTest ? (
               <View>
                 <View style={styles.Heading_container}>
-                  <Text style={Styles.heading}>Your Mood today</Text>
                   {/* mood tracker */}
                   <Suspense
                     fallback={<RoundLoadingAnimation width={80} height={80} />}>
@@ -199,35 +192,32 @@ const HomeScreen = ({navigation, route}) => {
                         keyExtractor={(item, index) => index.toString()}
                         renderItem={({item, index}) => (
                           <View key={item.id} style={{paddingHorizontal: 10}}>
-                            <Card
+                            <CardView
                               Press={() => {
                                 setSelectedTip(item);
                                 toggleModal();
                               }}
-                              bgColor={COLORS.lightGray}
-                              height={90}>
-                              <View
-                                style={{
-                                  backgroundColor: randomColor(),
-                                  width: 50,
-                                  height: 50,
-                                  borderRadius: 50,
-                                  justifyContent: 'center',
-                                  alignItems: 'center',
-                                }}>
-                                <Text style={styles.Tip_Number}>
-                                  {index + 1}
-                                </Text>
-                              </View>
-                              <View style={styles.Tip_Container}>
-                                <Text style={Styles.title}>
+                              height={110}
+                              style={styles.container2}>
+                              <Image
+                                style={styles.image}
+                                source={{
+                                  uri: `https://source.unsplash.com/featured/?mental-health,${index}`,
+                                }}
+                                alt=""
+                              />
+                              <View style={styles.contentContainer}>
+                                <Text style={styles.title}>
                                   {item.title.substring(0, 30)}
                                 </Text>
-                                <Text style={Styles.text}>
+                                <Text
+                                  style={{
+                                    color: COLORS.darkGray,
+                                  }}>
                                   {item.description.substring(0, 85, +'...')}
                                 </Text>
                               </View>
-                            </Card>
+                            </CardView>
                           </View>
                         )}
                       />
@@ -301,18 +291,28 @@ const HomeScreen = ({navigation, route}) => {
       <Suspense fallback={<RoundLoadingAnimation width={80} height={80} />}>
         {selectedTip ? (
           <CenterHalf Visibility={open} hide={toggleModal}>
-            <Text style={Styles.title}>{selectedTip.title}</Text>
-            <Text style={{paddingVertical: 10, ...Styles.text}}>
-              {selectedTip.description}
-            </Text>
-            <TouchableOpacity onPress={toggleModal}>
+            <Text style={styles.title}>{selectedTip.title}</Text>
+            <Text style={styles.text}>{selectedTip.description}</Text>
+            <TouchableOpacity
+              style={{
+                paddingHorizontal: 6,
+                marginVertical: 10,
+                width: '100%',
+              }}
+              onPress={() =>
+                Linking.openURL(
+                  'https://www.healthline.com/health/mental-health',
+                )
+              }>
               <Text
                 style={{
-                  paddingVertical: 10,
-                  color: COLORS.red,
+                  color: COLORS.blue,
                 }}>
-                Close
+                Read more
               </Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={toggleModal}>
+              <Text style={[styles.text, {color: COLORS.red}]}>Close</Text>
             </TouchableOpacity>
           </CenterHalf>
         ) : null}
@@ -381,6 +381,29 @@ const styles = StyleSheet.create({
   sessions: {
     fontSize: SIZES.small,
     color: COLORS.secondary,
+  },
+
+  imageContainer: {
+    borderTopLeftRadius: 10,
+    borderBottomLeftRadius: 10,
+    overflow: 'hidden',
+  },
+  image: {
+    borderTopLeftRadius: 10,
+    borderBottomLeftRadius: 10,
+    width: 140,
+    height: '100%',
+    resizeMode: 'cover',
+  },
+  contentContainer: {
+    flex: 1,
+    padding: 10,
+  },
+  title: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: COLORS.primary,
+    marginBottom: 10,
   },
 });
 

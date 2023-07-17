@@ -1,14 +1,9 @@
 import {StyleSheet, Text, View, TouchableOpacity} from 'react-native';
 import React from 'react';
-
-// navigation
 import {useNavigation} from '@react-navigation/native';
-
-// constants
 import {COLORS} from '../../constants';
 
 const DiagnosisTools = () => {
-  // navigation
   const navigation = useNavigation();
 
   // List of diagnosis tools
@@ -16,26 +11,20 @@ const DiagnosisTools = () => {
     {
       id: 1,
       title: 'Depression',
-      textColor: COLORS.primary,
+      textColor: COLORS.white,
       color: COLORS.yellow,
     },
     {
       id: 2,
       title: 'Anxiety',
-      textColor: COLORS.primary,
+      textColor: COLORS.white,
       color: COLORS.orange,
     },
     {
       id: 3,
-      title: 'Stress',
+      title: 'PTSD',
       textColor: COLORS.white,
       color: COLORS.cyan,
-    },
-    {
-      id: 4,
-      title: 'PTSD',
-      textColor: COLORS.primary,
-      color: COLORS.lightGray,
     },
   ];
 

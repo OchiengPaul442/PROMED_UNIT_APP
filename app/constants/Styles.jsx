@@ -111,9 +111,9 @@ export default Styles = StyleSheet.create({
 
   inputfield_con: {
     position: 'relative',
-    width: '100%',
+    flex: 1,
     height: 50,
-    paddingHorizontal: 28,
+    paddingHorizontal: 34,
     display: 'flex',
     flexDirection: 'row',
     justifyContent: 'center',
@@ -125,8 +125,10 @@ export default Styles = StyleSheet.create({
     height: 45,
     position: 'relative',
     padding: 10,
-    backgroundColor: COLORS.darkGray,
-    borderRadius: 10,
+    backgroundColor: COLORS.lightGray,
+    borderRadius: 30,
+    borderWidth: 1,
+    borderColor: COLORS.primary,
   },
 
   leftChat: {

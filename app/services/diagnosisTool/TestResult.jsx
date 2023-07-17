@@ -29,22 +29,20 @@ const TestResult = ({route, navigation}) => {
     const user = auth().currentUser;
     const docRef = firestore().collection('Results').doc(user.uid);
     const doc = await docRef.get();
+    const data = {
+      [title]: {
+        id,
+        title,
+        answers,
+        response,
+        ...(title === 'Anxiety' && {score: generatePercentage()}),
+      },
+    };
+
     if (!doc.exists) {
-      await docRef.set({
-        id,
-        title,
-        answers,
-        response: response,
-        createdAt: firestore.FieldValue.serverTimestamp(),
-      });
+      await docRef.set(data);
     } else {
-      await docRef.update({
-        id,
-        title,
-        answers,
-        response: response,
-        createdAt: firestore.FieldValue.serverTimestamp(),
-      });
+      await docRef.update(data);
     }
   };
 
@@ -68,26 +66,15 @@ const TestResult = ({route, navigation}) => {
           break;
         case 'Anxiety':
           const res2 = await api.post('/anxiety', {
-            Schizophrenia: answers[0],
-            BipolarDisorder: answers[1],
-            EatingDisorders: answers[2],
-            AnxietyDisorders: answers[3],
-            DrugUseDisorders: answers[4],
-            AlcoholUseDisorders: answers[5],
+            D1: answers[0],
+            D2: answers[1],
+            D3: answers[2],
+            D4: answers[3],
+            D5: answers[4],
+            D6: answers[5],
+            D7: answers[6],
           });
           setResponse(res2.data);
-          setLoading(false);
-          break;
-        case 'Stress':
-          const res3 = await api.post('', {
-            Schizophrenia: answers[0],
-            BipolarDisorder: answers[1],
-            EatingDisorders: answers[2],
-            AnxietyDisorders: answers[3],
-            DrugUseDisorders: answers[4],
-            AlcoholUseDisorders: answers[5],
-          });
-          setResponse(res3.data);
           setLoading(false);
           break;
         case 'PTSD':
@@ -119,6 +106,11 @@ const TestResult = ({route, navigation}) => {
   useEffect(() => {
     getResponse();
   }, []);
+
+  const generatePercentage = () => {
+    const score = answers.reduce((total, answer) => total + (answer || 0), 0);
+    return (score / 28) * 100;
+  };
 
   return (
     <Screen>
@@ -182,8 +174,14 @@ const TestResult = ({route, navigation}) => {
                     <View style={styles.result_box}>
                       <Text style={styles.result_percentage}>
                         {response
-                          ? response.Accuracy_score.toFixed(2) * 100 + '%'
-                          : '0%'}
+                          ? title === 'Depression'
+                            ? response.Accuracy_score.toFixed(2) * 100 + '%'
+                            : title === 'Anxiety'
+                            ? response && generatePercentage().toFixed(0) + '%'
+                            : title === 'PTSD'
+                            ? response && response.prediction
+                            : '0%'
+                          : null}
                       </Text>
                     </View>
                   </View>
@@ -236,8 +234,15 @@ const TestResult = ({route, navigation}) => {
                           </Text>
                           <Text style={styles.summary_card_text}>
                             {response
-                              ? response.Accuracy_score.toFixed(2) * 100 + '%'
-                              : '0%'}
+                              ? title === 'Depression'
+                                ? response.Accuracy_score.toFixed(2) * 100 + '%'
+                                : title === 'Anxiety'
+                                ? response &&
+                                  generatePercentage().toFixed(0) + '%'
+                                : title === 'PTSD'
+                                ? response && response.prediction
+                                : '0%'
+                              : null}
                           </Text>
                         </View>
 
@@ -253,11 +258,29 @@ const TestResult = ({route, navigation}) => {
                           <Text
                             style={{
                               color: COLORS.white,
-                              backgroundColor: COLORS.cyan,
+                              backgroundColor: response
+                                ? response.prediction === 'NotDepressed' ||
+                                  response.severity_level === 'Mild Anxiety' ||
+                                  response.severity_level ===
+                                    'Moderate Anxiety' ||
+                                  response.severity_level === 'Minimal Anxiety'
+                                  ? COLORS.cyan
+                                  : response.severity_level === 'Severe Anxiety'
+                                  ? COLORS.red
+                                  : COLORS.red
+                                : COLORS.red,
                               borderRadius: 10,
                               paddingHorizontal: 10,
                             }}>
-                            {response && response.prediction}
+                            {response
+                              ? title === 'Depression'
+                                ? response && response.prediction
+                                : title === 'Anxiety'
+                                ? response && response.severity_level
+                                : title === 'PTSD'
+                                ? response && response.prediction
+                                : null
+                              : null}
                           </Text>
                         </View>
                         <View
@@ -278,7 +301,15 @@ const TestResult = ({route, navigation}) => {
                               borderRadius: 10,
                               paddingHorizontal: 10,
                             }}>
-                            {response && response.Advice}
+                            {response
+                              ? title === 'Depression'
+                                ? response && response.Advice
+                                : title === 'Anxiety'
+                                ? response && response.advice
+                                : title === 'PTSD'
+                                ? response && response.prediction
+                                : null
+                              : null}
                           </Text>
                         </View>
 

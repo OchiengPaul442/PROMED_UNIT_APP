@@ -11,11 +11,11 @@ import {
   FlatList,
   TouchableOpacity,
 } from 'react-native';
+import moment from 'moment';
 import {object, string, ref} from 'yup';
 import {Formik} from 'formik';
 import CheckBox from '@react-native-community/checkbox';
 import DropDownPicker from 'react-native-dropdown-picker';
-
 import {AuthContext} from '../../navigations/Context/AuthContext';
 import Styles from '../../constants/Styles';
 import {COLORS, ProfileMale} from '../../constants';
@@ -39,21 +39,17 @@ import {
   getUpdatedUserData,
   fetchLiveTestResults,
 } from '../../../fireStore';
-
-// fireStore
 import firestore from '@react-native-firebase/firestore';
 import auth from '@react-native-firebase/auth';
 
+const Table = React.lazy(() => import('../../components/table/Table'));
 const CenterHalf = React.lazy(() =>
   import('../../components/Modals/CenterHalf'),
 );
 
 // ...
 
-// min 8 characters, 1 upper case letter, 1 lower case letter, 1 numeric digit.
 const passwordRules = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$/;
-
-// phone number regex
 const phoneRegex = /^\(?([0-9]{3})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})$/;
 
 // form validation schema
@@ -99,29 +95,17 @@ const Profile = ({navigation}) => {
     setUserToken,
     setLoading,
   } = useContext(AuthContext);
-
-  // current user
   const currentUserUid = auth().currentUser.uid;
-
-  // edit mode
   const [editMode, setEditMode] = React.useState(false);
-
-  // upload status
   const [uploadStatus, setUploadStatus] = React.useState(false);
-
-  // Get the user appointments
   const [userAppointments, setUserAppointments] = React.useState(0);
-
-  // get the user discussion boards
-  const [userDiscussionBoards, setUserDiscussionBoards] = React.useState();
-
-  // show password
+  const [appointmentData, setAppointmentData] = React.useState([]);
   const [showPassword1, setShowPassword1] = React.useState(true);
   const [showPassword2, setShowPassword2] = React.useState(true);
   const [showPassword3, setShowPassword3] = React.useState(true);
-
-  // MODAL
   const [isModalVisible2, setModalVisible2] = React.useState(false);
+  const [showModal, setShowModal] = React.useState(false);
+  const [selectedAppointment, setSelectedAppointment] = React.useState(null);
 
   // therapist details
   const [TherapistDetailsExists, setTherapistDetailsExists] =
@@ -214,10 +198,6 @@ const Profile = ({navigation}) => {
     setLanguageValue(selectedLanguages);
   };
 
-  const toggleModal2 = () => {
-    setModalVisible2(!isModalVisible2);
-  };
-
   // function upload therapist details to firestore
   const uploadTherapistDetails = async () => {
     // check if the user is anonymous
@@ -285,7 +265,48 @@ const Profile = ({navigation}) => {
     );
   };
 
+  // to fetch all appointment details
+  const fetchAppointmentDetails = async () => {
+    firestore()
+      .collection('Appointments')
+      .doc(currentUserUid)
+      .collection('UserAppointments')
+      .onSnapshot(querySnapshot => {
+        const appointments = querySnapshot.docs.map(doc => {
+          return {
+            id: doc.id,
+            ...doc.data(),
+          };
+        });
+        setAppointmentData(appointments);
+      });
+  };
+
+  // function to delete appointment
+  const deleteAppointment = async id => {
+    firestore()
+      .collection('Appointments')
+      .doc(currentUserUid)
+      .collection('UserAppointments')
+      .doc(id)
+      .delete()
+      .then(() => {
+        setErrorStatus('success');
+        setError('Appointment deleted successfully');
+      })
+      .catch(e => {
+        console.log(e.message);
+      });
+
+    setShowModal(false);
+    fetchAppointmentDetails();
+    setSelectedAppointment(null);
+  };
+
   React.useEffect(() => {
+    // fetch the user appointment details
+    fetchAppointmentDetails();
+
     // check if therapist details exists
     checkIfTherapistDetailsExists(setTherapistDetailsExists);
 
@@ -313,7 +334,33 @@ const Profile = ({navigation}) => {
         // set the error
         setError(e.message);
       });
-  }, []);
+  }, [userAppointments]);
+
+  const TABLECONTENT = {
+    tableHead: ['Date', 'Time', 'actions'],
+    tableData:
+      appointmentData.length === 0
+        ? [['No data', 'No data', 'No data']]
+        : appointmentData.map(item => [
+            moment(item.date, 'YYYY/MM/DD').format('MMMM Do YYYY'),
+            item.time,
+            <TouchableOpacity
+              style={{
+                width: '100%',
+                height: '100%',
+                paddingHorizontal: 10,
+                borderRadius: 20,
+                fontSize: 16,
+                backgroundColor: COLORS.red,
+              }}
+              onPress={() => {
+                setShowModal(!showModal);
+                setSelectedAppointment(item.id);
+              }}>
+              <Text style={{color: COLORS.white}}>Cancel</Text>
+            </TouchableOpacity>,
+          ]),
+  };
 
   return (
     <SafeAreaView>
@@ -376,22 +423,59 @@ const Profile = ({navigation}) => {
                       <Text style={Styles.text2}>Appointments</Text>
                     </View>
                     {testResults ? (
-                      <View style={styles.card_container}>
-                        <View style={{width: 100, ...styles.card}}>
-                          <Text
-                            style={{
-                              textAlign: 'center',
-                              ...Styles.heading2,
-                            }}>
-                            {testResults.response.Accuracy_score.toFixed(2) *
-                              100 +
-                              '%'}
-                          </Text>
-                        </View>
-                        <Text style={Styles.text2}>
-                          {testResults.title} Test Score
-                        </Text>
-                      </View>
+                      <>
+                        {testResults.Depression.title === 'Depression' && (
+                          <View style={styles.card_container}>
+                            <View style={{width: 100, ...styles.card}}>
+                              <Text
+                                style={{
+                                  textAlign: 'center',
+                                  ...Styles.heading2,
+                                }}>
+                                {(
+                                  testResults.Depression.response
+                                    .Accuracy_score * 100
+                                ).toFixed(0) + '%'}
+                              </Text>
+                            </View>
+                            <Text style={Styles.text2}>
+                              {testResults.Depression.title} Test Score
+                            </Text>
+                          </View>
+                        )}
+                        {testResults.Anxiety.title === 'Anxiety' && (
+                          <View style={styles.card_container}>
+                            <View style={{width: 100, ...styles.card}}>
+                              <Text
+                                style={{
+                                  textAlign: 'center',
+                                  ...Styles.heading2,
+                                }}>
+                                {testResults.Anxiety.score.toFixed(0) + '%'}
+                              </Text>
+                            </View>
+                            <Text style={Styles.text2}>
+                              {testResults.Anxiety.title} Test Score
+                            </Text>
+                          </View>
+                        )}
+                        {/* {testResults.PTSD.title === 'PTSD' && (
+                          <View style={styles.card_container}>
+                            <View style={{width: 100, ...styles.card}}>
+                              <Text
+                                style={{
+                                  textAlign: 'center',
+                                  ...Styles.heading2,
+                                }}>
+                                {testResults.Anxiety.score.toFixed(0) + '%'}
+                              </Text>
+                            </View>
+                            <Text style={Styles.text2}>
+                              {testResults.Anxiety.title} Test Score
+                            </Text>
+                          </View>
+                        )} */}
+                      </>
                     ) : (
                       <View style={styles.card_container}>
                         <View style={{width: 100, ...styles.card}}>
@@ -403,6 +487,29 @@ const Profile = ({navigation}) => {
                         <Text style={Styles.text2}>Test score</Text>
                       </View>
                     )}
+                  </View>
+                  {/* Appointments */}
+                  <View style={{width: '100%', ...styles.card}}>
+                    <Text
+                      style={{
+                        textAlign: 'left',
+                        width: '100%',
+                        marginBottom: 10,
+                        ...Styles.title,
+                      }}>
+                      Scheduled Appointments
+                    </Text>
+                    <View>
+                      <Table
+                        tableHead={TABLECONTENT.tableHead}
+                        tableData={TABLECONTENT.tableData}
+                        BorderColor={COLORS.primary}
+                        BorderWidth={1}
+                        tableDataColor={COLORS.black}
+                        HeaderTextColor={COLORS.white}
+                        HeaderBackgroundColor={COLORS.primary}
+                      />
+                    </View>
                   </View>
                   {/* personal details */}
                   <View
@@ -938,7 +1045,7 @@ const Profile = ({navigation}) => {
                     </Text>
                     <View>
                       <RecButton
-                        onPress={toggleModal2}
+                        onPress={() => setModalVisible2(!isModalVisible2)}
                         text="Delete Account"
                         textColor={COLORS.white}
                         bgColor={COLORS.tertiary}
@@ -954,8 +1061,47 @@ const Profile = ({navigation}) => {
 
       <Suspense fallback={<RoundLoadingAnimation width={80} height={80} />}>
         {/* MODAL */}
-        <CenterHalf Visibility={isModalVisible2} hide={toggleModal2}>
-          <Text style={Styles.title}>Are You sure about this?</Text>
+        <CenterHalf
+          Visibility={showModal}
+          hide={() => setShowModal(!showModal)}>
+          <Text style={{...Styles.title, textAlign: 'center'}}>
+            Are You sure you want to cancel this appointment?
+          </Text>
+          <View
+            style={{
+              width: 'auto',
+              position: 'relative',
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'space-around',
+            }}>
+            <RecButton
+              onPress={
+                anonymous ? null : () => deleteAppointment(selectedAppointment)
+              }
+              text={anonymous ? 'N/A' : 'Yes'}
+              w={70}
+              bgColor={COLORS.red}
+              textColor={COLORS.white}
+            />
+            <RecButton
+              onPress={() => setShowModal(!showModal)}
+              text="No"
+              w={70}
+              bgColor={COLORS.primary}
+              textColor={COLORS.white}
+            />
+          </View>
+        </CenterHalf>
+      </Suspense>
+      <Suspense fallback={<RoundLoadingAnimation width={80} height={80} />}>
+        {/* MODAL */}
+        <CenterHalf
+          Visibility={isModalVisible2}
+          hide={() => setModalVisible2(!isModalVisible2)}>
+          <Text style={{...Styles.title, textAlign: 'center'}}>
+            Are You sure you want to delete this account?
+          </Text>
           <View
             style={{
               width: 'auto',
@@ -967,14 +1113,14 @@ const Profile = ({navigation}) => {
             <RecButton
               onPress={anonymous ? null : deleteAccount}
               text={anonymous ? 'N/A' : 'Yes'}
-              w={100}
+              w={70}
               bgColor={COLORS.red}
               textColor={COLORS.white}
             />
             <RecButton
-              onPress={toggleModal2}
+              onPress={() => setModalVisible2(!isModalVisible2)}
               text="No"
-              w={100}
+              w={70}
               bgColor={COLORS.primary}
               textColor={COLORS.white}
             />

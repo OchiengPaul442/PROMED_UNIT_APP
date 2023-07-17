@@ -26,6 +26,7 @@ export const COLORS = {
   peach: '#FFDBD7',
   red: '#FF0000',
   Tuscany: '#F4EDE8',
+  blue: '#267EBD',
 };
 
 // GLOBAL SIZES
