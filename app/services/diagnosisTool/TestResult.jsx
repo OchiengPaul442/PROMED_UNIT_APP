@@ -39,6 +39,7 @@ const TestResult = ({route, navigation}) => {
         title,
         answers,
         response,
+        ...(title === 'Depression' && {score: generatePercentage1()}),
         ...(title === 'Anxiety' && {score: generatePercentage2()}),
       },
     };
@@ -59,6 +60,7 @@ const TestResult = ({route, navigation}) => {
         title,
         answers,
         response,
+        ...(title === 'Depression' && {score: generatePercentage1()}),
         ...(title === 'Anxiety' && {score: generatePercentage2()}),
         timestamp: new Date().toISOString(),
       },
@@ -66,15 +68,6 @@ const TestResult = ({route, navigation}) => {
 
     if (!historyDoc.exists) {
       await historyDocRef.set(historyData);
-    } else {
-      // Check if the last update was more than 2 days ago
-      const lastUpdate = new Date(historyDoc.data()[title].timestamp);
-      const twoDaysAgo = new Date();
-      twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
-
-      if (lastUpdate < twoDaysAgo) {
-        await historyDocRef.update(historyData);
-      }
     }
   };
 
@@ -283,7 +276,9 @@ const TestResult = ({route, navigation}) => {
                             paddingVertical: 10,
                           }}>
                           <Text style={styles.summary_card_title}>
-                            Accuracy score:
+                            {title === 'PTSD'
+                              ? 'Test score:'
+                              : 'Accuracy score:'}
                           </Text>
                           <Text style={styles.summary_card_text}>
                             {response
@@ -291,7 +286,7 @@ const TestResult = ({route, navigation}) => {
                                 ? response.Accuracy_score.toFixed(2) * 100 + '%'
                                 : title === 'Anxiety'
                                 ? response &&
-                                  generatePercentage2().toFixed(0) + '%'
+                                  response.Accuracy_score.toFixed(2) * 100 + '%'
                                 : title === 'PTSD'
                                 ? response &&
                                   response.percentage.toFixed(0) + '%'

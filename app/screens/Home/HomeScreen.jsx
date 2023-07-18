@@ -187,7 +187,11 @@ const HomeScreen = ({navigation, route}) => {
                               <Image
                                 style={styles.image}
                                 source={{
-                                  uri: `https://source.unsplash.com/featured/?mental-health,${index}`,
+                                  uri: item.photoURL
+                                    ? item.photoURL
+                                    : 'https://source.unsplash.com/1600x900/?' +
+                                      item.title +
+                                      ',mentalhealth',
                                 }}
                                 alt=""
                               />

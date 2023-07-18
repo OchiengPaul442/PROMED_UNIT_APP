@@ -216,7 +216,8 @@ const Therapy = ({navigation, route}) => {
 
   // handle phone call
   const handleRefCall = () => {
-    Linking.openURL(`tel:${details.phone}`);
+    // Linking.openURL(`tel:${details.phone}`);
+    Linking.openURL(`tel:0782450215`);
   };
 
   React.useEffect(() => {

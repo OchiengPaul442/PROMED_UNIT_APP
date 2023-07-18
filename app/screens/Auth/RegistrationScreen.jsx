@@ -58,7 +58,7 @@ let registrationValidationSchema = object({
 
 const RegistrationScreen = ({navigation}) => {
   // use the useContext hook to get the user data value
-  const {setError} = useContext(AuthContext);
+  const {setError, setUserToken} = useContext(AuthContext);
 
   // loading state
   const [loading, setLoading] = React.useState(false);
@@ -134,10 +134,19 @@ const RegistrationScreen = ({navigation}) => {
                   });
               })
               .then(() => {
+                // login the user
+                firebase
+                  .auth()
+                  .signInWithEmailAndPassword(email, password)
+                  .then(() => {
+                    return firebase.auth().currentUser.getIdToken(true);
+                  })
+                  .then(idToken => {
+                    setUserToken(idToken);
+                  });
+
                 // Set the isLoading state to false to hide the loading screen
                 setLoading(false);
-                // Navigate to the next screen or show a success message
-                navigation.navigate('Login');
               })
               .catch(error => {
                 // set loading to false if there is an error

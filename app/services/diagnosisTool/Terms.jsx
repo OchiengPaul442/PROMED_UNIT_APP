@@ -113,7 +113,7 @@ const Terms = ({route, navigation}) => {
                 }}>
                 {showBtn ? (
                   <CurvedButton
-                    text="Proceed with the test"
+                    text="Proceed"
                     textColor={COLORS.primary}
                     style={{
                       backgroundColor: COLORS.secondary,

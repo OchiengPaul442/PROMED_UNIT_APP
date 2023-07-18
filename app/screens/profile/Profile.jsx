@@ -442,10 +442,8 @@ const Profile = ({navigation}) => {
                                     textAlign: 'center',
                                     ...Styles.heading2,
                                   }}>
-                                  {(
-                                    testResults.Depression.response
-                                      .Accuracy_score * 100
-                                  ).toFixed(0) + '%'}
+                                  {testResults.Depression.score.toFixed(0) +
+                                    '%'}
                                 </Text>
                               </View>
                               <Text style={Styles.text2}>
@@ -503,28 +501,30 @@ const Profile = ({navigation}) => {
                     )}
                   </View>
                   {/* Appointments */}
-                  <View style={{width: '100%', ...styles.card}}>
-                    <Text
-                      style={{
-                        textAlign: 'left',
-                        width: '100%',
-                        marginBottom: 10,
-                        ...Styles.title,
-                      }}>
-                      Scheduled Appointments
-                    </Text>
-                    <View>
-                      <Table
-                        tableHead={TABLECONTENT.tableHead}
-                        tableData={TABLECONTENT.tableData}
-                        BorderColor={COLORS.primary}
-                        BorderWidth={1}
-                        tableDataColor={COLORS.black}
-                        HeaderTextColor={COLORS.white}
-                        HeaderBackgroundColor={COLORS.primary}
-                      />
+                  {userData && userData.userType === 'Therapist' ? null : (
+                    <View style={{width: '100%', ...styles.card}}>
+                      <Text
+                        style={{
+                          textAlign: 'left',
+                          width: '100%',
+                          marginBottom: 10,
+                          ...Styles.title,
+                        }}>
+                        Scheduled Appointments
+                      </Text>
+                      <View>
+                        <Table
+                          tableHead={TABLECONTENT.tableHead}
+                          tableData={TABLECONTENT.tableData}
+                          BorderColor={COLORS.primary}
+                          BorderWidth={1}
+                          tableDataColor={COLORS.black}
+                          HeaderTextColor={COLORS.white}
+                          HeaderBackgroundColor={COLORS.primary}
+                        />
+                      </View>
                     </View>
-                  </View>
+                  )}
                   {/* personal details */}
                   <View
                     style={{
@@ -1062,7 +1062,7 @@ const Profile = ({navigation}) => {
                         onPress={() => setModalVisible2(!isModalVisible2)}
                         text="Delete Account"
                         textColor={COLORS.white}
-                        bgColor={COLORS.tertiary}
+                        bgColor={COLORS.red}
                       />
                     </View>
                   </View>
