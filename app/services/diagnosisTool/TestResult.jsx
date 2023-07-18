@@ -51,6 +51,7 @@ const TestResult = ({route, navigation}) => {
 
     // Save a backup of the data in the ResultHistory collection
     const historyDocRef = firestore().collection('ResultHistory').doc(user.uid);
+
     const historyDoc = await historyDocRef.get();
     const historyData = {
       [title]: {
@@ -59,13 +60,21 @@ const TestResult = ({route, navigation}) => {
         answers,
         response,
         ...(title === 'Anxiety' && {score: generatePercentage2()}),
+        timestamp: new Date().toISOString(),
       },
     };
 
     if (!historyDoc.exists) {
       await historyDocRef.set(historyData);
     } else {
-      await historyDocRef.update(historyData);
+      // Check if the last update was more than 2 days ago
+      const lastUpdate = new Date(historyDoc.data()[title].timestamp);
+      const twoDaysAgo = new Date();
+      twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
+
+      if (lastUpdate < twoDaysAgo) {
+        await historyDocRef.update(historyData);
+      }
     }
   };
 
@@ -137,14 +146,14 @@ const TestResult = ({route, navigation}) => {
     }
   };
 
+  useEffect(() => {
+    getResponse();
+  }, []);
+
   // send the data to the firestore database for storage if response is not null
   if (response) {
     sendToFireStore();
   }
-
-  useEffect(() => {
-    getResponse();
-  }, []);
 
   const generatePercentage1 = () => {
     const score = answers.reduce((total, answer) => total + (answer || 0), 0);
