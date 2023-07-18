@@ -132,17 +132,16 @@ const TherapistProfile = ({navigation}) => {
       .collection('Therapists')
       .doc(userUid)
       .collection('Schedule')
-      .get()
-      .then(querySnapshot => {
-        const schedule = [];
-        querySnapshot.forEach(documentSnapshot => {
-          schedule.push({
+      .onSnapshot(querySnapshot => {
+        const schedule = querySnapshot.docs.map(documentSnapshot => {
+          return {
             ...documentSnapshot.data(),
             key: documentSnapshot.id,
-          });
+          };
         });
         setSchedule(schedule);
       });
+
     setLoading(false);
   };
 
@@ -198,17 +197,10 @@ const TherapistProfile = ({navigation}) => {
 
   // table content
   const TABLECONTENT = {
-    tableHead: ['Day', 'Time', 'Status'],
+    tableHead: ['Day', 'Time'],
     tableData: schedule.map(item => [
       moment(item.date, 'YYYY/MM/DD').format('MMMM Do YYYY'),
       item.time,
-      item.status,
-      // <TouchableOpacity
-      //   onPress={() => {
-      //     setShowModal(true);
-      //   }}>
-      //   <ViewIconeye width={20} height={20} />
-      // </TouchableOpacity>,
     ]),
   };
 

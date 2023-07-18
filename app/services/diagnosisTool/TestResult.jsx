@@ -20,8 +20,12 @@ const TestResult = ({route, navigation}) => {
   const [response, setResponse] = useState(null);
   const [loading, setLoading] = useState(false);
   const BASE_URL = 'https://cynthias-diagnosis-api.onrender.com';
+  const BASE_URL2 = 'https://cynthias-ptsd-api.onrender.com';
   const api = axios.create({
     baseURL: `${BASE_URL}`,
+  });
+  const api2 = axios.create({
+    baseURL: `${BASE_URL2}/pcl5`,
   });
 
   // send the data to the firestore database for storage new collection called Results if it doesn't exist already
@@ -35,7 +39,7 @@ const TestResult = ({route, navigation}) => {
         title,
         answers,
         response,
-        ...(title === 'Anxiety' && {score: generatePercentage()}),
+        ...(title === 'Anxiety' && {score: generatePercentage2()}),
       },
     };
 
@@ -43,6 +47,25 @@ const TestResult = ({route, navigation}) => {
       await docRef.set(data);
     } else {
       await docRef.update(data);
+    }
+
+    // Save a backup of the data in the ResultHistory collection
+    const historyDocRef = firestore().collection('ResultHistory').doc(user.uid);
+    const historyDoc = await historyDocRef.get();
+    const historyData = {
+      [title]: {
+        id,
+        title,
+        answers,
+        response,
+        ...(title === 'Anxiety' && {score: generatePercentage2()}),
+      },
+    };
+
+    if (!historyDoc.exists) {
+      await historyDocRef.set(historyData);
+    } else {
+      await historyDocRef.update(historyData);
     }
   };
 
@@ -78,13 +101,29 @@ const TestResult = ({route, navigation}) => {
           setLoading(false);
           break;
         case 'PTSD':
-          const res4 = await api.post('', {
-            Schizophrenia: answers[0],
-            BipolarDisorder: answers[1],
-            EatingDisorders: answers[2],
-            AnxietyDisorders: answers[3],
-            DrugUseDisorders: answers[4],
-            AlcoholUseDisorders: answers[5],
+          const res4 = await api2.post('', {
+            answers: [
+              answers[0],
+              answers[1],
+              answers[2],
+              answers[3],
+              answers[4],
+              answers[5],
+              answers[6],
+              answers[7],
+              answers[8],
+              answers[9],
+              answers[10],
+              answers[11],
+              answers[12],
+              answers[13],
+              answers[14],
+              answers[15],
+              answers[16],
+              answers[17],
+              answers[18],
+              answers[19],
+            ],
           });
           setResponse(res4.data);
           setLoading(false);
@@ -107,7 +146,12 @@ const TestResult = ({route, navigation}) => {
     getResponse();
   }, []);
 
-  const generatePercentage = () => {
+  const generatePercentage1 = () => {
+    const score = answers.reduce((total, answer) => total + (answer || 0), 0);
+    return (score / 24) * 100;
+  };
+
+  const generatePercentage2 = () => {
     const score = answers.reduce((total, answer) => total + (answer || 0), 0);
     return (score / 28) * 100;
   };
@@ -175,11 +219,11 @@ const TestResult = ({route, navigation}) => {
                       <Text style={styles.result_percentage}>
                         {response
                           ? title === 'Depression'
-                            ? response.Accuracy_score.toFixed(2) * 100 + '%'
+                            ? response && generatePercentage1().toFixed(0) + '%'
                             : title === 'Anxiety'
-                            ? response && generatePercentage().toFixed(0) + '%'
+                            ? response && generatePercentage2().toFixed(0) + '%'
                             : title === 'PTSD'
-                            ? response && response.prediction
+                            ? response && response.percentage.toFixed(0) + '%'
                             : '0%'
                           : null}
                       </Text>
@@ -238,13 +282,32 @@ const TestResult = ({route, navigation}) => {
                                 ? response.Accuracy_score.toFixed(2) * 100 + '%'
                                 : title === 'Anxiety'
                                 ? response &&
-                                  generatePercentage().toFixed(0) + '%'
+                                  generatePercentage2().toFixed(0) + '%'
                                 : title === 'PTSD'
-                                ? response && response.prediction
+                                ? response &&
+                                  response.percentage.toFixed(0) + '%'
                                 : '0%'
                               : null}
                           </Text>
                         </View>
+                        {title === 'PTSD' && (
+                          <View
+                            style={{
+                              display: 'flex',
+                              flexDirection: 'row',
+                              paddingVertical: 10,
+                            }}>
+                            <Text style={styles.summary_card_title}>
+                              Test score:
+                            </Text>
+                            <Text style={styles.summary_card_text}>
+                              {response &&
+                                response.total_score +
+                                  '/' +
+                                  response.pcl5_max_score}
+                            </Text>
+                          </View>
+                        )}
 
                         <View
                           style={{
@@ -270,15 +333,27 @@ const TestResult = ({route, navigation}) => {
                                   : COLORS.red
                                 : COLORS.red,
                               borderRadius: 10,
+                              flex: title === 'PTSD' ? 1 : null,
                               paddingHorizontal: 10,
                             }}>
                             {response
                               ? title === 'Depression'
-                                ? response && response.prediction
+                                ? response &&
+                                  response.prediction === 'Depressed'
+                                  ? generatePercentage1().toFixed(0) < 30
+                                    ? 'Minimal Depression'
+                                    : generatePercentage1().toFixed(0) < 50
+                                    ? 'Mild Depression'
+                                    : generatePercentage1().toFixed(0) < 70
+                                    ? 'Moderate Depression'
+                                    : generatePercentage1().toFixed(0) < 100
+                                    ? 'Severe Depression'
+                                    : '----'
+                                  : response.prediction
                                 : title === 'Anxiety'
                                 ? response && response.severity_level
                                 : title === 'PTSD'
-                                ? response && response.prediction
+                                ? response && response.message
                                 : null
                               : null}
                           </Text>
@@ -307,7 +382,7 @@ const TestResult = ({route, navigation}) => {
                                 : title === 'Anxiety'
                                 ? response && response.advice
                                 : title === 'PTSD'
-                                ? response && response.prediction
+                                ? response && response.advice
                                 : null
                               : null}
                           </Text>

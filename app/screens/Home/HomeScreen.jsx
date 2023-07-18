@@ -68,23 +68,6 @@ const HomeScreen = ({navigation, route}) => {
     }
   };
 
-  // generate random colors
-  const randomColor = () => {
-    const colors = [
-      // dull colors of the dark orange, dark blue, dark green, dark red, dark purple, dark yellow and dark gray with opacity of 0.4
-      'rgba(255, 165, 0, 0.5)', // dark orange
-      'rgba(0, 0, 255, 0.5)', // dark blue
-      'rgba(0, 128, 0, 0.5)', // dark green
-      'rgba(255, 0, 0, 0.5)', // dark red
-      'rgba(128, 0, 128, 0.5)', // dark purple
-      'rgba(255, 205, 220, 0.5)', // dark yellow
-      'rgba(128, 128, 128, 0.5)', // dark gray
-    ];
-
-    const random = Math.floor(Math.random() * colors.length);
-    return colors[random];
-  };
-
   // fetch the health tips once the component mounts
   React.useEffect(() => {
     // fetch the data only is the route is focused
@@ -134,15 +117,17 @@ const HomeScreen = ({navigation, route}) => {
               <Text style={Styles.text3}>loading...</Text>
             )}
           </Text>
-          {userData && userData.userType === 'Client' && (
-            <Text style={styles.sessions}>
-              You have
-              {userAppointments ? ' ' + userAppointments + ' ' : ' 0 '}
-              Appointments
-            </Text>
-          )}
+          {userData &&
+            (userData.userType === 'Client' ? (
+              <Text style={styles.sessions}>
+                You have
+                {userAppointments ? ' ' + userAppointments + ' ' : ' 0 '}
+                Appointments
+              </Text>
+            ) : userData.userType === 'Therapist' ? (
+              <Text style={styles.sessions}>Therapist Account</Text>
+            ) : null)}
         </View>
-
         {/* Body */}
         <View style={Styles.Content}>
           <ScrollView showsVerticalScrollIndicator={false}>
@@ -277,10 +262,8 @@ const HomeScreen = ({navigation, route}) => {
                     </TouchableOpacity>
                   </View>
                 </View>
-                <Suspense
-                  fallback={<RoundLoadingAnimation width={80} height={80} />}>
-                  <DiagnosisTools />
-                </Suspense>
+                {/* diagnosis tool */}
+                <DiagnosisTools />
               </View>
             )}
           </ScrollView>
@@ -299,11 +282,7 @@ const HomeScreen = ({navigation, route}) => {
                 marginVertical: 10,
                 width: '100%',
               }}
-              onPress={() =>
-                Linking.openURL(
-                  'https://www.healthline.com/health/mental-health',
-                )
-              }>
+              onPress={() => Linking.openURL('https://www.mindful.org/')}>
               <Text
                 style={{
                   color: COLORS.blue,

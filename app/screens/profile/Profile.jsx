@@ -275,6 +275,7 @@ const Profile = ({navigation}) => {
         const appointments = querySnapshot.docs.map(doc => {
           return {
             id: doc.id,
+            therapistId: doc.data().therapistId,
             ...doc.data(),
           };
         });
@@ -284,21 +285,29 @@ const Profile = ({navigation}) => {
 
   // function to delete appointment
   const deleteAppointment = async id => {
-    firestore()
-      .collection('Appointments')
-      .doc(currentUserUid)
-      .collection('UserAppointments')
-      .doc(id)
-      .delete()
-      .then(() => {
-        setErrorStatus('success');
-        setError('Appointment deleted successfully');
-      })
-      .catch(e => {
-        console.log(e.message);
-      });
+    try {
+      await firestore()
+        .collection('Appointments')
+        .doc(currentUserUid)
+        .collection('UserAppointments')
+        .doc(id[0])
+        .delete()
+        .then(() => {
+          firestore()
+            .collection('Therapists')
+            .doc(id[1])
+            .collection('Schedule')
+            .doc(currentUserUid)
+            .delete();
+        });
 
-    setShowModal(false);
+      setErrorStatus('success');
+      setError('Appointment deleted successfully');
+    } catch (e) {
+      console.log(e.message);
+    } finally {
+      setShowModal(false);
+    }
     fetchAppointmentDetails();
     setSelectedAppointment(null);
   };
@@ -355,7 +364,7 @@ const Profile = ({navigation}) => {
               }}
               onPress={() => {
                 setShowModal(!showModal);
-                setSelectedAppointment(item.id);
+                setSelectedAppointment([item.id, item.therapistId]);
               }}>
               <Text style={{color: COLORS.white}}>Cancel</Text>
             </TouchableOpacity>,
@@ -424,57 +433,62 @@ const Profile = ({navigation}) => {
                     </View>
                     {testResults ? (
                       <>
-                        {testResults.Depression.title === 'Depression' && (
-                          <View style={styles.card_container}>
-                            <View style={{width: 100, ...styles.card}}>
-                              <Text
-                                style={{
-                                  textAlign: 'center',
-                                  ...Styles.heading2,
-                                }}>
-                                {(
-                                  testResults.Depression.response
-                                    .Accuracy_score * 100
-                                ).toFixed(0) + '%'}
+                        {testResults.Depression &&
+                          testResults.Depression.title === 'Depression' && (
+                            <View style={styles.card_container}>
+                              <View style={{width: 100, ...styles.card}}>
+                                <Text
+                                  style={{
+                                    textAlign: 'center',
+                                    ...Styles.heading2,
+                                  }}>
+                                  {(
+                                    testResults.Depression.response
+                                      .Accuracy_score * 100
+                                  ).toFixed(0) + '%'}
+                                </Text>
+                              </View>
+                              <Text style={Styles.text2}>
+                                {testResults.Depression.title} Test Score
                               </Text>
                             </View>
-                            <Text style={Styles.text2}>
-                              {testResults.Depression.title} Test Score
-                            </Text>
-                          </View>
-                        )}
-                        {testResults.Anxiety.title === 'Anxiety' && (
-                          <View style={styles.card_container}>
-                            <View style={{width: 100, ...styles.card}}>
-                              <Text
-                                style={{
-                                  textAlign: 'center',
-                                  ...Styles.heading2,
-                                }}>
-                                {testResults.Anxiety.score.toFixed(0) + '%'}
+                          )}
+                        {testResults.Anxiety &&
+                          testResults.Anxiety.title === 'Anxiety' && (
+                            <View style={styles.card_container}>
+                              <View style={{width: 100, ...styles.card}}>
+                                <Text
+                                  style={{
+                                    textAlign: 'center',
+                                    ...Styles.heading2,
+                                  }}>
+                                  {testResults.Anxiety.score.toFixed(0) + '%'}
+                                </Text>
+                              </View>
+                              <Text style={Styles.text2}>
+                                {testResults.Anxiety.title} Test Score
                               </Text>
                             </View>
-                            <Text style={Styles.text2}>
-                              {testResults.Anxiety.title} Test Score
-                            </Text>
-                          </View>
-                        )}
-                        {/* {testResults.PTSD.title === 'PTSD' && (
-                          <View style={styles.card_container}>
-                            <View style={{width: 100, ...styles.card}}>
-                              <Text
-                                style={{
-                                  textAlign: 'center',
-                                  ...Styles.heading2,
-                                }}>
-                                {testResults.Anxiety.score.toFixed(0) + '%'}
+                          )}
+                        {testResults.PTSD &&
+                          testResults.PTSD.title === 'PTSD' && (
+                            <View style={styles.card_container}>
+                              <View style={{width: 100, ...styles.card}}>
+                                <Text
+                                  style={{
+                                    textAlign: 'center',
+                                    ...Styles.heading2,
+                                  }}>
+                                  {testResults.PTSD.response.percentage.toFixed(
+                                    0,
+                                  ) + '%'}
+                                </Text>
+                              </View>
+                              <Text style={Styles.text2}>
+                                {testResults.PTSD.title} Test Score
                               </Text>
                             </View>
-                            <Text style={Styles.text2}>
-                              {testResults.Anxiety.title} Test Score
-                            </Text>
-                          </View>
-                        )} */}
+                          )}
                       </>
                     ) : (
                       <View style={styles.card_container}>

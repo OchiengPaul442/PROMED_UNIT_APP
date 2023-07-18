@@ -160,50 +160,228 @@ const Test = ({route, navigation}) => {
   const ptsdQnz = [
     {
       question:
-        'Have you experienced or witnessed a traumatic event that involved actual or threatened death, serious injury, or sexual violence?',
+        'Are you having disturbing and unwanted memories of a stressful experience?',
       options: [
-        {label: 'Yes', value: 1},
-        {label: 'No', value: 0},
+        {label: 'Not at all', value: 0},
+        {label: 'A little bit', value: 1},
+        {label: 'Moderately', value: 2},
+        {label: 'Quite a bit', value: 3},
+        {label: 'Extremely', value: 4},
       ],
     },
     {
       question:
-        'Do you have recurrent, involuntary, and intrusive distressing memories of the traumatic event?',
+        ' Are you having disturbing dreams related to a stressful experience?',
       options: [
-        {label: 'Yes', value: 1},
-        {label: 'No', value: 0},
+        {label: 'Not at all', value: 0},
+        {label: 'A little bit', value: 1},
+        {label: 'Moderately', value: 2},
+        {label: 'Quite a bit', value: 3},
+        {label: 'Extremely', value: 4},
       ],
     },
     {
       question:
-        'Do you have recurrent distressing dreams in which the content and/or affect of the dream are related to the traumatic event?',
+        'Have you been feeling like you are reliving the stressful experience? (e.g., flashbacks, hallucinations, illusions, dissociative flashback episodes, or a sense of reliving the experience)',
       options: [
-        {label: 'Yes', value: 1},
-        {label: 'No', value: 0},
+        {label: 'Not at all', value: 0},
+        {label: 'A little bit', value: 1},
+        {label: 'Moderately', value: 2},
+        {label: 'Quite a bit', value: 3},
+        {label: 'Extremely', value: 4},
       ],
     },
     {
       question:
         'Do you experience dissociative reactions (e.g., flashbacks) in which the traumatic event feels like it is recurring?',
       options: [
-        {label: 'Yes', value: 1},
-        {label: 'No', value: 0},
+        {label: 'Not at all', value: 0},
+        {label: 'A little bit', value: 1},
+        {label: 'Moderately', value: 2},
+        {label: 'Quite a bit', value: 3},
+        {label: 'Extremely', value: 4},
       ],
     },
     {
       question:
-        'Do you experience intense or prolonged psychological distress at exposure to internal or external cues that symbolize or resemble an aspect of the traumatic event?',
+        'Are you feeling upset when something reminds you of the stressful experience?',
       options: [
-        {label: 'Yes', value: 1},
-        {label: 'No', value: 0},
+        {label: 'Not at all', value: 0},
+        {label: 'A little bit', value: 1},
+        {label: 'Moderately', value: 2},
+        {label: 'Quite a bit', value: 3},
+        {label: 'Extremely', value: 4},
       ],
     },
     {
       question:
-        'Do you experience marked physiological reactions to internal or external cues that symbolize or resemble an aspect of the traumatic event?',
+        'Have you been having strong physical reactions when reminded of the stressful experience (e.g. increased heart rate, trouble breathing, sweating)?',
       options: [
-        {label: 'Yes', value: 1},
-        {label: 'No', value: 0},
+        {label: 'Not at all', value: 0},
+        {label: 'A little bit', value: 1},
+        {label: 'Moderately', value: 2},
+        {label: 'Quite a bit', value: 3},
+        {label: 'Extremely', value: 4},
+      ],
+    },
+
+    {
+      question:
+        ' Have you been trying to avoid thinking about the stressful experience?',
+      options: [
+        {label: 'Not at all', value: 0},
+        {label: 'A little bit', value: 1},
+        {label: 'Moderately', value: 2},
+        {label: 'Quite a bit', value: 3},
+        {label: 'Extremely', value: 4},
+      ],
+    },
+    {
+      question:
+        'Are you avoiding things that remind you of the stressful experience (e.g., people, places, activities)?',
+      options: [
+        {label: 'Not at all', value: 0},
+        {label: 'A little bit', value: 1},
+        {label: 'Moderately', value: 2},
+        {label: 'Quite a bit', value: 3},
+        {label: 'Extremely', value: 4},
+      ],
+    },
+    {
+      question:
+        ' Have you been having trouble remembering important parts of the stressful experience?',
+      options: [
+        {label: 'Not at all', value: 0},
+        {label: 'A little bit', value: 1},
+        {label: 'Moderately', value: 2},
+        {label: 'Quite a bit', value: 3},
+        {label: 'Extremely', value: 4},
+      ],
+    },
+    {
+      question:
+        ' Do you have negative beliefs about yourself, others, or the world due to the stressful experience?',
+      options: [
+        {label: 'Not at all', value: 0},
+        {label: 'A little bit', value: 1},
+        {label: 'Moderately', value: 2},
+        {label: 'Quite a bit', value: 3},
+        {label: 'Extremely', value: 4},
+      ],
+    },
+    {
+      question:
+        ' Are you blaming yourself or others for the stressful experience or its aftermath?',
+      options: [
+        {label: 'Not at all', value: 0},
+        {label: 'A little bit', value: 1},
+        {label: 'Moderately', value: 2},
+        {label: 'Quite a bit', value: 3},
+        {label: 'Extremely', value: 4},
+      ],
+    },
+    {
+      question:
+        'Are you experiencing strong negative feelings such as fear, anger, guilt, or shame?',
+      options: [
+        {label: 'Not at all', value: 0},
+        {label: 'A little bit', value: 1},
+        {label: 'Moderately', value: 2},
+        {label: 'Quite a bit', value: 3},
+        {label: 'Extremely', value: 4},
+      ],
+    },
+    {
+      question: 'Have you lost interest in activities you used to enjoy?',
+      options: [
+        {label: 'Not at all', value: 0},
+        {label: 'A little bit', value: 1},
+        {label: 'Moderately', value: 2},
+        {label: 'Quite a bit', value: 3},
+        {label: 'Extremely', value: 4},
+      ],
+    },
+    {
+      question: 'Are you feeling disconnected from other people?',
+      options: [
+        {label: 'Not at all', value: 0},
+        {label: 'A little bit', value: 1},
+        {label: 'Moderately', value: 2},
+        {label: 'Quite a bit', value: 3},
+        {label: 'Extremely', value: 4},
+      ],
+    },
+    {
+      question:
+        'Are you having difficulty experiencing positive feelings or happiness?',
+      options: [
+        {label: 'Not at all', value: 0},
+        {label: 'A little bit', value: 1},
+        {label: 'Moderately', value: 2},
+        {label: 'Quite a bit', value: 3},
+        {label: 'Extremely', value: 4},
+      ],
+    },
+    {
+      question:
+        'Are you exhibiting irritable behavior, angry outbursts, or aggression?',
+      options: [
+        {label: 'Not at all', value: 0},
+        {label: 'A little bit', value: 1},
+        {label: 'Moderately', value: 2},
+        {label: 'Quite a bit', value: 3},
+        {label: 'Extremely', value: 4},
+      ],
+    },
+    {
+      question:
+        'Have you been taking risks or doing things that could harm you?',
+      options: [
+        {label: 'Not at all', value: 0},
+        {label: 'A little bit', value: 1},
+        {label: 'Moderately', value: 2},
+        {label: 'Quite a bit', value: 3},
+        {label: 'Extremely', value: 4},
+      ],
+    },
+    {
+      question: 'Are you constantly feeling on guard or watchful?',
+      options: [
+        {label: 'Not at all', value: 0},
+        {label: 'A little bit', value: 1},
+        {label: 'Moderately', value: 2},
+        {label: 'Quite a bit', value: 3},
+        {label: 'Extremely', value: 4},
+      ],
+    },
+    {
+      question: 'Are you feeling jumpy or easily startled?',
+      options: [
+        {label: 'Not at all', value: 0},
+        {label: 'A little bit', value: 1},
+        {label: 'Moderately', value: 2},
+        {label: 'Quite a bit', value: 3},
+        {label: 'Extremely', value: 4},
+      ],
+    },
+    {
+      question: 'Are you having difficulty concentrating?',
+      options: [
+        {label: 'Not at all', value: 0},
+        {label: 'A little bit', value: 1},
+        {label: 'Moderately', value: 2},
+        {label: 'Quite a bit', value: 3},
+        {label: 'Extremely', value: 4},
+      ],
+    },
+    {
+      question: 'Are you struggling with falling or staying asleep?',
+      options: [
+        {label: 'Not at all', value: 0},
+        {label: 'A little bit', value: 1},
+        {label: 'Moderately', value: 2},
+        {label: 'Quite a bit', value: 3},
+        {label: 'Extremely', value: 4},
       ],
     },
   ];
@@ -253,32 +431,6 @@ const Test = ({route, navigation}) => {
               <View style={styles.questionForm}>
                 {title === 'Depression' &&
                   depressionQnz.map((item, index) => (
-                    <View key={index} style={styles.fieldContainer}>
-                      <Text style={styles.question}>{item.question}</Text>
-                      <RadioForm
-                        styles={{marginVertical: 10}}
-                        radio_props={item.options}
-                        formHorizontal={false}
-                        labelHorizontal={true}
-                        initial={-1}
-                        buttonColor={COLORS.primary}
-                        selectedButtonColor={COLORS.primary}
-                        labelStyle={{fontSize: 14, color: COLORS.black}}
-                        buttonSize={10}
-                        buttonOuterSize={20}
-                        animation={true}
-                        onPress={value => {
-                          setAnswers(prevAnswers => {
-                            const newAnswers = [...prevAnswers];
-                            newAnswers[index] = value;
-                            return newAnswers;
-                          });
-                        }}
-                      />
-                    </View>
-                  ))}
-                {title === 'Stress' &&
-                  stressQnz.map((item, index) => (
                     <View key={index} style={styles.fieldContainer}>
                       <Text style={styles.question}>{item.question}</Text>
                       <RadioForm

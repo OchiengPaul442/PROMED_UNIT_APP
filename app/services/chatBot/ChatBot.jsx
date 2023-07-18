@@ -46,11 +46,11 @@ const ChatMessage = ({sender, botName, text}) => {
 
 const ChatBot = ({navigation}) => {
   const [text, setText] = useState('');
-  const [name, setName] = useState('Faith');
+  const [name, setName] = useState('Sunny');
   const [messages, setMessages] = useState([
     {
-      sender: 'bot',
-      text: 'Hello, I am a Faith, your friendly chatbot and am here to help you.',
+      sender: `${name}`,
+      text: `Hi, I'm ${name}. How can I help you?`,
     },
   ]);
   const [loading, setLoading] = useState(false);
@@ -75,10 +75,11 @@ const ChatBot = ({navigation}) => {
           },
         ],
       });
+
       // Add the bot's response to the messages array
       setMessages(prevMessages => [
         ...prevMessages,
-        {sender: 'bot', text: res.data.response},
+        {sender: res.data.messages[1].role, text: res.data.messages[1].content},
       ]);
       setLoading(false);
     } catch (err) {

@@ -313,6 +313,7 @@ const AppNavigations = () => {
   const [userData, setUserData] = React.useState('');
   const [takeTest, setTakeTest] = React.useState(false);
   const [notificationCount, setNotificationCount] = React.useState(0);
+  const [showMoodModel, setMoodModel] = React.useState(false);
 
   // get current user and user doc reference
   const user = auth().currentUser;
@@ -320,6 +321,9 @@ const AppNavigations = () => {
   React.useEffect(() => {
     if (user) {
       getUserData(setUserData, setError, user);
+      setMoodModel(true);
+    } else {
+      setMoodModel(false);
     }
 
     const unsubscribe = NetInfo.addEventListener(state => {
@@ -359,6 +363,8 @@ const AppNavigations = () => {
   return (
     <AuthContext.Provider
       value={{
+        showMoodModel,
+        setMoodModel,
         takeTest,
         setTakeTest,
         notificationCount,

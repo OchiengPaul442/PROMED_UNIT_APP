@@ -382,17 +382,46 @@ export async function confirmUserBooking(
     sendNotification(name, date, time);
     sendNotificationToTherapist(therapistId, name, date, time);
 
-    await firestore()
-      .collection('Therapists')
-      .doc(therapistId)
-      .collection('Schedule')
-      .add({
-        client: user.uid,
-        date: date,
-        time: time,
-        status: 'Booked',
-        createdAt: firestore.FieldValue.serverTimestamp(),
-      });
+    try {
+      const doc2 = await firestore()
+        .collection('Therapists')
+        .doc(therapistId)
+        .collection('Schedule')
+        .doc(user.uid)
+        .get();
+
+      if (doc2.exists) {
+        await firestore()
+          .collection('Therapists')
+          .doc(therapistId)
+          .collection('Schedule')
+          .doc(user.uid)
+          .update({
+            userId: user.uid,
+            therapistId: therapistId,
+            date: date,
+            time: time,
+            token: `${userData.phoneNumber}${token}`,
+            createdAt: firestore.FieldValue.serverTimestamp(),
+          });
+      } else {
+        await firestore()
+          .collection('Therapists')
+          .doc(therapistId)
+          .collection('Schedule')
+          .doc(user.uid)
+          .set({
+            userId: user.uid,
+            therapistId: therapistId,
+            date: date,
+            time: time,
+            token: `${userData.phoneNumber}${token}`,
+            createdAt: firestore.FieldValue.serverTimestamp(),
+          });
+      }
+    } catch (error) {
+      console.log(error);
+    }
 
     setErrorStatus('success');
     setError('Appointment booked successfully');

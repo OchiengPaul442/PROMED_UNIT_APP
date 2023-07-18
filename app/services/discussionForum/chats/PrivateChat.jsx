@@ -76,7 +76,6 @@ const PrivateChat = ({navigation, route}) => {
     });
     return () => unsubscribe();
   }, [therapistId, userUid]);
-  console.log(message);
   return (
     <ChatScreen
       title="Private Chat"
@@ -109,7 +108,7 @@ const PrivateChat = ({navigation, route}) => {
           data={message}
           scrollEnabled={false}
           inverted={false}
-          keyExtractor={item => item.key}
+          keyExtractor={item => Math.random()}
           extraData={message}
           renderItem={({item}) =>
             userData.length > 0 &&
